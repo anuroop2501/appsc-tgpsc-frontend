@@ -54,15 +54,17 @@ const TYPE_CONFIG = {
 }
 
 const timeAgo = (dateStr) => {
-  if (!dateStr) return '—'
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'Just now'
-  if (mins < 60) return `${mins} min ago`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs} hr${hrs > 1 ? 's' : ''} ago`
-  const days = Math.floor(hrs / 24)
-  return `${days} day${days > 1 ? 's' : ''} ago`
+  if (!dateStr) return '—';
+  const parsed = new Date(dateStr);
+  if (isNaN(parsed.getTime())) return '—';
+  const diff = Date.now() - parsed.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hr${hrs > 1 ? 's' : ''} ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} day${days > 1 ? 's' : ''} ago`;
 }
 
 const formatDate = (dateStr) => {
@@ -560,10 +562,10 @@ const HistoryPage = () => {
                   {/* Timestamp */}
                   <div className="flex-shrink-0 text-right">
                     <p className="text-xs font-medium" style={{ color: 'var(--color-muted)' }}>
-                      {timeAgo(item.createdAt || item.timestamp)}
+                      {timeAgo(item.created_at || item.createdAt || item.timestamp)}
                     </p>
                     <p className="text-xs mt-0.5 opacity-60" style={{ color: 'var(--color-muted)' }}>
-                      {formatDate(item.createdAt || item.timestamp)}
+                      {formatDate(item.created_at || item.createdAt || item.timestamp)}
                     </p>
                   </div>
                 </div>

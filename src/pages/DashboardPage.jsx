@@ -44,14 +44,17 @@ const AnimatedNumber = ({ target, suffix = '' }) => {
 
 /* ── Time ago helper ── */
 const timeAgo = (dateStr) => {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'Just now'
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  const days = Math.floor(hrs / 24)
-  return `${days}d ago`
+  if (!dateStr) return '';
+  const parsed = new Date(dateStr);
+  if (isNaN(parsed.getTime())) return '';
+  const diff = Date.now() - parsed.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
 }
 
 const TYPE_META = {
@@ -378,7 +381,7 @@ const DashboardPage = () => {
                       </p>
                     </div>
                     <span className="text-xs flex-shrink-0" style={{ color: 'var(--color-muted)' }}>
-                      {timeAgo(item.createdAt || item.timestamp)}
+                      {timeAgo(item.created_at || item.createdAt || item.timestamp)}
                     </span>
                   </div>
                 )
