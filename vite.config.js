@@ -38,7 +38,7 @@ export default defineConfig({
         // Runtime caching for API responses (notes, history)
         runtimeCaching: [
           {
-            urlPattern: /^http:\/\/localhost:5001\/api\/history/,
+            urlPattern: /\/api\/history/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'examedge-history-cache',
@@ -47,7 +47,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /^http:\/\/localhost:5001\/api\/ai\/notes/,
+            urlPattern: /\/api\/ai\/notes/,
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'examedge-notes-cache',
@@ -55,8 +55,8 @@ export default defineConfig({
             },
           },
         ],
-        // Offline fallback page
-        navigateFallback: '/offline.html',
+        // Single Page App client-side routing fallback must be index.html
+        navigateFallback: 'index.html',
         navigateFallbackDenylist: [/^\/api\//],
       },
       devOptions: {
