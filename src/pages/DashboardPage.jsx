@@ -134,6 +134,8 @@ const DashboardPage = () => {
     },
   ]
 
+  const isGroup2 = (user?.targetExam || '').toLowerCase().includes('group 2')
+
   const featureCards = [
     {
       title: 'MCQ Prelims',
@@ -147,7 +149,7 @@ const DashboardPage = () => {
       accent: '#4F8EF7',
     },
     {
-      title: 'Mains Notes',
+      title: isGroup2 ? 'Group 2 Notes' : 'Mains Notes',
       desc: 'AI-structured notes tailored to your exam pattern',
       icon: BookOpen,
       gradient: 'linear-gradient(135deg, rgba(123,94,248,0.15), rgba(123,94,248,0.05))',
@@ -157,7 +159,8 @@ const DashboardPage = () => {
       path: '/notes',
       accent: '#7B5EF8',
     },
-    {
+    // Answer Evaluator only for Group 1 exams
+    ...(!isGroup2 ? [{
       title: 'Answer Evaluator',
       desc: 'Get expert AI feedback on your mains answers with scores',
       icon: Star,
@@ -167,7 +170,7 @@ const DashboardPage = () => {
       glow: 'rgba(245,166,35,0.2)',
       path: '/evaluator',
       accent: '#F5A623',
-    },
+    }] : []),
   ]
 
   return (

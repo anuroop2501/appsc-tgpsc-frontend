@@ -1,4 +1,4 @@
-const LoadingDots = ({ message = 'AI is generating...' }) => {
+const LoadingDots = ({ message = 'High-quality questions are on the way…' }) => {
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-10">
       {/* ── Dots ── */}

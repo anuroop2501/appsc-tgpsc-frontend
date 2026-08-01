@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, Lightbulb, ChevronDown } from 'lucide-react'
+import FormattedQuestionText from './FormattedQuestionText'
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D']
 
@@ -81,12 +82,9 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index }) => {
         >
           {(index || 0) + 1}
         </span>
-        <p
-          className="text-sm font-medium leading-relaxed flex-1"
-          style={{ color: 'var(--color-text)' }}
-        >
-          {question}
-        </p>
+        <div className="flex-1">
+          <FormattedQuestionText text={question} />
+        </div>
       </div>
 
       {/* ── Options ── */}

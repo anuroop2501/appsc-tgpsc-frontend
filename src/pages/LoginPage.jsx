@@ -92,18 +92,18 @@ const LoginPage = () => {
               <Zap size={26} className="text-white" />
             </div>
             <h1
-              className="text-2xl font-bold"
+              className="text-2xl font-bold tracking-tight"
               style={{
                 fontFamily: 'Sora, sans-serif',
-                background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)',
+                background: 'linear-gradient(135deg, #1579E6, #60A5FA)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              ExamEdge
+              APPSC <span style={{ color: '#F7B500', WebkitTextFillColor: '#F7B500' }}>AI</span>
             </h1>
             <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-              AI-powered APPSC/TGPSC preparation
+              AI-powered APPSC preparation by Ace with Ease IAS
             </p>
           </div>
 
@@ -223,7 +223,7 @@ const LoginPage = () => {
           <div className="flex items-center gap-3 my-6">
             <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
             <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-              New to ExamEdge?
+              New to APPSC AI?
             </span>
             <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
           </div>
@@ -242,7 +242,7 @@ const LoginPage = () => {
 
         {/* Footer note */}
         <p className="text-center text-xs mt-4" style={{ color: 'var(--color-muted)' }}>
-          Trusted by thousands of APPSC & TGPSC aspirants
+          Ace with Ease IAS — Powered by Precision AI
         </p>
       </div>
     </div>

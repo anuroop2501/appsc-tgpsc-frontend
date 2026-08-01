@@ -22,3 +22,10 @@ export const getStats = () =>
  */
 export const getSessionDetail = (id) =>
   api.get(`/api/history/${id}`).then((r) => r.data)
+
+/**
+ * Regenerate content for an expired history session and save permanently.
+ * @param {string} id - Session UUID
+ */
+export const regenerateSession = (id) =>
+  api.post(`/api/history/regenerate/${id}`).then((r) => r.data)

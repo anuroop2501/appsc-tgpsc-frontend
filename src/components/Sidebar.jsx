@@ -9,31 +9,52 @@ import {
   Zap,
   X,
   ChevronRight,
+  ClipboardList,
+  CreditCard,
+  FileText,
 } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 
-const NAV_ITEMS = [
-  {
-    section: 'Overview',
-    items: [
-      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    ],
-  },
-  {
-    section: 'AI Tools',
-    items: [
-      { to: '/prelims', icon: Sparkles, label: 'MCQ Prelims' },
-      { to: '/notes', icon: BookOpen, label: 'Mains Notes' },
-      { to: '/evaluator', icon: Star, label: 'Answer Evaluator' },
-    ],
-  },
-  {
-    section: 'Account',
-    items: [
-      { to: '/history', icon: Clock, label: 'Study History' },
-    ],
-  },
-]
+// ─── Helper: derive nav from exam ────────────────────────────────────────────
+function getNavItems(targetExam = '') {
+  const exam = (targetExam || '').toLowerCase()
+
+  // Group 2 exams: no Mains Notes, no Answer Evaluator; instead show "Group 2 Notes"
+  const isGroup2 = exam.includes('group 2')
+
+  const aiItems = [
+    { to: '/prelims', icon: Sparkles, label: 'MCQ Prelims' },
+    // { to: '/test',    icon: ClipboardList, label: 'Mock Test' },
+  ]
+
+  if (isGroup2) {
+    aiItems.push({ to: '/notes', icon: FileText, label: 'Group 2 Notes' })
+    // Mains Notes & Answer Evaluator are NOT available for Group 2
+  } else {
+    aiItems.push({ to: '/notes',     icon: BookOpen, label: 'Mains Notes' })
+    aiItems.push({ to: '/evaluator', icon: Star,     label: 'Answer Evaluator' })
+  }
+
+  return [
+    {
+      section: 'Overview',
+      items: [
+        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      ],
+    },
+    {
+      section: 'AI Tools',
+      items: aiItems,
+    },
+    {
+      section: 'Account',
+      items: [
+        { to: '/history', icon: Clock,       label: 'Study History' },
+        { to: '/pricing', icon: CreditCard,  label: 'Plans & Pricing' },
+      ],
+    },
+  ]
+}
 
 const Sidebar = ({ open, onClose, isMobile }) => {
   const { user, logout } = useAuthStore()
@@ -48,6 +69,8 @@ const Sidebar = ({ open, onClose, isMobile }) => {
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U'
 
+  const NAV_ITEMS = getNavItems(user?.targetExam)
+
   if (!open) return null
 
   return (
@@ -60,20 +83,25 @@ const Sidebar = ({ open, onClose, isMobile }) => {
       }}
     >
       {/* ── Logo ── */}
-      <div className="flex items-center justify-between px-5 py-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
+        <div className="flex items-center gap-2.5">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)' }}
+            style={{ background: 'linear-gradient(135deg, #1579E6, #F7B500)' }}
           >
             <Zap size={18} className="text-white" />
           </div>
-          <span
-            className="text-lg font-bold"
-            style={{ fontFamily: 'Sora, sans-serif', background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-          >
-            ExamEdge
-          </span>
+          <div className="flex flex-col">
+            <span
+              className="text-lg font-extrabold leading-tight tracking-tight"
+              style={{ fontFamily: 'Sora, sans-serif', background: 'linear-gradient(135deg, #1579E6, #60A5FA)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+            >
+              APPSC <span style={{ color: '#F7B500', WebkitTextFillColor: '#F7B500' }}>AI</span>
+            </span>
+            <span className="text-[9px] font-medium leading-none tracking-tight text-slate-400 mt-0.5">
+              by Ace with Ease IAS
+            </span>
+          </div>
         </div>
         {isMobile && (
           <button

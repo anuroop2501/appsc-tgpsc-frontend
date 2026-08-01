@@ -24,7 +24,7 @@ import LoadingDots from '../components/LoadingDots'
 import { evaluateAnswer, extractAnswerFromFile } from '../api/evaluator'
 import useAuthStore from '../store/authStore'
 
-const EXAMS = ['APPSC Group 1', 'APPSC Group 2', 'TGPSC Group 1', 'TGPSC Group 2']
+const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
 const ACCEPTED_EXT   = '.jpg,.jpeg,.png,.webp,.pdf'
 const MAX_SIZE_MB    = 10
@@ -605,7 +605,7 @@ const EvaluatorPage = () => {
       {/* ── Loading ── */}
       {loading && (
         <div className="glass-card">
-          <LoadingDots message="AI examiner is reviewing your answer…" />
+          <LoadingDots message="Evaluating and scoring your answer…" />
         </div>
       )}
 

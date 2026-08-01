@@ -6,17 +6,18 @@
    CSS Custom Properties — Design System
 ───────────────────────────────────────── */
 :root {
-  --color-bg: #0B0F1A;
-  --color-surface: #131826;
-  --color-card: #1A2035;
-  --color-border: #2A3450;
-  --color-accent: #4F8EF7;
-  --color-purple: #7B5EF8;
-  --color-gold: #F5A623;
-  --color-green: #3DD68C;
-  --color-red: #F76F6F;
-  --color-text: #E8EDF8;
-  --color-muted: #7A8BAA;
+  --color-bg: #070C18;
+  --color-surface: #0E1628;
+  --color-card: #152036;
+  --color-border: #202F4E;
+  --color-accent: #2563EB;
+  --color-blue: #1579E6;
+  --color-gold: #F7B500;
+  --color-amber: #F59E0B;
+  --color-green: #10B981;
+  --color-red: #EF4444;
+  --color-text: #F1F5F9;
+  --color-muted: #8496B8;
 
   --font-heading: 'Sora', sans-serif;
   --font-body: 'DM Sans', sans-serif;
@@ -118,28 +119,28 @@ input, textarea, select {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-purple));
+  background: linear-gradient(135deg, #2563EB, #60A5FA);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-gold {
-  background: linear-gradient(135deg, var(--color-gold), #FF8C42);
+  background: linear-gradient(135deg, #F7B500, #F59E0B);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-green {
-  background: linear-gradient(135deg, var(--color-green), #00B4D8);
+  background: linear-gradient(135deg, var(--color-green), #34D399);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-purple));
+  background: linear-gradient(135deg, #1579E6, #1D4ED8);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -150,12 +151,12 @@ input, textarea, select {
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(79, 142, 247, 0.3);
+  box-shadow: 0 4px 15px rgba(21, 121, 230, 0.35);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(79, 142, 247, 0.45);
+  box-shadow: 0 8px 25px rgba(21, 121, 230, 0.5);
 }
 
 .btn-primary:active {

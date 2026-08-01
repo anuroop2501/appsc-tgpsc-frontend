@@ -17,8 +17,6 @@ import useAuthStore from '../store/authStore'
 const EXAMS = [
   { value: 'APPSC Group 1', label: 'APPSC Group 1' },
   { value: 'APPSC Group 2', label: 'APPSC Group 2' },
-  { value: 'TGPSC Group 1', label: 'TGPSC Group 1' },
-  { value: 'TGPSC Group 2', label: 'TGPSC Group 2' },
 ]
 
 const SignupPage = () => {
@@ -120,18 +118,18 @@ const SignupPage = () => {
               <Zap size={26} className="text-white" />
             </div>
             <h1
-              className="text-2xl font-bold"
+              className="text-2xl font-bold tracking-tight"
               style={{
                 fontFamily: 'Sora, sans-serif',
-                background: 'linear-gradient(135deg, #7B5EF8, #4F8EF7)',
+                background: 'linear-gradient(135deg, #1579E6, #60A5FA)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              ExamEdge
+              APPSC <span style={{ color: '#F7B500', WebkitTextFillColor: '#F7B500' }}>AI</span>
             </h1>
             <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-              Start your AI-powered exam journey
+              AI-powered APPSC preparation by Ace with Ease IAS
             </p>
           </div>
 

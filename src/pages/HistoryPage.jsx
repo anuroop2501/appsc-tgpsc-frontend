@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   Loader2,
 } from 'lucide-react'
-import { getHistory, getSessionDetail } from '../api/history'
+import { getHistory, getSessionDetail, regenerateSession } from '../api/history'
+import { exportNotesToPdf } from '../lib/exportPdf'
 import MCQCard from '../components/MCQCard'
 import ScoreRing from '../components/ScoreRing'
 import RubricBar from '../components/RubricBar'
@@ -93,6 +94,23 @@ const HistoryPage = () => {
   // Inline session viewing states
   const [viewingSession, setViewingSession] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
+
+  const handleRegenerate = async () => {
+    if (!viewingSession?.id) return
+    setRegenerating(true)
+    setError('')
+    try {
+      const data = await regenerateSession(viewingSession.id)
+      if (data.success && data.session) {
+        setViewingSession(data.session)
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Failed to regenerate content.')
+    } finally {
+      setRegenerating(false)
+    }
+  }
 
   const setOverride = useBreadcrumbStore((s) => s.setOverride)
   const clearOverride = useBreadcrumbStore((s) => s.clearOverride)
@@ -118,8 +136,25 @@ const HistoryPage = () => {
     try {
       const data = await getSessionDetail(id)
       if (data.success && data.session) {
-        setViewingSession(data.session)
-        setOverride(['Dashboard', 'Study History', data.session.topic || fallbackTopic])
+        let session = data.session
+
+        // Auto-regenerate if notes or prelims content is missing!
+        if (
+          (session.type === 'notes' && !session.metadata?.content) ||
+          (session.type === 'prelims' && !session.metadata?.questions)
+        ) {
+          try {
+            const regenRes = await regenerateSession(id)
+            if (regenRes.success && regenRes.session) {
+              session = regenRes.session
+            }
+          } catch (e) {
+            console.warn('Auto-regeneration failed, fallback to manual retry button:', e.message)
+          }
+        }
+
+        setViewingSession(session)
+        setOverride(['Dashboard', 'Study History', session.topic || fallbackTopic])
       } else {
         setError('Failed to retrieve session details.')
       }
@@ -193,9 +228,18 @@ const HistoryPage = () => {
               <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                 Session Data Expired
               </p>
-              <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
-                This practice session was created before full database persistence was enabled, and its temporary cache has expired. Future sessions will be saved permanently.
+              <p className="text-xs mt-2 mb-5 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
+                This practice session was created before full database persistence was enabled. You can regenerate the questions now to save them permanently.
               </p>
+              <button
+                onClick={handleRegenerate}
+                disabled={regenerating}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-50 inline-flex items-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)' }}
+              >
+                {regenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={15} />}
+                Regenerate Questions Now
+              </button>
             </div>
           )}
 
@@ -207,9 +251,18 @@ const HistoryPage = () => {
               <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                 Notes Content Expired
               </p>
-              <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
-                This study notes session was created before full database persistence was enabled, and its temporary cache has expired. Future notes will be saved permanently.
+              <p className="text-xs mt-2 mb-5 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
+                This study notes session was created before full database persistence was enabled. You can regenerate these notes now to save them permanently in your account.
               </p>
+              <button
+                onClick={handleRegenerate}
+                disabled={regenerating}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-50 inline-flex items-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)' }}
+              >
+                {regenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={15} />}
+                Regenerate Study Notes Now
+              </button>
             </div>
           )}
 
@@ -267,13 +320,52 @@ const HistoryPage = () => {
 
           {/* ── NOTES RENDERING ── */}
           {viewingSession.type === 'notes' && viewingSession.metadata.content && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <h2 className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
-                  Notes: {viewingSession.topic}
-                </h2>
+            <div className="space-y-6">
+              {/* Header Box */}
+              <div className="glass-card p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(123,94,248,0.15)', color: '#7B5EF8', border: '1px solid rgba(123,94,248,0.3)' }}>
+                      {viewingSession.exam || 'Study Notes'}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                      {formatDate(viewingSession.created_at)}
+                    </span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                    {viewingSession.topic}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(viewingSession.metadata.content)
+                      alert('Study notes copied to clipboard!')
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
+                    style={{ background: 'rgba(79,142,247,0.15)', color: 'var(--color-accent)', border: '1px solid rgba(79,142,247,0.3)' }}
+                  >
+                    Copy Notes
+                  </button>
+                  <button
+                    onClick={() =>
+                      exportNotesToPdf({
+                        topic: viewingSession.topic,
+                        exam: viewingSession.exam,
+                        content: viewingSession.metadata.content,
+                        date: formatDate(viewingSession.created_at),
+                      })
+                    }
+                    className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
+                    style={{ background: 'rgba(61,214,140,0.15)', color: '#3DD68C', border: '1px solid rgba(61,214,140,0.3)' }}
+                  >
+                    ⬇ Download PDF
+                  </button>
+                </div>
               </div>
-              <div className="p-5 rounded-xl border border-border" style={{ background: 'rgba(11,15,26,0.3)' }}>
+
+              {/* Document Container */}
+              <div className="glass-card p-6 sm:p-10 rounded-2xl" style={{ background: 'rgba(19,24,38,0.6)', border: '1px solid var(--color-border)' }}>
                 <MarkdownRenderer content={viewingSession.metadata.content} />
               </div>
             </div>

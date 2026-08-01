@@ -8,6 +8,8 @@ import PrelimsPage from './pages/PrelimsPage'
 import NotesPage from './pages/NotesPage'
 import EvaluatorPage from './pages/EvaluatorPage'
 import HistoryPage from './pages/HistoryPage'
+import TestPage from './pages/TestPage'
+import PricingPage from './pages/PricingPage'
 
 const App = () => {
   return (
@@ -29,9 +31,11 @@ const App = () => {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="prelims" element={<PrelimsPage />} />
+          <Route path="test" element={<TestPage />} />
           <Route path="notes" element={<NotesPage />} />
           <Route path="evaluator" element={<EvaluatorPage />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="pricing" element={<PricingPage />} />
         </Route>
 
         {/* Catch-all */}

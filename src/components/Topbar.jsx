@@ -1,15 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { Menu, Bell, ChevronRight, CheckCircle, Info, Calendar } from 'lucide-react'
+import { Menu, Bell, ChevronRight, CheckCircle, Info, Calendar, Zap } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import useBreadcrumbStore from '../store/breadcrumbStore'
+import PricingModal from './PricingModal'
+import { getUserBalance } from '../api/payment'
 
-const ROUTE_LABELS = {
-  '/dashboard': ['Dashboard'],
-  '/prelims': ['AI Tools', 'MCQ Prelims'],
-  '/notes': ['AI Tools', 'Mains Notes'],
-  '/evaluator': ['AI Tools', 'Answer Evaluator'],
-  '/history': ['Dashboard', 'Study History'],
+const getRouteLabels = (targetExam = '') => {
+  const isGroup2 = (targetExam || '').toLowerCase().includes('group 2')
+  return {
+    '/dashboard':  ['Dashboard'],
+    '/prelims':    ['AI Tools', 'MCQ Prelims'],
+    '/test':       ['AI Tools', 'Mock Test'],
+    '/notes':      ['AI Tools', isGroup2 ? 'Group 2 Notes' : 'Mains Notes'],
+    '/evaluator':  ['AI Tools', 'Answer Evaluator'],
+    '/history':    ['Dashboard', 'Study History'],
+  }
 }
 
 const CRUMB_PATHS = {
@@ -40,7 +46,7 @@ const INITIAL_NOTIFICATIONS = [
   },
   {
     id: 3,
-    title: 'Welcome to ExamEdge',
+    title: 'Welcome to APPSC AI',
     desc: 'Complete your profile setup and select your focus subjects.',
     time: '1 day ago',
     type: 'system',
@@ -52,12 +58,29 @@ const INITIAL_NOTIFICATIONS = [
 const Topbar = ({ onMenuClick }) => {
   const { pathname } = useLocation()
   const user = useAuthStore((s) => s.user)
+  const updateUser = useAuthStore((s) => s.updateUser)
+  const [credits, setCredits] = useState(user?.credits || 0)
+  const [isPricingOpen, setIsPricingOpen] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [unread, setUnread] = useState(true)
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS)
   const dropdownRef = useRef(null)
 
+  // Fetch live credits on mount
+  useEffect(() => {
+    if (user?.id || user?.userId) {
+      getUserBalance()
+        .then((data) => {
+          if (data.credits !== undefined) {
+            setCredits(data.credits)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [user])
+
   const override = useBreadcrumbStore((s) => s.override)
+  const ROUTE_LABELS = getRouteLabels(user?.targetExam)
   const crumbs = override || ROUTE_LABELS[pathname] || [pathname.slice(1)]
 
   const initials = user?.name
@@ -152,8 +175,29 @@ const Topbar = ({ onMenuClick }) => {
         </nav>
       </div>
 
-      {/* ── Right: notifications + avatar ── */}
+      {/* ── Right: credits + notifications + avatar ── */}
       <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+        {/* Credit Balance Pill Button */}
+        <button
+          onClick={() => setIsPricingOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105"
+          style={{
+            background: 'rgba(79, 142, 247, 0.12)',
+            border: '1px solid rgba(79, 142, 247, 0.3)',
+            color: 'var(--color-accent)',
+          }}
+          title="Click to view plans & credit top-ups"
+        >
+          <Zap size={14} style={{ color: '#F5A623' }} />
+          <span>{credits} Cr</span>
+          <span
+            className="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase"
+            style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)', color: '#FFFFFF' }}
+          >
+            + Top Up
+          </span>
+        </button>
+
         {/* Bell */}
         <button
           onClick={handleBellClick}
@@ -255,6 +299,18 @@ const Topbar = ({ onMenuClick }) => {
           </div>
         </div>
       </div>
+
+      {/* Pricing & Credit Upgrade Modal */}
+      <PricingModal
+        isOpen={isPricingOpen}
+        onClose={() => setIsPricingOpen(false)}
+        onPaymentSuccess={(updatedUser) => {
+          if (updatedUser?.credits !== undefined) {
+            setCredits(updatedUser.credits)
+            if (updateUser) updateUser(updatedUser)
+          }
+        }}
+      />
     </header>
   )
 }

@@ -12,7 +12,7 @@ import {
   BookMarked,
   ArrowRight,
 } from 'lucide-react'
-import { getSessionDetail } from '../api/history'
+import { getSessionDetail, regenerateSession } from '../api/history'
 import MCQCard from './MCQCard'
 import ScoreRing from './ScoreRing'
 import RubricBar from './RubricBar'
@@ -22,6 +22,23 @@ const SessionDetailModal = ({ isOpen, onClose, sessionId }) => {
   const [loading, setLoading] = useState(true)
   const [session, setSession] = useState(null)
   const [error, setError] = useState('')
+  const [regenerating, setRegenerating] = useState(false)
+
+  const handleRegenerate = async () => {
+    if (!sessionId) return
+    setRegenerating(true)
+    setError('')
+    try {
+      const data = await regenerateSession(sessionId)
+      if (data.success && data.session) {
+        setSession(data.session)
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Failed to regenerate content.')
+    } finally {
+      setRegenerating(false)
+    }
+  }
 
   useEffect(() => {
     if (!isOpen || !sessionId) return
@@ -174,9 +191,18 @@ const SessionDetailModal = ({ isOpen, onClose, sessionId }) => {
                   <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                     Session Data Expired
                   </p>
-                  <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
-                    This practice session was created before full database persistence was enabled, and its temporary cache has expired. Future sessions will be saved permanently.
+                  <p className="text-xs mt-2 mb-5 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
+                    This practice session was created before full database persistence was enabled. You can regenerate the questions now to save them permanently.
                   </p>
+                  <button
+                    onClick={handleRegenerate}
+                    disabled={regenerating}
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-50 inline-flex items-center gap-2"
+                    style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)' }}
+                  >
+                    {regenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={15} />}
+                    Regenerate Questions Now
+                  </button>
                 </div>
               )}
 
@@ -188,9 +214,18 @@ const SessionDetailModal = ({ isOpen, onClose, sessionId }) => {
                   <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                     Notes Content Expired
                   </p>
-                  <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
-                    This study notes session was created before full database persistence was enabled, and its temporary cache has expired. Future notes will be saved permanently.
+                  <p className="text-xs mt-2 mb-5 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
+                    This study notes session was created before full database persistence was enabled. You can regenerate these notes now to save them permanently in your account.
                   </p>
+                  <button
+                    onClick={handleRegenerate}
+                    disabled={regenerating}
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-50 inline-flex items-center gap-2"
+                    style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)' }}
+                  >
+                    {regenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={15} />}
+                    Regenerate Study Notes Now
+                  </button>
                 </div>
               )}
 

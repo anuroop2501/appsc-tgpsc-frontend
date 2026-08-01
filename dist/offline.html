@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline — ExamEdge AI</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #131826;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+    .icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.75; }
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #4F8EF7, #7B5EF8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      max-width: 380px;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(79, 142, 247, 0.12);
+      border: 1px solid rgba(79, 142, 247, 0.3);
+      color: #4F8EF7;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+    }
+    button {
+      background: linear-gradient(135deg, #4F8EF7, #7B5EF8);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 0.75rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    button:hover { transform: scale(1.05); opacity: 0.9; }
+    button:active { transform: scale(0.97); }
+    .footer {
+      position: fixed;
+      bottom: 1.5rem;
+      font-size: 0.7rem;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">📡</div>
+  <div class="badge">⚡ ExamEdge AI</div>
+  <h1>You're Offline</h1>
+  <p>
+    It looks like you're not connected to the internet right now.
+    Previously viewed Study Notes and History are still available.
+    Connect to resume AI-powered generation.
+  </p>
+  <button onclick="window.location.reload()">
+    🔄 Retry Connection
+  </button>
+  <p class="footer">ExamEdge AI — APPSC & TGPSC Exam Preparation</p>
+</body>
+</html>

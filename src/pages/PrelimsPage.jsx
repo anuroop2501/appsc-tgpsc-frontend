@@ -6,7 +6,7 @@ import LoadingDots from '../components/LoadingDots'
 import { generatePrelims } from '../api/prelims'
 import useAuthStore from '../store/authStore'
 
-const EXAMS = ['APPSC Group 1', 'APPSC Group 2', 'TGPSC Group 1', 'TGPSC Group 2']
+const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 
 const PrelimsPage = () => {
   const user = useAuthStore((s) => s.user)
@@ -70,7 +70,7 @@ const PrelimsPage = () => {
           </h1>
         </div>
         <p className="text-sm ml-14" style={{ color: 'var(--color-muted)' }}>
-          Generate 10 exam-pattern multiple choice questions from any APPSC/TGPSC topic
+          Generate 10 exam-pattern multiple choice questions from any APPSC topic
         </p>
       </div>
 
@@ -89,7 +89,7 @@ const PrelimsPage = () => {
               value={topic}
               onChange={setTopic}
               exam={exam}
-              placeholder="e.g. Fundamental Rights, Telangana History…"
+              placeholder="e.g. Fundamental Rights, Andhra Pradesh History…"
             />
           </div>
 
@@ -123,7 +123,7 @@ const PrelimsPage = () => {
               {loading ? (
                 <>
                   <Loader2 size={17} className="animate-spin" />
-                  Generating…
+                  Preparing…
                 </>
               ) : (
                 <>
@@ -165,7 +165,7 @@ const PrelimsPage = () => {
       {/* ── Loading ── */}
       {loading && (
         <div className="glass-card">
-          <LoadingDots message="AI is crafting your questions…" />
+          <LoadingDots message="High-quality questions are on the way…" />
         </div>
       )}
 

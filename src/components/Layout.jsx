@@ -28,7 +28,7 @@ const Layout = () => {
 
   /* ── Fetch syllabus on mount ── */
   useEffect(() => {
-    const exams = ['APPSC Group 1', 'APPSC Group 2', 'TGPSC Group 1', 'TGPSC Group 2']
+    const exams = ['APPSC Group 1', 'APPSC Group 2']
     if (!loaded) {
       exams.forEach((exam) => {
         getSyllabus(exam)

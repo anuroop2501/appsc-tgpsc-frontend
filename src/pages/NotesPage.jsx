@@ -13,7 +13,7 @@ import LoadingDots from '../components/LoadingDots'
 import { streamNotes } from '../api/notes'
 import useAuthStore from '../store/authStore'
 
-const EXAMS = ['APPSC Group 1', 'APPSC Group 2', 'TGPSC Group 1', 'TGPSC Group 2']
+const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 
 const NOTE_TYPES = [
   { value: 'Comprehensive', label: 'Comprehensive', icon: '📚' },
@@ -112,7 +112,7 @@ const NotesPage = () => {
             className="text-2xl font-bold"
             style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
           >
-            Mains Notes Generator
+            {(user?.targetExam || '').toLowerCase().includes('group 2') ? 'Group 2 Notes Generator' : 'Mains Notes Generator'}
           </h1>
         </div>
         <p className="text-sm ml-14" style={{ color: 'var(--color-muted)' }}>
@@ -229,7 +229,7 @@ const NotesPage = () => {
       {/* ── Loading ── */}
       {isStreaming && !content && (
         <div className="glass-card">
-          <LoadingDots message="AI is generating your notes…" />
+          <LoadingDots message="Preparing comprehensive study notes…" />
         </div>
       )}
 
