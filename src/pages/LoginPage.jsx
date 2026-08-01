@@ -1,12 +1,23 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, Zap, AlertCircle, Loader2 } from 'lucide-react'
 import { login } from '../api/auth'
 import useAuthStore from '../store/authStore'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const token = useAuthStore((s) => s.token)
   const setAuth = useAuthStore((s) => s.setAuth)
+
+  const from = location.state?.from?.pathname || '/dashboard'
+
+  // Redirect away from login if already authenticated
+  useEffect(() => {
+    if (token) {
+      navigate(from, { replace: true })
+    }
+  }, [token, navigate, from])
 
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
@@ -33,7 +44,7 @@ const LoginPage = () => {
         token: data.token || data.accessToken,
         refreshToken: data.refreshToken,
       })
-      navigate('/dashboard', { replace: true })
+      navigate(from, { replace: true })
     } catch (err) {
       setError(
         err.response?.data?.message ||

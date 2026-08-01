@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Mail,
@@ -21,7 +21,14 @@ const EXAMS = [
 
 const SignupPage = () => {
   const navigate = useNavigate()
+  const token = useAuthStore((s) => s.token)
   const setAuth = useAuthStore((s) => s.setAuth)
+
+  useEffect(() => {
+    if (token) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [token, navigate])
 
   const [form, setForm] = useState({
     name: '',
