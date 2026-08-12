@@ -386,7 +386,7 @@ const HistoryPage = () => {
               </div>
 
               {/* Document Container */}
-              <div className="glass-card p-6 sm:p-10 rounded-2xl" style={{ background: 'rgba(19,24,38,0.6)', border: '1px solid var(--color-border)' }}>
+              <div className="glass-card p-6 sm:p-10 rounded-2xl" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}>
                 <MarkdownRenderer content={viewingSession.metadata.content} />
               </div>
             </div>

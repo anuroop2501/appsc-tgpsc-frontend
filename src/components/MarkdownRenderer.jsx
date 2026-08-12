@@ -8,11 +8,11 @@ const components = {
         fontFamily: 'Sora, sans-serif',
         fontSize: '1.6rem',
         fontWeight: 700,
-        background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)',
+        background: 'linear-gradient(135deg, var(--color-accent), #7B5EF8)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
-        borderBottom: '2px solid #2A3450',
+        borderBottom: '2px solid var(--color-border)',
         paddingBottom: '10px',
         marginBottom: '18px',
         marginTop: '0',
@@ -28,11 +28,11 @@ const components = {
         fontFamily: 'Sora, sans-serif',
         fontSize: '1.25rem',
         fontWeight: 700,
-        background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)',
+        background: 'linear-gradient(135deg, var(--color-accent), #7B5EF8)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
-        borderBottom: '1px solid #2A3450',
+        borderBottom: '1px solid var(--color-border)',
         paddingBottom: '8px',
         marginBottom: '14px',
         marginTop: '28px',
@@ -48,8 +48,8 @@ const components = {
         fontFamily: 'Sora, sans-serif',
         fontSize: '1.05rem',
         fontWeight: 600,
-        color: '#E8EDF8',
-        borderLeft: '3px solid #4F8EF7',
+        color: 'var(--color-text)',
+        borderLeft: '3px solid var(--color-accent)',
         paddingLeft: '12px',
         marginBottom: '10px',
         marginTop: '20px',
@@ -65,7 +65,7 @@ const components = {
         fontFamily: 'Sora, sans-serif',
         fontSize: '0.95rem',
         fontWeight: 600,
-        color: '#7A8BAA',
+        color: 'var(--color-muted)',
         marginBottom: '8px',
         marginTop: '16px',
         textTransform: 'uppercase',
@@ -79,7 +79,7 @@ const components = {
   p: ({ children }) => (
     <p
       style={{
-        color: '#E8EDF8',
+        color: 'var(--color-text)',
         fontSize: '0.95rem',
         lineHeight: '1.85',
         marginBottom: '14px',
@@ -96,7 +96,7 @@ const components = {
   ),
 
   ol: ({ children }) => (
-    <ol style={{ paddingLeft: '20px', marginBottom: '14px', color: '#E8EDF8' }}>
+    <ol style={{ paddingLeft: '20px', marginBottom: '14px', color: 'var(--color-text)' }}>
       {children}
     </ol>
   ),
@@ -108,7 +108,7 @@ const components = {
         paddingLeft: '20px',
         paddingTop: '3px',
         paddingBottom: '3px',
-        color: '#E8EDF8',
+        color: 'var(--color-text)',
         fontSize: '0.95rem',
         lineHeight: '1.7',
       }}
@@ -120,7 +120,7 @@ const components = {
           top: '11px',
           width: '6px',
           height: '6px',
-          background: '#4F8EF7',
+          background: 'var(--color-accent)',
           borderRadius: '50%',
           flexShrink: 0,
         }}
@@ -132,13 +132,13 @@ const components = {
   blockquote: ({ children }) => (
     <blockquote
       style={{
-        background: 'rgba(245, 166, 35, 0.07)',
-        borderLeft: '3px solid #F5A623',
+        background: 'rgba(245, 166, 35, 0.08)',
+        borderLeft: '3px solid var(--color-gold)',
         borderRadius: '0 12px 12px 0',
         padding: '12px 16px',
         margin: '16px 0',
         fontStyle: 'italic',
-        color: '#E8EDF8',
+        color: 'var(--color-text)',
         backdropFilter: 'blur(8px)',
       }}
     >
@@ -147,13 +147,13 @@ const components = {
   ),
 
   strong: ({ children }) => (
-    <strong style={{ color: '#4F8EF7', fontWeight: 700 }}>
+    <strong style={{ color: 'var(--color-accent)', fontWeight: 700 }}>
       {children}
     </strong>
   ),
 
   em: ({ children }) => (
-    <em style={{ color: '#F5A623' }}>{children}</em>
+    <em style={{ color: 'var(--color-gold)' }}>{children}</em>
   ),
 
   code: ({ inline, children, ...props }) => {
@@ -161,13 +161,13 @@ const components = {
       return (
         <code
           style={{
-            background: 'rgba(79, 142, 247, 0.12)',
-            border: '1px solid #2A3450',
+            background: 'rgba(37, 99, 235, 0.12)',
+            border: '1px solid var(--color-border)',
             borderRadius: '4px',
             padding: '2px 6px',
             fontFamily: "'Courier New', monospace",
             fontSize: '0.85em',
-            color: '#4F8EF7',
+            color: 'var(--color-accent)',
           }}
           {...props}
         >
@@ -180,7 +180,7 @@ const components = {
         style={{
           fontFamily: "'Courier New', monospace",
           fontSize: '0.875em',
-          color: '#E8EDF8',
+          color: 'var(--color-text)',
         }}
         {...props}
       >
@@ -192,8 +192,8 @@ const components = {
   pre: ({ children }) => (
     <pre
       style={{
-        background: 'rgba(11, 15, 26, 0.9)',
-        border: '1px solid #2A3450',
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
         borderRadius: '12px',
         padding: '16px',
         overflowX: 'auto',
@@ -208,7 +208,7 @@ const components = {
     <hr
       style={{
         border: 'none',
-        borderTop: '1px solid #2A3450',
+        borderTop: '1px solid var(--color-border)',
         margin: '24px 0',
       }}
     />
@@ -220,7 +220,7 @@ const components = {
       target="_blank"
       rel="noopener noreferrer"
       style={{
-        color: '#4F8EF7',
+        color: 'var(--color-accent)',
         textDecoration: 'underline',
         textUnderlineOffset: '3px',
       }}
@@ -246,10 +246,10 @@ const components = {
   th: ({ children }) => (
     <th
       style={{
-        background: 'rgba(79, 142, 247, 0.15)',
-        border: '1px solid #2A3450',
+        background: 'rgba(37, 99, 235, 0.12)',
+        border: '1px solid var(--color-border)',
         padding: '8px 12px',
-        color: '#4F8EF7',
+        color: 'var(--color-accent)',
         fontFamily: 'Sora, sans-serif',
         fontWeight: 600,
         textAlign: 'left',
@@ -263,9 +263,9 @@ const components = {
   td: ({ children }) => (
     <td
       style={{
-        border: '1px solid #2A3450',
+        border: '1px solid var(--color-border)',
         padding: '8px 12px',
-        color: '#E8EDF8',
+        color: 'var(--color-text)',
         fontSize: '0.9rem',
       }}
     >
@@ -276,7 +276,7 @@ const components = {
   tr: ({ children }) => (
     <tr
       style={{
-        borderBottom: '1px solid #2A3450',
+        borderBottom: '1px solid var(--color-border)',
       }}
     >
       {children}
