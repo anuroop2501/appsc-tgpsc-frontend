@@ -22,7 +22,7 @@ function drawPageHeader(doc, topic, exam, pageW, margin) {
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(180, 205, 255)
-  doc.text('Ace with Ease IAS', margin + 22, 9)
+  doc.text('Civil Services Preparation', margin + 22, 9)
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8)
@@ -45,7 +45,7 @@ function drawPageFooter(doc, pageW, pageH, margin, pageNum, totalPages) {
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(130, 140, 160)
-  doc.text('APPSC AI — Ace with Ease IAS Preparation Platform', margin, pageH - 6)
+  doc.text('APPSC & TGPSC AI Preparation Platform', margin, pageH - 6)
   if (totalPages) {
     doc.text(`Page ${pageNum} of ${totalPages}`, pageW - margin, pageH - 6, { align: 'right' })
   } else {
@@ -78,7 +78,7 @@ export function exportNotesToPdf({ topic, exam, content = '', date }) {
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8.5)
   doc.setTextColor(180, 205, 255)
-  doc.text('Ace with Ease IAS — AI Exam Preparation Platform', margin, 18)
+  doc.text('APPSC & TGPSC AI Exam Preparation Platform', margin, 18)
 
   // Exam badge on top right
   doc.setFont('helvetica', 'bold')
@@ -301,4 +301,200 @@ export function exportNotesToPdf({ topic, exam, content = '', date }) {
   // ── Save ───────────────────────────────────────────────────────────────────
   const filename = `APPSC_AI_${(topic || 'Notes').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40)}.pdf`
   doc.save(filename)
+}
+
+/**
+ * Export Prelims MCQs with Questions, Options, Answer Key & Detailed Solutions.
+ */
+export function exportPrelimsToPdf({ topic, exam, questions = [], date }) {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+
+  const pageW = doc.internal.pageSize.getWidth()
+  const pageH = doc.internal.pageSize.getHeight()
+  const margin = 16
+  const contentW = pageW - margin * 2
+  const footerReserved = 16
+  let y = margin
+
+  const checkPageBreak = (neededHeight) => {
+    if (y + neededHeight > pageH - footerReserved) {
+      doc.addPage()
+      drawPageHeader(doc, topic, exam, pageW, margin)
+      y = 22
+      return true
+    }
+    return false
+  }
+
+  // ── Page 1 Banner ─────────────────────────────────────────────────────────
+  doc.setFillColor(14, 22, 40)
+  doc.rect(0, 0, pageW, 26, 'F')
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(14)
+  doc.setTextColor(255, 255, 255)
+  doc.text('APPSC AI', margin, 11)
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8.5)
+  doc.setTextColor(180, 205, 255)
+  doc.text('Prelims Practice Test with Detailed Solutions', margin, 18)
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8.5)
+  doc.setTextColor(247, 181, 0)
+  doc.text(exam || 'APPSC Prelims', pageW - margin, 11, { align: 'right' })
+
+  y = 34
+
+  // ── Topic Title ────────────────────────────────────────────────────────────
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(14)
+  doc.setTextColor(15, 23, 42)
+  const titleLines = doc.splitTextToSize(topic ? `Topic: ${topic}` : 'Prelims Practice Questions', contentW)
+  doc.text(titleLines, margin, y)
+  y += titleLines.length * 6 + 1
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8.5)
+  doc.setTextColor(100, 116, 139)
+  doc.text(`Total Questions: ${questions.length} | Date: ${date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`, margin, y)
+  y += 6
+
+  doc.setDrawColor(21, 121, 230)
+  doc.setLineWidth(0.6)
+  doc.line(margin, y, pageW - margin, y)
+  y += 8
+
+  // ── SECTION 1: QUESTIONS & OPTIONS ─────────────────────────────────────────
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(11)
+  doc.setTextColor(21, 121, 230)
+  doc.text('SECTION 1: QUESTIONS & OPTIONS', margin, y)
+  y += 7
+
+  questions.forEach((q, i) => {
+    const qNum = `Q${i + 1}. `
+    const qText = q.question || q.q || `Question ${i + 1}`
+    
+    // Normalize options array
+    const rawOptions = q.opts || q.options || {}
+    const optionsArray = Array.isArray(rawOptions)
+      ? rawOptions
+      : ['A', 'B', 'C', 'D'].map((k) => rawOptions[k] || '')
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9.5)
+    doc.setTextColor(15, 23, 42)
+
+    const qWrapped = doc.splitTextToSize(`${qNum}${qText}`, contentW)
+    checkPageBreak(qWrapped.length * 5 + 20)
+
+    doc.text(qWrapped, margin, y)
+    y += qWrapped.length * 4.8 + 2
+
+    // Options (A, B, C, D)
+    const optLabels = ['(A)', '(B)', '(C)', '(D)']
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.setTextColor(30, 41, 59)
+
+    optionsArray.forEach((optText, optIdx) => {
+      if (optIdx > 3) return
+      const label = optLabels[optIdx]
+      const optLine = `${label} ${optText}`
+      const optWrapped = doc.splitTextToSize(optLine, contentW - 6)
+      checkPageBreak(optWrapped.length * 4.5 + 2)
+
+      doc.text(optWrapped, margin + 4, y)
+      y += optWrapped.length * 4.3 + 1
+    })
+
+    y += 4 // Spacing between questions
+  })
+
+  // ── SECTION 2: ANSWER KEY & DETAILED SOLUTIONS ─────────────────────────────
+  y += 4
+  checkPageBreak(25)
+
+  doc.setDrawColor(21, 121, 230)
+  doc.setLineWidth(0.6)
+  doc.line(margin, y, pageW - margin, y)
+  y += 8
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(11)
+  doc.setTextColor(21, 121, 230)
+  doc.text('SECTION 2: ANSWER KEY & DETAILED SOLUTIONS', margin, y)
+  y += 8
+
+  questions.forEach((q, i) => {
+    const qNum = `Q${i + 1}. `
+    const qText = q.question || q.q || `Question ${i + 1}`
+
+    const rawOptions = q.opts || q.options || {}
+    const optionsArray = Array.isArray(rawOptions)
+      ? rawOptions
+      : ['A', 'B', 'C', 'D'].map((k) => rawOptions[k] || '')
+
+    const correctRaw = q.correct ?? q.ans ?? q.answer ?? q.correctAnswer ?? 'A'
+    let correctLetter = 'A'
+    let correctOptText = ''
+
+    if (typeof correctRaw === 'number') {
+      correctLetter = ['A', 'B', 'C', 'D'][correctRaw] || 'A'
+      correctOptText = optionsArray[correctRaw] || ''
+    } else if (typeof correctRaw === 'string') {
+      const cleanUpper = correctRaw.trim().toUpperCase()
+      if (cleanUpper.length === 1 && ['A', 'B', 'C', 'D'].includes(cleanUpper)) {
+        correctLetter = cleanUpper
+        const idx = ['A', 'B', 'C', 'D'].indexOf(cleanUpper)
+        correctOptText = optionsArray[idx] || ''
+      } else {
+        correctOptText = correctRaw
+      }
+    }
+
+    const explanationText = q.explanation || q.exp || 'Correct based on syllabus provisions and historical facts.'
+
+    const qWrapped = doc.splitTextToSize(`${qNum}${qText}`, contentW)
+    const expWrapped = doc.splitTextToSize(`Explanation: ${explanationText}`, contentW - 4)
+    const needed = qWrapped.length * 4.8 + expWrapped.length * 4.2 + 16
+
+    checkPageBreak(needed)
+
+    // Question statement
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9.5)
+    doc.setTextColor(15, 23, 42)
+    doc.text(qWrapped, margin, y)
+    y += qWrapped.length * 4.8 + 2
+
+    // Correct Answer Line
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(5, 150, 105) // Green
+    const ansText = `Correct Answer: [${correctLetter}] ${correctOptText}`
+    const ansWrapped = doc.splitTextToSize(ansText, contentW - 4)
+    doc.text(ansWrapped, margin + 2, y)
+    y += ansWrapped.length * 4.5 + 2
+
+    // Explanation Box
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8.5)
+    doc.setTextColor(51, 65, 85) // Slate-700
+    doc.text(expWrapped, margin + 4, y)
+    y += expWrapped.length * 4.2 + 5
+  })
+
+  // ── Render Footers on All Pages ────────────────────────────────────────────
+  const totalPages = doc.internal.getNumberOfPages()
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p)
+    drawPageFooter(doc, pageW, pageH, margin, p, totalPages)
+  }
+
+  // ── Save PDF ───────────────────────────────────────────────────────────────
+  const safeFilename = `APPSC_MCQ_${(topic || 'Prelims').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40)}.pdf`
+  doc.save(safeFilename)
 }

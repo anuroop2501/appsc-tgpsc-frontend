@@ -30,6 +30,32 @@
   --transition: all 0.2s ease;
 }
 
+:root[data-theme="light"], [data-theme="light"] {
+  --color-bg: #F1F5F9;
+  --color-surface: #FFFFFF;
+  --color-card: #FFFFFF;
+  --color-border: #E2E8F0;
+  --color-accent: #2563EB;
+  --color-blue: #1D4ED8;
+  --color-gold: #D97706;
+  --color-amber: #D97706;
+  --color-green: #059669;
+  --color-red: #DC2626;
+  --color-text: #0F172A;
+  --color-muted: #64748B;
+}
+
+[data-theme="light"] .glass-card {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .glass-card-sm {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
 /* ─────────────────────────────────────────
    Base Styles
 ───────────────────────────────────────── */

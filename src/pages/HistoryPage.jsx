@@ -14,9 +14,10 @@ import {
   CheckCircle as CheckCircleIcon,
   AlertTriangle,
   Loader2,
+  Download,
 } from 'lucide-react'
 import { getHistory, getSessionDetail, regenerateSession } from '../api/history'
-import { exportNotesToPdf } from '../lib/exportPdf'
+import { exportNotesToPdf, exportPrelimsToPdf } from '../lib/exportPdf'
 import MCQCard from '../components/MCQCard'
 import ScoreRing from '../components/ScoreRing'
 import RubricBar from '../components/RubricBar'
@@ -283,13 +284,33 @@ const HistoryPage = () => {
           {/* ── PRELIMS RENDERING ── */}
           {viewingSession.type === 'prelims' && viewingSession.metadata.questions && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <h2 className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
-                  Practice Questions: {viewingSession.topic}
-                </h2>
-                <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-                  Total {viewingSession.metadata.questions.length} questions
-                </span>
+              <div className="flex items-center justify-between pb-2 flex-wrap gap-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <div>
+                  <h2 className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                    Practice Questions: {viewingSession.topic}
+                  </h2>
+                  <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                    Total {viewingSession.metadata.questions.length} questions
+                  </span>
+                </div>
+                <button
+                  onClick={() => exportPrelimsToPdf({
+                    topic: viewingSession.topic,
+                    exam: viewingSession.exam,
+                    questions: viewingSession.metadata.questions,
+                    date: viewingSession.created_at ? new Date(viewingSession.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined,
+                  })}
+                  className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:scale-105"
+                  style={{
+                    background: 'rgba(79, 142, 247, 0.15)',
+                    color: 'var(--color-accent)',
+                    border: '1px solid rgba(79, 142, 247, 0.35)',
+                  }}
+                  title="Download MCQs with Solutions PDF"
+                >
+                  <Download size={13} />
+                  Download PDF
+                </button>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {viewingSession.metadata.questions.map((q, idx) => {

@@ -114,7 +114,7 @@ const LoginPage = () => {
               APPSC <span style={{ color: '#F7B500', WebkitTextFillColor: '#F7B500' }}>AI</span>
             </h1>
             <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-              AI-powered APPSC preparation by Ace with Ease IAS
+              AI-powered APPSC & TGPSC Exam Preparation Platform
             </p>
           </div>
 
@@ -253,7 +253,7 @@ const LoginPage = () => {
 
         {/* Footer note */}
         <p className="text-center text-xs mt-4" style={{ color: 'var(--color-muted)' }}>
-          Ace with Ease IAS — Powered by Precision AI
+          APPSC AI — Powered by Precision RAG Engine
         </p>
       </div>
     </div>

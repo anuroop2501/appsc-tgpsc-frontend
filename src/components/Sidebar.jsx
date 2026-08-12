@@ -98,9 +98,6 @@ const Sidebar = ({ open, onClose, isMobile }) => {
             >
               APPSC <span style={{ color: '#F7B500', WebkitTextFillColor: '#F7B500' }}>AI</span>
             </span>
-            <span className="text-[9px] font-medium leading-none tracking-tight text-slate-400 mt-0.5">
-              by Ace with Ease IAS
-            </span>
           </div>
         </div>
         {isMobile && (

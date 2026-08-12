@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Sparkles, Loader2, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { Sparkles, Loader2, CheckCircle, XCircle, RefreshCw, Download } from 'lucide-react'
 import TopicAutocomplete from '../components/TopicAutocomplete'
 import MCQCard from '../components/MCQCard'
 import LoadingDots from '../components/LoadingDots'
 import { generatePrelims } from '../api/prelims'
+import { exportPrelimsToPdf } from '../lib/exportPdf'
 import useAuthStore from '../store/authStore'
 
 const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
@@ -199,14 +200,29 @@ const PrelimsPage = () => {
               </div>
             </div>
 
-            <button
-              onClick={handleGenerate}
-              className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-all hover:bg-white/5"
-              style={{ color: 'var(--color-accent)', border: '1px solid var(--color-border)' }}
-            >
-              <RefreshCw size={14} />
-              Regenerate
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => exportPrelimsToPdf({ topic, exam, questions })}
+                className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-all hover:scale-[1.02] active:scale-95"
+                style={{
+                  background: 'rgba(79, 142, 247, 0.15)',
+                  color: 'var(--color-accent)',
+                  border: '1px solid rgba(79, 142, 247, 0.35)',
+                }}
+                title="Download MCQs with Solutions PDF"
+              >
+                <Download size={15} />
+                Download PDF
+              </button>
+              <button
+                onClick={handleGenerate}
+                className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-all hover:bg-white/5"
+                style={{ color: 'var(--color-muted)', border: '1px solid var(--color-border)' }}
+              >
+                <RefreshCw size={14} />
+                Regenerate
+              </button>
+            </div>
           </div>
 
           {/* MCQ Grid */}

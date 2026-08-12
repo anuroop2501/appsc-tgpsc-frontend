@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { Menu, Bell, ChevronRight, CheckCircle, Info, Calendar, Zap } from 'lucide-react'
+import { Menu, Bell, ChevronRight, CheckCircle, Info, Calendar, Zap, Sun, Moon } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import useBreadcrumbStore from '../store/breadcrumbStore'
+import { useTheme } from '../context/ThemeContext'
 import PricingModal from './PricingModal'
 import { getUserBalance } from '../api/payment'
 
@@ -59,6 +60,7 @@ const Topbar = ({ onMenuClick }) => {
   const { pathname } = useLocation()
   const user = useAuthStore((s) => s.user)
   const updateUser = useAuthStore((s) => s.updateUser)
+  const { theme, toggleTheme } = useTheme()
   const [credits, setCredits] = useState(user?.credits || 0)
   const [isPricingOpen, setIsPricingOpen] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
@@ -111,7 +113,7 @@ const Topbar = ({ onMenuClick }) => {
     <header
       className="sticky top-0 z-20 flex items-center justify-between px-6 py-3"
       style={{
-        background: 'rgba(19, 24, 38, 0.95)',
+        background: 'var(--color-surface)',
         borderBottom: '1px solid var(--color-border)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
@@ -196,6 +198,20 @@ const Topbar = ({ onMenuClick }) => {
           >
             + Top Up
           </span>
+        </button>
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-lg hover:bg-white/5 transition-colors flex items-center justify-center"
+          style={{ color: 'var(--color-muted)' }}
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {theme === 'dark' ? (
+            <Sun size={18} className="text-amber-400 hover:rotate-45 transition-transform" />
+          ) : (
+            <Moon size={18} className="text-indigo-600 hover:-rotate-12 transition-transform" />
+          )}
         </button>
 
         {/* Bell */}
