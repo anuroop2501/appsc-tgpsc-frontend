@@ -18,7 +18,7 @@ import MarkdownRenderer from '../components/MarkdownRenderer'
 import { exportPlannerToPdf, exportPlannerToCsv } from '../lib/exportPdf'
 import useAuthStore from '../store/authStore'
 
-const EXAMS = ['APPSC Group 1', 'APPSC Group 2', 'TGPSC Group 1', 'TGPSC Group 2']
+const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 const DURATION_PRESETS = [
   { label: '7 Days (1 Wk)', days: 7 },
   { label: '15 Days (Sprint)', days: 15 },
@@ -183,7 +183,7 @@ const PlannerPage = () => {
               Your Study Planner
             </h1>
             <p className="text-xs sm:text-sm mt-0.5" style={{ color: 'var(--color-muted)' }}>
-              Comprehensive day-by-day timetables designed for APPSC & TGPSC syllabus, 8-hour daily schedules, and direct integration with Notes & MCQs
+              Comprehensive day-by-day timetables designed for APPSC syllabus, 8-hour daily schedules, and direct integration with Notes & MCQs
             </p>
           </div>
         </div>

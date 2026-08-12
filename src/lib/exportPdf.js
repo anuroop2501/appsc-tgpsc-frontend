@@ -45,7 +45,7 @@ function drawPageFooter(doc, pageW, pageH, margin, pageNum, totalPages) {
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(130, 140, 160)
-  doc.text('APPSC & TGPSC AI Preparation Platform', margin, pageH - 6)
+  doc.text('APPSC AI Exam Preparation Platform', margin, pageH - 6)
   if (totalPages) {
     doc.text(`Page ${pageNum} of ${totalPages}`, pageW - margin, pageH - 6, { align: 'right' })
   } else {
@@ -92,7 +92,7 @@ export function exportNotesToPdf({ topic, exam, content = '', date }) {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8.5)
   doc.setTextColor(37, 99, 235)
-  doc.text((exam || 'APPSC / TGPSC').toUpperCase() + ' — CIVIL SERVICES PREPARATION', margin + 5, y + 6)
+  doc.text((exam || 'APPSC').toUpperCase() + ' — CIVIL SERVICES PREPARATION', margin + 5, y + 6)
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(14)
@@ -572,7 +572,7 @@ export function exportPlannerToPdf({ exam, targetDays, content, date }) {
   const planTitle = `${targetDays}-Day Study Plan — ${exam || 'Civil Services'}`
   return exportNotesToPdf({
     topic: planTitle,
-    exam: exam || 'APPSC / TGPSC',
+    exam: exam || 'APPSC',
     content: content || '',
     date: date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
   })
@@ -585,8 +585,8 @@ export function exportPlannerToCsv({ exam, targetDays, content }) {
   if (!content) return
 
   const rows = [
-    ['APPSC & TGPSC AI Study Planner Schedule'],
-    ['Target Exam', exam || 'APPSC / TGPSC'],
+    ['APPSC AI Study Planner Schedule'],
+    ['Target Exam', exam || 'APPSC'],
     ['Plan Duration', `${targetDays} Days`],
     ['Generated Date', new Date().toLocaleDateString('en-IN')],
     [],
