@@ -12,9 +12,10 @@ import {
   Flame,
   CheckCircle,
   Sliders,
+  FileSpreadsheet,
 } from 'lucide-react'
 import MarkdownRenderer from '../components/MarkdownRenderer'
-import { exportPlannerToPdf } from '../lib/exportPdf'
+import { exportPlannerToPdf, exportPlannerToCsv } from '../lib/exportPdf'
 import useAuthStore from '../store/authStore'
 
 const EXAMS = ['APPSC Group 1', 'APPSC Group 2', 'TGPSC Group 1', 'TGPSC Group 2']
@@ -404,6 +405,25 @@ const PlannerPage = () => {
               >
                 {copied ? <CheckCheck size={14} /> : <Copy size={14} />}
                 {copied ? 'Copied' : 'Copy Plan'}
+              </button>
+
+              <button
+                onClick={() =>
+                  exportPlannerToCsv({
+                    exam,
+                    targetDays,
+                    content,
+                  })
+                }
+                className="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
+                style={{
+                  background: 'rgba(16,185,129,0.15)',
+                  color: '#10B981',
+                  border: '1px solid rgba(16,185,129,0.3)',
+                }}
+              >
+                <FileSpreadsheet size={14} />
+                Export Excel (.csv)
               </button>
 
               <button

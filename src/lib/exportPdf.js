@@ -53,6 +53,21 @@ function drawPageFooter(doc, pageW, pageH, margin, pageNum, totalPages) {
   }
 }
 
+function sanitizeTextForPdf(text) {
+  if (typeof text !== 'string') return ''
+  return text
+    .replace(/📖\s*/g, '[Notes] ')
+    .replace(/⚡\s*/g, '[MCQ] ')
+    .replace(/🌅\s*/g, 'Morning: ')
+    .replace(/☀️\s*/g, 'Afternoon: ')
+    .replace(/🌙\s*/g, 'Evening: ')
+    .replace(/📌\s*/g, '* ')
+    .replace(/🔥\s*/g, '* ')
+    .replace(/✅\s*/g, '[Done] ')
+    .replace(/⚠️\s*/g, '[Note] ')
+    .replace(/[^\x00-\x7F]/g, '')
+}
+
 /**
  * Main export function for Study Notes.
  */
@@ -66,51 +81,35 @@ export function exportNotesToPdf({ topic, exam, content = '', date }) {
   const footerReserved = 16
   let y = margin
 
-  // ── Page 1: Hero Header Banner ──────────────────────────────────────────────
-  doc.setFillColor(14, 22, 40) // Royal Navy
-  doc.rect(0, 0, pageW, 26, 'F')
+  // ── Cover Banner / Header Block (Page 1) ──────────────────────────────────
+  doc.setFillColor(241, 245, 249) // Light surface
+  doc.roundedRect(margin, y, contentW, 28, 3, 3, 'F')
+
+  doc.setDrawColor(37, 99, 235) // Accent blue border
+  doc.setLineWidth(0.8)
+  doc.line(margin, y, margin, y + 28)
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8.5)
+  doc.setTextColor(37, 99, 235)
+  doc.text((exam || 'APPSC / TGPSC').toUpperCase() + ' — CIVIL SERVICES PREPARATION', margin + 5, y + 6)
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(14)
-  doc.setTextColor(255, 255, 255)
-  doc.text('APPSC AI', margin, 11)
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8.5)
-  doc.setTextColor(180, 205, 255)
-  doc.text('APPSC & TGPSC AI Exam Preparation Platform', margin, 18)
-
-  // Exam badge on top right
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(8.5)
-  doc.setTextColor(247, 181, 0) // Ace Gold
-  doc.text(exam || 'APPSC Exam Notes', pageW - margin, 11, { align: 'right' })
-
-  y = 35
-
-  // ── Topic Title ─────────────────────────────────────────────────────────────
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(15)
   doc.setTextColor(15, 23, 42)
-  const titleLines = doc.splitTextToSize(topic || 'Study Notes', contentW)
-  doc.text(titleLines, margin, y)
-  y += titleLines.length * 6.5 + 2
+  const titleText = (topic || 'Study Notes').slice(0, 60)
+  doc.text(titleText, margin + 5, y + 14)
 
-  // ── Date sub-line ────────────────────────────────────────────────────────────
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(100, 116, 139)
-  doc.text(`Generated: ${date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`, margin, y)
-  y += 6
+  doc.text(`Generated on: ${date || new Date().toLocaleDateString('en-IN')}`, margin + 5, y + 21)
 
-  // ── Divider ──────────────────────────────────────────────────────────────────
-  doc.setDrawColor(21, 121, 230) // Royal Blue accent
-  doc.setLineWidth(0.6)
-  doc.line(margin, y, pageW - margin, y)
-  y += 7
+  y += 34
 
   // ── Parse & Render Content Blocks ──────────────────────────────────────────
-  const rawLines = content.split(/\r?\n/)
+  const cleanContent = sanitizeTextForPdf(content || '')
+  const rawLines = cleanContent.split(/\r?\n/)
 
   const checkPageBreak = (neededHeight) => {
     if (y + neededHeight > pageH - footerReserved) {
@@ -510,4 +509,58 @@ export function exportPlannerToPdf({ exam, targetDays, content, date }) {
     content: content || '',
     date: date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
   })
+}
+
+/**
+ * Export Study Planner schedule to Excel CSV Spreadsheet.
+ */
+export function exportPlannerToCsv({ exam, targetDays, content }) {
+  if (!content) return
+
+  const rows = [
+    ['APPSC & TGPSC AI Study Planner Schedule'],
+    ['Target Exam', exam || 'APPSC / TGPSC'],
+    ['Plan Duration', `${targetDays} Days`],
+    ['Generated Date', new Date().toLocaleDateString('en-IN')],
+    [],
+    ['Day', 'Subject / Section Focus', 'Tasks & Study Schedule'],
+  ]
+
+  const lines = content.split(/\r?\n/)
+  let currentDay = ''
+  let currentTasks = []
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (trimmed.startsWith('### Day ') || trimmed.startsWith('## Day ') || trimmed.startsWith('Day ')) {
+      if (currentDay) {
+        rows.push([currentDay, 'Study Schedule', currentTasks.join(' | ')])
+      }
+      currentDay = trimmed.replace(/^#+\s*/, '')
+      currentTasks = []
+    } else if (trimmed && currentDay) {
+      const cleanLine = trimmed
+        .replace(/^[\*\-\#]+\s*/, '')
+        .replace(/📖\s*/g, '[Notes] ')
+        .replace(/⚡\s*/g, '[MCQ] ')
+      if (cleanLine) currentTasks.push(cleanLine)
+    }
+  }
+
+  if (currentDay) {
+    rows.push([currentDay, 'Study Schedule', currentTasks.join(' | ')])
+  }
+
+  const csvContent = rows
+    .map((row) => row.map((cell) => `"${(cell || '').replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', `APPSC_Study_Plan_${targetDays}Days.csv`)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
