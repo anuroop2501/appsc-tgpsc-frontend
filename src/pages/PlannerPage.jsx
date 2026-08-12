@@ -163,7 +163,7 @@ const PlannerPage = () => {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
-              AI Study Planner
+              Your Study Planner
             </h1>
             <p className="text-xs sm:text-sm mt-0.5" style={{ color: 'var(--color-muted)' }}>
               Comprehensive day-by-day timetables designed for APPSC & TGPSC syllabus, 8-hour daily schedules, and direct integration with Notes & MCQs
@@ -210,26 +210,37 @@ const PlannerPage = () => {
             </div>
           </div>
 
-          {/* Daily Study Hours */}
+          {/* Daily Study Hours Stepper */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>
               Daily Study Time
             </label>
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1">
-                <input
-                  type="number"
-                  min="4"
-                  max="14"
-                  value={dailyHours}
-                  onChange={(e) => setDailyHours(Math.max(4, Math.min(14, parseInt(e.target.value, 10) || 8)))}
-                  className="input-field pl-10"
-                />
-                <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-muted)' }} />
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setDailyHours((h) => Math.max(4, h - 1))}
+                className="w-11 h-11 rounded-xl text-lg font-bold flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}
+                title="Decrease Hours"
+              >
+                -
+              </button>
+              <div
+                className="flex-1 py-2.5 px-4 rounded-xl text-center font-extrabold text-sm flex items-center justify-center gap-2 shadow-inner"
+                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}
+              >
+                <Clock size={16} style={{ color: 'var(--color-accent)' }} />
+                <span>{dailyHours} Hours / Day</span>
               </div>
-              <span className="text-xs font-medium" style={{ color: 'var(--color-muted)' }}>
-                Hours / Day (8h recommended)
-              </span>
+              <button
+                type="button"
+                onClick={() => setDailyHours((h) => Math.min(14, h + 1))}
+                className="w-11 h-11 rounded-xl text-lg font-bold flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}
+                title="Increase Hours"
+              >
+                +
+              </button>
             </div>
           </div>
         </div>
