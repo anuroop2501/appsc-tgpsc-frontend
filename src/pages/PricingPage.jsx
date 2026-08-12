@@ -248,10 +248,13 @@ export default function PricingPage() {
                     {plan.badge && (
                       <span
                         className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider shadow-md"
-                        style={{
-                          background: isPopular ? 'linear-gradient(90deg, #5F259F, #7B5EF8)' : 'rgba(255,255,255,0.15)',
-                          color: '#FFFFFF',
-                        }}
+                        style={
+                          plan.badge.toUpperCase().includes('BEST VALUE')
+                            ? { background: 'linear-gradient(135deg, #7B5EF8, #5F259F)', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(123,94,248,0.4)' }
+                            : plan.badge.toUpperCase().includes('POPULAR')
+                            ? { background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(37,99,235,0.4)' }
+                            : { background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(245,158,11,0.4)' }
+                        }
                       >
                         {plan.badge}
                       </span>
