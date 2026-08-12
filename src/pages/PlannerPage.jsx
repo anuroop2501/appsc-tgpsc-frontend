@@ -4,32 +4,39 @@ import {
   Calendar,
   Clock,
   Sparkles,
-  BookOpen,
-  HelpCircle,
   Download,
-  CheckCircle2,
-  Circle,
   Copy,
   CheckCheck,
-  RotateCcw,
   Loader2,
-  Layers,
   Target,
-  ArrowRight,
   Flame,
+  CheckCircle,
+  Sliders,
 } from 'lucide-react'
 import MarkdownRenderer from '../components/MarkdownRenderer'
 import { exportPlannerToPdf } from '../lib/exportPdf'
 import useAuthStore from '../store/authStore'
 
 const EXAMS = ['APPSC Group 1', 'APPSC Group 2', 'TGPSC Group 1', 'TGPSC Group 2']
-const DURATION_PRESETS = [7, 15, 30, 45, 60]
+const DURATION_PRESETS = [
+  { label: '7 Days (1 Wk)', days: 7 },
+  { label: '15 Days (Sprint)', days: 15 },
+  { label: '30 Days (1 Mo)', days: 30 },
+  { label: '45 Days (Mid)', days: 45 },
+  { label: '60 Days (2 Mo)', days: 60 },
+  { label: '90 Days (3 Mo)', days: 90 },
+  { label: '120 Days (4 Mo)', days: 120 },
+  { label: '180 Days (6 Mo)', days: 180 },
+]
+
+const BASE_URL = import.meta.env.VITE_API_URL || ''
 
 const PlannerPage = () => {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const [exam, setExam] = useState(user?.target_exam || 'APPSC Group 1')
   const [targetDays, setTargetDays] = useState(30)
+  const [isCustomDays, setIsCustomDays] = useState(false)
   const [dailyHours, setDailyHours] = useState(8)
   const [prepLevel, setPrepLevel] = useState('Intermediate')
   const [focusTopics, setFocusTopics] = useState('')
@@ -37,13 +44,13 @@ const PlannerPage = () => {
   const [loading, setLoading] = useState(false)
   const [content, setContent] = useState('')
   const [copied, setCopied] = useState(false)
-  const [completedDays, setCompletedDays] = useState({})
+  const [errorMsg, setErrorMsg] = useState('')
 
-  const streamRef = useRef(null)
+  const abortRef = useRef(null)
 
   useEffect(() => {
     return () => {
-      if (streamRef.current) streamRef.current.abort()
+      if (abortRef.current) abortRef.current.abort()
     }
   }, [])
 
@@ -52,15 +59,19 @@ const PlannerPage = () => {
 
     setLoading(true)
     setContent('')
-    setCompletedDays({})
+    setErrorMsg('')
+
+    if (abortRef.current) abortRef.current.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
 
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('/api/ai/planner', {
+      const token = useAuthStore.getState().token
+      const response = await fetch(`${BASE_URL}/api/ai/planner`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           exam,
@@ -69,29 +80,35 @@ const PlannerPage = () => {
           prepLevel,
           focusTopics,
         }),
+        signal: controller.signal,
       })
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
-        alert(errData.error || 'Failed to generate study plan.')
+        setErrorMsg(errData.error || errData.message || `Failed to generate plan (HTTP ${response.status})`)
         setLoading(false)
         return
       }
 
       const reader = response.body.getReader()
-      const decoder = new TextDecoder()
+      const decoder = new TextDecoder('utf-8')
       let accumulated = ''
+      let buffer = ''
 
       while (true) {
         const { value, done } = await reader.read()
         if (done) break
 
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const raw = line.replace('data: ', '').trim()
+          const trimmed = line.trim()
+          if (!trimmed || trimmed.startsWith(':')) continue
+
+          if (trimmed.startsWith('data:')) {
+            const raw = trimmed.replace(/^data:\s*/, '').trim()
             if (raw === '[DONE]') break
             try {
               const parsed = JSON.parse(raw)
@@ -99,15 +116,20 @@ const PlannerPage = () => {
                 accumulated += parsed.text
                 setContent(accumulated)
               }
+              if (parsed.error) {
+                setErrorMsg(parsed.error)
+              }
             } catch (e) {
-              // Ignore non-json
+              // Ignore non-JSON lines
             }
           }
         }
       }
     } catch (err) {
-      console.error('Study plan generation failed:', err)
-      alert('An error occurred while streaming your study plan.')
+      if (err.name !== 'AbortError') {
+        console.error('Study plan generation error:', err)
+        setErrorMsg('Network error occurred while generating study plan.')
+      }
     } finally {
       setLoading(false)
     }
@@ -119,25 +141,11 @@ const PlannerPage = () => {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const toggleDayComplete = (dayNum) => {
-    setCompletedDays((prev) => ({
-      ...prev,
-      [dayNum]: !prev[dayNum],
-    }))
-  }
-
-  // Calculate completed count and percent
-  const completedCount = Object.values(completedDays).filter(Boolean).length
-  const progressPercent = Math.round((completedCount / targetDays) * 100)
-
   // Extract day topics to build quick actions
   const extractQuickTopics = () => {
     if (!content) return []
-    const dayMatches = content.match(/### Day \d+:[^\n]+/g) || []
-    return dayMatches.slice(0, 10).map((m) => {
-      const topicName = m.replace(/### Day \d+:\s*/, '').trim()
-      return topicName
-    })
+    const matches = content.match(/### Day \d+:[^\n]+/g) || []
+    return matches.slice(0, 12).map((m) => m.replace(/### Day \d+:\s*/, '').trim())
   }
 
   const quickTopics = extractQuickTopics()
@@ -146,30 +154,36 @@ const PlannerPage = () => {
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-12">
       {/* ── Header ── */}
       <div className="glass-card p-6 sm:p-8 rounded-3xl relative overflow-hidden">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center gap-3.5 mb-2">
           <div
-            className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg"
+            className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
             style={{ background: 'linear-gradient(135deg, #1579E6, #2563EB)', color: '#FFFFFF' }}
           >
-            <Calendar size={20} />
+            <Calendar size={24} />
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
               AI Study Planner
             </h1>
             <p className="text-xs sm:text-sm mt-0.5" style={{ color: 'var(--color-muted)' }}>
-              Holistic day-by-day timetables designed for APPSC & TGPSC syllabus coverage with 8-hour daily schedules
+              Comprehensive day-by-day timetables designed for APPSC & TGPSC syllabus, 8-hour daily schedules, and direct integration with Notes & MCQs
             </p>
           </div>
         </div>
       </div>
 
-      {/* ── Input Form ── */}
+      {/* ── Configuration Form ── */}
       <div className="glass-card p-6 sm:p-8 rounded-3xl space-y-6">
         <h2 className="text-lg font-bold flex items-center gap-2" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
           <Target size={18} style={{ color: 'var(--color-accent)' }} />
           Configure Your Study Plan
         </h2>
+
+        {errorMsg && (
+          <div className="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444' }}>
+            <span>⚠️ {errorMsg}</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Target Exam */}
@@ -196,50 +210,10 @@ const PlannerPage = () => {
             </div>
           </div>
 
-          {/* Duration in Days */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-muted)' }}>
-                Target Duration (Days)
-              </label>
-              <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full" style={{ background: 'rgba(37,99,235,0.15)', color: 'var(--color-accent)' }}>
-                {targetDays} Days
-              </span>
-            </div>
-
-            <input
-              type="range"
-              min="7"
-              max="90"
-              value={targetDays}
-              onChange={(e) => setTargetDays(parseInt(e.target.value, 10))}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-3"
-              style={{ background: 'var(--color-border)' }}
-            />
-
-            <div className="flex items-center gap-2 flex-wrap">
-              {DURATION_PRESETS.map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  onClick={() => setTargetDays(preset)}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
-                  style={{
-                    background: targetDays === preset ? 'rgba(37,99,235,0.2)' : 'var(--color-surface)',
-                    color: targetDays === preset ? 'var(--color-accent)' : 'var(--color-muted)',
-                    border: '1px solid var(--color-border)',
-                  }}
-                >
-                  {preset}d
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Daily Study Hours */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>
-              Daily Study Hours
+              Daily Study Time
             </label>
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
@@ -248,18 +222,92 @@ const PlannerPage = () => {
                   min="4"
                   max="14"
                   value={dailyHours}
-                  onChange={(e) => setDailyHours(parseInt(e.target.value, 10) || 8)}
+                  onChange={(e) => setDailyHours(Math.max(4, Math.min(14, parseInt(e.target.value, 10) || 8)))}
                   className="input-field pl-10"
                 />
                 <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-muted)' }} />
               </div>
               <span className="text-xs font-medium" style={{ color: 'var(--color-muted)' }}>
-                hrs / day (8h recommended)
+                Hours / Day (8h recommended)
               </span>
             </div>
           </div>
+        </div>
 
-          {/* Preparation Stage */}
+        {/* Plan Duration Selection */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--color-muted)' }}>
+              <Sliders size={14} style={{ color: 'var(--color-accent)' }} />
+              Plan Duration (Days)
+            </label>
+            <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ background: 'rgba(37,99,235,0.15)', color: 'var(--color-accent)', border: '1px solid rgba(37,99,235,0.3)' }}>
+              {targetDays} Days Plan ({Math.round((targetDays / 30) * 10) / 10} Months)
+            </span>
+          </div>
+
+          {/* Preset Chips */}
+          <div className="flex items-center gap-2 flex-wrap mb-4">
+            {DURATION_PRESETS.map((p) => {
+              const isSelected = !isCustomDays && targetDays === p.days
+              return (
+                <button
+                  key={p.days}
+                  type="button"
+                  onClick={() => {
+                    setTargetDays(p.days)
+                    setIsCustomDays(false)
+                  }}
+                  className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
+                  style={{
+                    background: isSelected ? 'linear-gradient(135deg, #1579E6, #2563EB)' : 'var(--color-surface)',
+                    color: isSelected ? '#FFFFFF' : 'var(--color-text)',
+                    border: isSelected ? '1px solid #1579E6' : '1px solid var(--color-border)',
+                    boxShadow: isSelected ? '0 4px 12px rgba(37,99,235,0.25)' : 'none',
+                  }}
+                >
+                  {p.label}
+                </button>
+              )
+            })}
+            <button
+              type="button"
+              onClick={() => setIsCustomDays(true)}
+              className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
+              style={{
+                background: isCustomDays ? 'linear-gradient(135deg, #1579E6, #2563EB)' : 'var(--color-surface)',
+                color: isCustomDays ? '#FFFFFF' : 'var(--color-text)',
+                border: isCustomDays ? '1px solid #1579E6' : '1px solid var(--color-border)',
+              }}
+            >
+              Custom Days...
+            </button>
+          </div>
+
+          {/* Custom Days Input Box */}
+          {isCustomDays && (
+            <div className="p-4 rounded-2xl flex items-center gap-3 animate-fade-in" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <label className="text-xs font-bold whitespace-nowrap" style={{ color: 'var(--color-text)' }}>
+                Enter Custom Duration:
+              </label>
+              <input
+                type="number"
+                min="7"
+                max="180"
+                value={targetDays}
+                onChange={(e) => setTargetDays(Math.max(7, Math.min(180, parseInt(e.target.value, 10) || 7)))}
+                placeholder="e.g. 75, 100, 150"
+                className="input-field max-w-[140px]"
+              />
+              <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                Days (Min 7 days, Max 180 days / 6 months)
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Preparation Stage & Focus Topics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>
               Preparation Level
@@ -274,20 +322,19 @@ const PlannerPage = () => {
               <option value="Revision Sprint">Revision Sprint (Rapid Mock & Topic Drills)</option>
             </select>
           </div>
-        </div>
 
-        {/* Optional Focus Topics */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>
-            Focus / Weak Subjects (Optional)
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. AP Economy, Indian History, Science & Tech, Governance"
-            value={focusTopics}
-            onChange={(e) => setFocusTopics(e.target.value)}
-            className="input-field"
-          />
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>
+              Focus / Weak Subjects (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. AP Economy, Indian History, Science & Tech"
+              value={focusTopics}
+              onChange={(e) => setFocusTopics(e.target.value)}
+              className="input-field"
+            />
+          </div>
         </div>
 
         {/* Submit CTA */}
@@ -304,18 +351,18 @@ const PlannerPage = () => {
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              Generating Custom {targetDays}-Day Plan...
+              Generating Custom {targetDays}-Day Study Plan...
             </>
           ) : (
             <>
               <Sparkles size={18} />
-              Generate {targetDays}-Day Study Plan (8h Daily Schedule)
+              Generate {targetDays}-Day Study Plan ({dailyHours}h Daily Schedule)
             </>
           )}
         </button>
       </div>
 
-      {/* ── Generated Plan View ── */}
+      {/* ── Generated Plan Output View ── */}
       {content && (
         <div className="space-y-6 animate-fade-in">
           {/* Action Bar */}
@@ -326,7 +373,7 @@ const PlannerPage = () => {
                   {exam}
                 </span>
                 <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-                  {targetDays} Days • {dailyHours} Hours/Day
+                  {targetDays} Days • {dailyHours} Hours/Day Schedule
                 </span>
               </div>
               <h3 className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
