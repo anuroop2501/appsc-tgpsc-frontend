@@ -234,6 +234,73 @@ export function exportNotesToPdf({ topic, exam, content = '', date }) {
       continue
     }
 
+    // ── Table Row (| col1 | col2 | ...) ──────────────────────────────────────────
+    if (line.startsWith('|') && line.endsWith('|')) {
+      const cells = line.split('|').map((c) => c.trim()).slice(1, -1)
+
+      // Skip header divider lines like |---|---|
+      if (cells.length >= 2 && cells[0].includes('---')) {
+        continue
+      }
+
+      // Check if it's the table header row (| Day | Morning Block ... |)
+      const isHeaderRow = cells[0].toLowerCase().includes('day') && cells.some(c => c.toLowerCase().includes('block') || c.toLowerCase().includes('morning'))
+
+      if (isHeaderRow) {
+        checkPageBreak(8)
+        y += 2
+        doc.setFillColor(37, 99, 235) // Primary Accent Blue
+        doc.rect(margin, y, contentW, 6, 'F')
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(8.5)
+        doc.setTextColor(255, 255, 255)
+        doc.text('DAY-BY-DAY MASTER STUDY TIMETABLE', margin + 3, y + 4.2)
+        y += 8
+        continue
+      }
+
+      // Regular Day Table Row
+      if (cells.length >= 2) {
+        const dayLabel = cells[0]
+        const morning = cells[1] || ''
+        const afternoon = cells[2] || ''
+        const evening = cells[3] || ''
+
+        const fullText = `${dayLabel}: ${morning}${afternoon ? ' | ' + afternoon : ''}${evening ? ' | ' + evening : ''}`
+        const wrapped = doc.splitTextToSize(fullText, contentW - 4)
+
+        checkPageBreak(wrapped.length * 4.5 + 4)
+
+        doc.setFillColor(241, 245, 249)
+        doc.roundedRect(margin, y - 1, contentW, wrapped.length * 4.5 + 3, 1.5, 1.5, 'F')
+
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(9)
+        doc.setTextColor(37, 99, 235)
+        doc.text(dayLabel, margin + 2, y + 3.2)
+
+        const dayWidth = doc.getTextWidth(dayLabel + ': ')
+
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8.5)
+        doc.setTextColor(15, 23, 42)
+
+        const detailsText = `${morning}${afternoon ? ' | Afternoon: ' + afternoon : ''}${evening ? ' | Evening: ' + evening : ''}`
+        const detailsWrapped = doc.splitTextToSize(detailsText, contentW - dayWidth - 6)
+
+        if (detailsWrapped.length > 0) {
+          doc.text(detailsWrapped[0], margin + 2 + dayWidth, y + 3.2)
+          for (let r = 1; r < detailsWrapped.length; r++) {
+            y += 4.2
+            doc.text(detailsWrapped[r], margin + 4, y + 3.2)
+          }
+        }
+
+        y += 6.5
+        continue
+      }
+    }
+
     // ── Blockquote (> quote) ─────────────────────────────────────────────────
     if (line.startsWith('>')) {
       const qText = line.replace(/^>\s*/, '').replace(/\*\*(.*?)\*\*/g, '$1').trim()
@@ -523,32 +590,69 @@ export function exportPlannerToCsv({ exam, targetDays, content }) {
     ['Plan Duration', `${targetDays} Days`],
     ['Generated Date', new Date().toLocaleDateString('en-IN')],
     [],
-    ['Day', 'Subject / Section Focus', 'Tasks & Study Schedule'],
+    ['Day', 'Morning Block (4h Core)', 'Afternoon Block (3h State/CA)', 'Evening Block (1h Review)', 'Action Shortcuts'],
   ]
 
   const lines = content.split(/\r?\n/)
-  let currentDay = ''
-  let currentTasks = []
+  let tableFound = false
 
   for (const line of lines) {
     const trimmed = line.trim()
-    if (trimmed.startsWith('### Day ') || trimmed.startsWith('## Day ') || trimmed.startsWith('Day ')) {
-      if (currentDay) {
-        rows.push([currentDay, 'Study Schedule', currentTasks.join(' | ')])
+
+    // Match Markdown table row: | Day 1 | Morning | Afternoon | Evening | Actions |
+    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+      const cells = trimmed
+        .split('|')
+        .map((c) => c.trim())
+        .slice(1, -1) // remove empty outer elements
+
+      // Skip divider row |---|---|
+      if (cells.length >= 2 && cells[0].includes('---')) {
+        continue
       }
-      currentDay = trimmed.replace(/^#+\s*/, '')
-      currentTasks = []
-    } else if (trimmed && currentDay) {
-      const cleanLine = trimmed
-        .replace(/^[\*\-\#]+\s*/, '')
-        .replace(/📖\s*/g, '[Notes] ')
-        .replace(/⚡\s*/g, '[MCQ] ')
-      if (cleanLine) currentTasks.push(cleanLine)
+
+      // Skip header row if it contains 'Day' & 'Block'
+      if (cells[0].toLowerCase().includes('day') && cells.some((c) => c.toLowerCase().includes('block') || c.toLowerCase().includes('morning'))) {
+        tableFound = true
+        continue
+      }
+
+      if (cells.length >= 2) {
+        tableFound = true
+        // Clean unicode emojis for CSV
+        const cleanCells = cells.map((cell) =>
+          cell
+            .replace(/📖\s*/g, '[Notes] ')
+            .replace(/⚡\s*/g, '[MCQ] ')
+        )
+        rows.push(cleanCells)
+      }
     }
   }
 
-  if (currentDay) {
-    rows.push([currentDay, 'Study Schedule', currentTasks.join(' | ')])
+  // Fallback if content was not formatted as a markdown table
+  if (!tableFound) {
+    let currentDay = ''
+    let currentTasks = []
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (trimmed.startsWith('### Day ') || trimmed.startsWith('## Day ') || trimmed.startsWith('Day ')) {
+        if (currentDay) {
+          rows.push([currentDay, 'Study Schedule', currentTasks.join(' | ')])
+        }
+        currentDay = trimmed.replace(/^#+\s*/, '')
+        currentTasks = []
+      } else if (trimmed && currentDay) {
+        const cleanLine = trimmed
+          .replace(/^[\*\-\#]+\s*/, '')
+          .replace(/📖\s*/g, '[Notes] ')
+          .replace(/⚡\s*/g, '[MCQ] ')
+        if (cleanLine) currentTasks.push(cleanLine)
+      }
+    }
+    if (currentDay) {
+      rows.push([currentDay, 'Study Schedule', currentTasks.join(' | ')])
+    }
   }
 
   const csvContent = rows
