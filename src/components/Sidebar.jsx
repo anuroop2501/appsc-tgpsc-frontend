@@ -12,6 +12,7 @@ import {
   ClipboardList,
   CreditCard,
   FileText,
+  Calendar,
 } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 
@@ -34,6 +35,8 @@ function getNavItems(targetExam = '') {
     aiItems.push({ to: '/notes',     icon: BookOpen, label: 'Mains Notes' })
     aiItems.push({ to: '/evaluator', icon: Star,     label: 'Answer Evaluator' })
   }
+
+  aiItems.push({ to: '/planner', icon: Calendar, label: 'Study Planner' })
 
   return [
     {

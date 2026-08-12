@@ -15,6 +15,7 @@ const getRouteLabels = (targetExam = '') => {
     '/test':       ['AI Tools', 'Mock Test'],
     '/notes':      ['AI Tools', isGroup2 ? 'Group 2 Notes' : 'Mains Notes'],
     '/evaluator':  ['AI Tools', 'Answer Evaluator'],
+    '/planner':    ['AI Tools', 'Study Planner'],
     '/history':    ['Dashboard', 'Study History'],
   }
 }

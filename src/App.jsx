@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage'
 import PrelimsPage from './pages/PrelimsPage'
 import NotesPage from './pages/NotesPage'
 import EvaluatorPage from './pages/EvaluatorPage'
+import PlannerPage from './pages/PlannerPage'
 import HistoryPage from './pages/HistoryPage'
 import TestPage from './pages/TestPage'
 import PricingPage from './pages/PricingPage'
@@ -34,6 +35,7 @@ const App = () => {
           <Route path="test" element={<TestPage />} />
           <Route path="notes" element={<NotesPage />} />
           <Route path="evaluator" element={<EvaluatorPage />} />
+          <Route path="planner" element={<PlannerPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="pricing" element={<PricingPage />} />
         </Route>

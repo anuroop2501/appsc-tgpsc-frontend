@@ -15,9 +15,10 @@ import {
   AlertTriangle,
   Loader2,
   Download,
+  Calendar,
 } from 'lucide-react'
 import { getHistory, getSessionDetail, regenerateSession } from '../api/history'
-import { exportNotesToPdf, exportPrelimsToPdf } from '../lib/exportPdf'
+import { exportNotesToPdf, exportPrelimsToPdf, exportPlannerToPdf } from '../lib/exportPdf'
 import MCQCard from '../components/MCQCard'
 import ScoreRing from '../components/ScoreRing'
 import RubricBar from '../components/RubricBar'
@@ -29,6 +30,7 @@ const TABS = [
   { value: 'prelims', label: 'MCQ Sessions' },
   { value: 'notes', label: 'Notes' },
   { value: 'evaluation', label: 'Evaluations' },
+  { value: 'planner', label: 'Study Plans' },
 ]
 
 const TYPE_CONFIG = {
@@ -52,6 +54,13 @@ const TYPE_CONFIG = {
     color: '#F5A623',
     bg: 'rgba(245,166,35,0.15)',
     border: 'rgba(245,166,35,0.3)',
+  },
+  planner: {
+    icon: Calendar,
+    label: 'Planner',
+    color: '#2563EB',
+    bg: 'rgba(37,99,235,0.15)',
+    border: 'rgba(37,99,235,0.3)',
   },
 }
 
@@ -339,15 +348,15 @@ const HistoryPage = () => {
             </div>
           )}
 
-          {/* ── NOTES RENDERING ── */}
-          {viewingSession.type === 'notes' && viewingSession.metadata.content && (
+          {/* ── NOTES & PLANNER RENDERING ── */}
+          {(viewingSession.type === 'notes' || viewingSession.type === 'planner') && viewingSession.metadata.content && (
             <div className="space-y-6">
               {/* Header Box */}
               <div className="glass-card p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(123,94,248,0.15)', color: '#7B5EF8', border: '1px solid rgba(123,94,248,0.3)' }}>
-                      {viewingSession.exam || 'Study Notes'}
+                    <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold" style={{ background: viewingSession.type === 'planner' ? 'rgba(37,99,235,0.15)' : 'rgba(123,94,248,0.15)', color: viewingSession.type === 'planner' ? 'var(--color-accent)' : '#7B5EF8', border: '1px solid var(--color-border)' }}>
+                      {viewingSession.exam || (viewingSession.type === 'planner' ? 'Study Plan' : 'Study Notes')}
                     </span>
                     <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
                       {formatDate(viewingSession.created_at)}
@@ -361,21 +370,28 @@ const HistoryPage = () => {
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(viewingSession.metadata.content)
-                      alert('Study notes copied to clipboard!')
+                      alert('Copied to clipboard!')
                     }}
                     className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
                     style={{ background: 'rgba(79,142,247,0.15)', color: 'var(--color-accent)', border: '1px solid rgba(79,142,247,0.3)' }}
                   >
-                    Copy Notes
+                    Copy Content
                   </button>
                   <button
                     onClick={() =>
-                      exportNotesToPdf({
-                        topic: viewingSession.topic,
-                        exam: viewingSession.exam,
-                        content: viewingSession.metadata.content,
-                        date: formatDate(viewingSession.created_at),
-                      })
+                      viewingSession.type === 'planner'
+                        ? exportPlannerToPdf({
+                            exam: viewingSession.exam,
+                            targetDays: viewingSession.metadata.targetDays || 30,
+                            content: viewingSession.metadata.content,
+                            date: formatDate(viewingSession.created_at),
+                          })
+                        : exportNotesToPdf({
+                            topic: viewingSession.topic,
+                            exam: viewingSession.exam,
+                            content: viewingSession.metadata.content,
+                            date: formatDate(viewingSession.created_at),
+                          })
                     }
                     className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
                     style={{ background: 'rgba(61,214,140,0.15)', color: '#3DD68C', border: '1px solid rgba(61,214,140,0.3)' }}

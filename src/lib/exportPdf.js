@@ -498,3 +498,16 @@ export function exportPrelimsToPdf({ topic, exam, questions = [], date }) {
   const safeFilename = `APPSC_MCQ_${(topic || 'Prelims').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40)}.pdf`
   doc.save(safeFilename)
 }
+
+/**
+ * Export Study Planner schedule to publication-ready PDF.
+ */
+export function exportPlannerToPdf({ exam, targetDays, content, date }) {
+  const planTitle = `${targetDays}-Day Study Plan — ${exam || 'Civil Services'}`
+  return exportNotesToPdf({
+    topic: planTitle,
+    exam: exam || 'APPSC / TGPSC',
+    content: content || '',
+    date: date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+  })
+}
