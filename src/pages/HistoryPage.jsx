@@ -512,7 +512,7 @@ const HistoryPage = () => {
                       Model Answer Reference
                     </h3>
                   </div>
-                  <div className="p-4 rounded-xl border border-border" style={{ background: 'rgba(11,15,26,0.5)' }}>
+                  <div className="p-4 rounded-xl border border-border" style={{ background: 'var(--color-surface)' }}>
                     <MarkdownRenderer content={viewingSession.metadata.evaluation.modelAnswer} />
                   </div>
                 </div>

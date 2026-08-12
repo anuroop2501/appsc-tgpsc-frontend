@@ -232,7 +232,7 @@ export default function PricingModal({ isOpen, onClose, onPaymentSuccess, reason
 
             {/* Tab Toggle: Plans vs Top-ups */}
             <div className="flex justify-center mb-8">
-              <div className="flex p-1 rounded-2xl" style={{ background: 'rgba(42,52,80,0.6)', border: '1px solid var(--color-border)' }}>
+              <div className="flex p-1 rounded-2xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
                 <button
                   onClick={() => setActiveTab('plans')}
                   className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'plans' ? 'shadow-lg' : ''}`}
@@ -283,7 +283,7 @@ export default function PricingModal({ isOpen, onClose, onPaymentSuccess, reason
                       key={plan.id}
                       className={`relative rounded-3xl p-6 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] ${isPopular ? 'shadow-2xl' : ''}`}
                       style={{
-                        background: isPopular ? 'linear-gradient(180deg, rgba(95,37,159,0.18), rgba(123,94,248,0.08))' : 'rgba(42,52,80,0.4)',
+                        background: isPopular ? 'linear-gradient(180deg, rgba(95,37,159,0.18), rgba(123,94,248,0.08))' : 'var(--color-card)',
                         border: isPopular ? '2px solid #5F259F' : '1px solid var(--color-border)',
                       }}
                     >
@@ -368,7 +368,7 @@ export default function PricingModal({ isOpen, onClose, onPaymentSuccess, reason
                     key={topup.id}
                     className="rounded-3xl p-6 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02]"
                     style={{
-                      background: 'rgba(42,52,80,0.4)',
+                      background: 'var(--color-card)',
                       border: '1px solid var(--color-border)',
                     }}
                   >

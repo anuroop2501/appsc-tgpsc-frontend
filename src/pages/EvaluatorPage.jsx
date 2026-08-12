@@ -273,7 +273,7 @@ const EvaluatorPage = () => {
                 style={{
                   background: form.marks === m
                     ? 'linear-gradient(135deg, rgba(245,166,35,0.25), rgba(245,166,35,0.15))'
-                    : 'rgba(42, 52, 80, 0.4)',
+                    : 'var(--color-surface)',
                   border: form.marks === m ? '1px solid rgba(245,166,35,0.5)' : '1px solid var(--color-border)',
                   color: form.marks === m ? 'var(--color-gold)' : 'var(--color-muted)',
                   transform: form.marks === m ? 'scale(1.04)' : 'scale(1)',
@@ -302,7 +302,7 @@ const EvaluatorPage = () => {
                 style={{
                   background: answerMode === 'type'
                     ? 'linear-gradient(135deg, rgba(79,142,247,0.2), rgba(79,142,247,0.1))'
-                    : 'transparent',
+                    : 'var(--color-surface)',
                   color: answerMode === 'type' ? 'var(--color-accent)' : 'var(--color-muted)',
                   borderRight: '1px solid var(--color-border)',
                 }}
@@ -316,7 +316,7 @@ const EvaluatorPage = () => {
                 style={{
                   background: answerMode === 'upload'
                     ? 'linear-gradient(135deg, rgba(123,94,248,0.2), rgba(123,94,248,0.1))'
-                    : 'transparent',
+                    : 'var(--color-surface)',
                   color: answerMode === 'upload' ? 'var(--color-purple)' : 'var(--color-muted)',
                 }}
               >
@@ -362,7 +362,7 @@ const EvaluatorPage = () => {
                     border: `2px dashed ${isDragging ? 'var(--color-purple)' : 'var(--color-border)'}`,
                     background: isDragging
                       ? 'rgba(123,94,248,0.07)'
-                      : 'rgba(19,24,38,0.5)',
+                      : 'var(--color-surface)',
                     transform: isDragging ? 'scale(1.01)' : 'scale(1)',
                   }}
                 >
@@ -371,7 +371,7 @@ const EvaluatorPage = () => {
                     style={{
                       background: isDragging
                         ? 'linear-gradient(135deg, rgba(123,94,248,0.3), rgba(79,142,247,0.2))'
-                        : 'rgba(42,52,80,0.6)',
+                        : 'var(--color-card)',
                     }}
                   >
                     <Upload size={24} style={{ color: isDragging ? 'var(--color-purple)' : 'var(--color-muted)' }} />
@@ -397,7 +397,7 @@ const EvaluatorPage = () => {
                       <span
                         key={label}
                         className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs"
-                        style={{ background: 'rgba(42,52,80,0.8)', color: 'var(--color-muted)', border: '1px solid var(--color-border)' }}
+                        style={{ background: 'var(--color-card)', color: 'var(--color-muted)', border: '1px solid var(--color-border)' }}
                       >
                         {icon} {label}
                       </span>

@@ -316,6 +316,11 @@ input, textarea, select {
   border-radius: var(--radius-sm);
 }
 
+[data-theme="light"] .skeleton {
+  background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+  background-size: 200% 100%;
+}
+
 /* ─────────────────────────────────────────
    Custom Select
 ───────────────────────────────────────── */
@@ -325,6 +330,11 @@ select.input-field {
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 40px;
+}
+
+select.input-field option {
+  background-color: var(--color-surface);
+  color: var(--color-text);
 }
 
 /* ─────────────────────────────────────────

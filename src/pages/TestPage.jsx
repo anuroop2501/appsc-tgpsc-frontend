@@ -128,7 +128,7 @@ const SetupScreen = ({ onStart }) => {
               onClick={() => setExam(e)}
               className="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-left"
               style={{
-                background: exam === e ? 'rgba(79,142,247,0.15)' : 'rgba(42,52,80,0.4)',
+                background: exam === e ? 'rgba(79,142,247,0.15)' : 'var(--color-surface)',
                 border: exam === e ? '1px solid rgba(79,142,247,0.6)' : '1px solid var(--color-border)',
                 color: exam === e ? 'var(--color-accent)' : 'var(--color-muted)',
                 fontFamily: 'DM Sans, sans-serif',
@@ -154,7 +154,7 @@ const SetupScreen = ({ onStart }) => {
               style={{
                 background: selected.minutes === opt.minutes
                   ? `rgba(${opt.color === '#3DD68C' ? '61,214,140' : opt.color === '#4F8EF7' ? '79,142,247' : '245,166,35'},0.1)`
-                  : 'rgba(42,52,80,0.4)',
+                  : 'var(--color-surface)',
                 border: selected.minutes === opt.minutes
                   ? `2px solid ${opt.color}`
                   : '2px solid var(--color-border)',

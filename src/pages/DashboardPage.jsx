@@ -222,9 +222,9 @@ const DashboardPage = () => {
             onClick={() => navigate('/history', { state: { activeTab } })}
             className="glass-card p-5 text-left animate-slide-up group hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200"
             style={{ 
-              boxShadow: `0 4px 24px ${glow}`,
+              boxShadow: `0 4px 20px ${glow}`,
               cursor: 'pointer',
-              background: 'rgba(19, 24, 38, 0.4)',
+              background: 'var(--color-card)',
             }}
           >
             <div className="flex items-start justify-between">

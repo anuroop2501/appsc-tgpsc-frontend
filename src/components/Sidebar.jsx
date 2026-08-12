@@ -145,27 +145,27 @@ const Sidebar = ({ open, onClose, isMobile }) => {
                 to={to}
                 onClick={isMobile ? onClose : undefined}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium group relative transition-all duration-200 ${
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl mb-1 text-sm font-semibold group relative transition-all duration-200 ${
                     isActive
-                      ? 'text-white'
-                      : 'hover:bg-white/5'
+                      ? 'shadow-sm'
+                      : 'hover:bg-slate-200/60 dark:hover:bg-white/5'
                   }`
                 }
                 style={({ isActive }) => ({
-                  color: isActive ? '#fff' : 'var(--color-muted)',
-                  background: isActive ? 'rgba(79, 142, 247, 0.15)' : undefined,
-                  borderLeft: isActive ? '3px solid var(--color-accent)' : '3px solid transparent',
+                  color: isActive ? '#FFFFFF' : 'var(--color-muted)',
+                  background: isActive ? 'linear-gradient(135deg, #1579E6, #2563EB)' : undefined,
+                  boxShadow: isActive ? '0 4px 14px rgba(37, 99, 235, 0.35)' : undefined,
                 })}
               >
                 <Icon
-                  size={17}
+                  size={18}
                   className="flex-shrink-0"
                   style={{ color: 'inherit' }}
                 />
                 <span style={{ fontFamily: 'DM Sans, sans-serif' }}>{label}</span>
                 <ChevronRight
                   size={14}
-                  className="ml-auto opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all duration-200"
+                  className="ml-auto opacity-0 group-hover:opacity-60 -translate-x-1 group-hover:translate-x-0 transition-all duration-200"
                 />
               </NavLink>
             ))}

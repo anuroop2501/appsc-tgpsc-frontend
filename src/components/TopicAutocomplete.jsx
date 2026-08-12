@@ -163,11 +163,11 @@ const TopicAutocomplete = ({
         <div
           className="absolute left-0 right-0 mt-1.5 rounded-xl overflow-hidden z-50 animate-slide-down"
           style={{
-            background: 'rgba(19, 24, 38, 0.98)',
+            background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
-            boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+            boxShadow: '0 16px 40px rgba(0,0,0,0.15)',
             maxHeight: '280px',
             overflowY: 'auto',
           }}
@@ -189,7 +189,7 @@ const TopicAutocomplete = ({
                       : 'transparent',
                   borderBottom:
                     i < filtered.length - 1
-                      ? '1px solid rgba(42, 52, 80, 0.5)'
+                      ? '1px solid var(--color-border)'
                       : 'none',
                 }}
                 onMouseEnter={() => setHighlighted(i)}
@@ -200,7 +200,7 @@ const TopicAutocomplete = ({
                     background:
                       highlighted === i
                         ? 'rgba(79, 142, 247, 0.2)'
-                        : 'rgba(42, 52, 80, 0.5)',
+                        : 'var(--color-card)',
                   }}
                 >
                   <Search size={12} style={{ color: highlighted === i ? 'var(--color-accent)' : 'var(--color-muted)' }} />
@@ -237,7 +237,7 @@ const TopicAutocomplete = ({
         <div
           className="absolute left-0 right-0 mt-1.5 rounded-xl overflow-hidden z-50"
           style={{
-            background: 'rgba(19, 24, 38, 0.98)',
+            background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
           }}
         >

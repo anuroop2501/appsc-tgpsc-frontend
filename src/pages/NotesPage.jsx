@@ -166,7 +166,7 @@ const NotesPage = () => {
                   background:
                     noteType === value
                       ? 'linear-gradient(135deg, rgba(123,94,248,0.25), rgba(79,142,247,0.2))'
-                      : 'rgba(42, 52, 80, 0.4)',
+                      : 'var(--color-surface)',
                   border:
                     noteType === value
                       ? '1px solid rgba(123,94,248,0.5)'

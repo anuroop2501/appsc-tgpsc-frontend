@@ -22,7 +22,7 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index }) => {
   const getOptionStyle = (i) => {
     if (!answered) {
       return {
-        background: 'rgba(42, 52, 80, 0.4)',
+        background: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
         color: 'var(--color-text)',
       }
@@ -31,19 +31,19 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index }) => {
       return {
         background: 'rgba(61, 214, 140, 0.12)',
         border: '1px solid rgba(61, 214, 140, 0.6)',
-        color: '#3DD68C',
+        color: 'var(--color-green)',
       }
     }
     if (isSelected(i) && !isCorrect(i)) {
       return {
         background: 'rgba(247, 111, 111, 0.12)',
         border: '1px solid rgba(247, 111, 111, 0.6)',
-        color: '#F76F6F',
+        color: 'var(--color-red)',
       }
     }
     return {
-      background: 'rgba(26, 32, 53, 0.4)',
-      border: '1px solid rgba(42, 52, 80, 0.4)',
+      background: 'var(--color-surface)',
+      border: '1px solid var(--color-border)',
       color: 'var(--color-muted)',
     }
   }
@@ -108,7 +108,7 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index }) => {
                   ? 'rgba(61, 214, 140, 0.25)'
                   : answered && isSelected(i)
                   ? 'rgba(247, 111, 111, 0.25)'
-                  : 'rgba(42, 52, 80, 0.6)',
+                  : 'var(--color-card)',
                 color: 'inherit',
                 fontFamily: 'Sora, sans-serif',
               }}
