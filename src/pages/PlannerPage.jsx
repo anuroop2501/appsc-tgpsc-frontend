@@ -145,8 +145,24 @@ const PlannerPage = () => {
   // Extract day topics to build quick actions
   const extractQuickTopics = () => {
     if (!content) return []
-    const matches = content.match(/### Day \d+:[^\n]+/g) || []
-    return matches.slice(0, 12).map((m) => m.replace(/### Day \d+:\s*/, '').trim())
+    const topics = []
+    const tableRows = content.split('\n')
+    for (const line of tableRows) {
+      if (line.includes('| Day ') || line.includes('|Day ')) {
+        const parts = line.split('|').map((p) => p.trim()).filter(Boolean)
+        if (parts.length >= 2) {
+          const topicCandidate = parts[1].replace(/📖\s*|⚡\s*|\[Notes\]|\[MCQ\]/g, '').trim()
+          if (topicCandidate && !topicCandidate.toLowerCase().includes('morning')) {
+            topics.push(topicCandidate)
+          }
+        }
+      }
+    }
+    if (topics.length === 0) {
+      const matches = content.match(/### Day \d+:[^\n]+/g) || []
+      return matches.slice(0, 12).map((m) => m.replace(/### Day \d+:\s*/, '').trim())
+    }
+    return topics.slice(0, 12)
   }
 
   const quickTopics = extractQuickTopics()
