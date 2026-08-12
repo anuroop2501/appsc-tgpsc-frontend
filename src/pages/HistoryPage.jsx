@@ -16,9 +16,10 @@ import {
   Loader2,
   Download,
   Calendar,
+  FileSpreadsheet,
 } from 'lucide-react'
 import { getHistory, getSessionDetail, regenerateSession } from '../api/history'
-import { exportNotesToPdf, exportPrelimsToPdf, exportPlannerToPdf } from '../lib/exportPdf'
+import { exportNotesToPdf, exportPrelimsToPdf, exportPlannerToPdf, exportPlannerToCsv } from '../lib/exportPdf'
 import MCQCard from '../components/MCQCard'
 import ScoreRing from '../components/ScoreRing'
 import RubricBar from '../components/RubricBar'
@@ -377,6 +378,22 @@ const HistoryPage = () => {
                   >
                     Copy Content
                   </button>
+                  {viewingSession.type === 'planner' && (
+                    <button
+                      onClick={() =>
+                        exportPlannerToCsv({
+                          exam: viewingSession.exam,
+                          targetDays: viewingSession.metadata.targetDays || 30,
+                          content: viewingSession.metadata.content,
+                        })
+                      }
+                      className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
+                      style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.3)' }}
+                    >
+                      <FileSpreadsheet size={14} />
+                      Export Excel (.csv)
+                    </button>
+                  )}
                   <button
                     onClick={() =>
                       viewingSession.type === 'planner'
@@ -396,7 +413,8 @@ const HistoryPage = () => {
                     className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
                     style={{ background: 'rgba(61,214,140,0.15)', color: '#3DD68C', border: '1px solid rgba(61,214,140,0.3)' }}
                   >
-                    ⬇ Download PDF
+                    <Download size={14} />
+                    Download PDF
                   </button>
                 </div>
               </div>

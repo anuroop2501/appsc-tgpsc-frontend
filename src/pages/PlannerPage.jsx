@@ -384,7 +384,7 @@ const PlannerPage = () => {
           ) : (
             <>
               <Sparkles size={18} />
-              Generate {targetDays}-Day Study Plan ({dailyHours}h Daily Schedule)
+              Generate {targetDays}-Day Study Plan • 50 Credits ({dailyHours}h Daily Schedule)
             </>
           )}
         </button>
