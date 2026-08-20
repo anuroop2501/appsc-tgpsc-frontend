@@ -76,7 +76,8 @@ const Sidebar = ({ open, onClose, isMobile }) => {
         width: 272,
         background: 'var(--bg-soft)',
         borderRight: '1px solid var(--border-soft)',
-        padding: '28px 22px',
+        padding: '24px 20px',
+        transition: 'background 0.2s ease, border-color 0.2s ease',
       }}
     >
       {/* ── Mobile close ── */}
@@ -91,20 +92,21 @@ const Sidebar = ({ open, onClose, isMobile }) => {
       )}
 
       {/* ── Brand ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 26 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 22 }}>
         <div
           style={{
             width: 38, height: 38, borderRadius: 10, flexShrink: 0,
             background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 17,
+            fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 18,
             color: '#0A0F1C',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           }}
         >
           A
         </div>
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 19, letterSpacing: 0.2 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 19, letterSpacing: 0.2, color: 'var(--text-1)' }}>
             APPSC <span style={{ color: 'var(--gold-hi)' }}>AI</span>
           </div>
           <div style={{ fontSize: 10.5, color: 'var(--text-3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 1 }}>
@@ -119,7 +121,7 @@ const Sidebar = ({ open, onClose, isMobile }) => {
           style={{
             display: 'flex', alignItems: 'center', gap: 9,
             border: '1px solid var(--border)', borderRadius: 10,
-            padding: '11px 13px', marginBottom: 28,
+            padding: '10px 12px', marginBottom: 20,
             background: 'var(--surface)',
           }}
         >
@@ -145,12 +147,12 @@ const Sidebar = ({ open, onClose, isMobile }) => {
       {/* ── Nav ── */}
       <nav style={{ flex: 1, overflowY: 'auto' }}>
         {NAV_ITEMS.map(({ section, items }) => (
-          <div key={section} style={{ marginBottom: 8 }}>
+          <div key={section} style={{ marginBottom: 6 }}>
             <p
               style={{
                 fontSize: 10.5, letterSpacing: '0.11em', textTransform: 'uppercase',
                 color: 'var(--text-3)', fontWeight: 600,
-                margin: '20px 8px 10px',
+                margin: '16px 8px 8px',
               }}
             >
               {section}
@@ -164,18 +166,17 @@ const Sidebar = ({ open, onClose, isMobile }) => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
-                  padding: '10px 12px',
+                  padding: '9px 12px',
                   borderRadius: 9,
                   color: isActive ? 'var(--text-1)' : 'var(--text-2)',
-                  fontSize: 14,
-                  fontWeight: 500,
+                  fontSize: 13.5,
+                  fontWeight: isActive ? 600 : 500,
                   textDecoration: 'none',
                   marginBottom: 2,
                   borderLeft: isActive ? '2px solid var(--gold)' : '2px solid transparent',
                   background: isActive ? 'var(--surface-elevated)' : 'transparent',
                   transition: 'all 0.15s ease',
                 })}
-                className={({ isActive }) => isActive ? '' : 'sidebar-nav-item'}
               >
                 <Icon size={16} style={{ flexShrink: 0, opacity: 0.9 }} />
                 <span>{label}</span>
@@ -189,18 +190,19 @@ const Sidebar = ({ open, onClose, isMobile }) => {
       <div
         style={{
           marginTop: 'auto',
-          paddingTop: 18,
+          paddingTop: 14,
           borderTop: '1px solid var(--border-soft)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px' }}>
           <div
             style={{
               width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-              background: 'linear-gradient(160deg, #3A4A78, #232C4A)',
+              background: 'linear-gradient(135deg, var(--indigo), #4338CA)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600,
-              color: 'var(--text-1)', border: '1px solid var(--border)',
+              fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700,
+              color: '#FFFFFF',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
             }}
           >
             {initials}
@@ -219,12 +221,12 @@ const Sidebar = ({ open, onClose, isMobile }) => {
           onClick={handleLogout}
           style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-            padding: '9px 12px', borderRadius: 9, marginTop: 4,
+            padding: '8px 12px', borderRadius: 9, marginTop: 4,
             background: 'transparent', border: 'none', cursor: 'pointer',
             color: 'var(--text-3)', fontSize: 13, fontWeight: 500,
             transition: 'all 0.15s ease',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#F87171' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--red-dim)'; e.currentTarget.style.color = 'var(--red)' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-3)' }}
         >
           <LogOut size={14} />
