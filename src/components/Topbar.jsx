@@ -135,22 +135,22 @@ const Topbar = ({ onMenuClick, sidebarOpen = true }) => {
           </button>
         )}
 
-        {/* Breadcrumb */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
+        {/* Breadcrumb / Page Title */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0, overflow: 'hidden' }}>
           {crumbs.map((crumb, i) => {
             const isLast = i === crumbs.length - 1
             const path = CRUMB_PATHS[crumb]
             return (
-              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                {i > 0 && <ChevronRight size={12} style={{ color: 'var(--text-3)', flexShrink: 0 }} />}
+              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+                {i > 0 && <ChevronRight size={13} style={{ color: 'var(--text-3)', flexShrink: 0 }} />}
                 {isLast || !path ? (
-                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 380 }}>
+                  <span style={{ fontSize: 16.5, fontWeight: 650, color: 'var(--text-1)', fontFamily: 'var(--font-body)', letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 420 }}>
                     {crumb}
                   </span>
                 ) : (
                   <Link
                     to={path}
-                    style={{ fontSize: 13.5, color: 'var(--text-3)', textDecoration: 'none', fontWeight: 500, whiteSpace: 'nowrap' }}
+                    style={{ fontSize: 14.5, color: 'var(--text-3)', textDecoration: 'none', fontWeight: 500, whiteSpace: 'nowrap' }}
                   >
                     {crumb}
                   </Link>
