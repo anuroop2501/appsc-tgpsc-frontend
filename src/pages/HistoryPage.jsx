@@ -10,9 +10,6 @@ import {
   Inbox,
   ArrowLeft,
   MessageSquare,
-  BookMarked,
-  CheckCircle as CheckCircleIcon,
-  AlertTriangle,
   Loader2,
   Download,
   Calendar,
@@ -63,6 +60,41 @@ const TYPE_CONFIG = {
     dim: 'var(--indigo-dim)',
     border: 'var(--indigo-border)',
   },
+}
+
+/**
+ * Clean and normalize messy or raw prompt topics for display.
+ * E.g. strips WhatsApp chat logs ("8:29 am, 19/8/2026 Nandini: For Gupta Empire..."),
+ * raw question numbers ("33.Consider the following..."), or overly long prompt text.
+ */
+function formatTopicTitle(topic) {
+  if (!topic || typeof topic !== 'string') return 'Study Practice Session'
+  let clean = topic.trim()
+
+  // 1. Strip WhatsApp/chat transcript prefixes e.g. "8:29 am, 19/8/2026 Nandini: " or "19/08/2026, 08:29 - Name: "
+  clean = clean.replace(/^(?:\d{1,2}:\d{2}\s*(?:am|pm)?,?\s*)?(?:\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4},?\s*)?[^:\n]+:\s*/i, '')
+
+  // 2. Strip leading numbers or bullets e.g. "33. ", "1. ", "Q1: "
+  clean = clean.replace(/^(?:Q\d+[\.:\-]\s*|\d{1,3}[\.\)\-]\s*)/i, '')
+
+  // 3. If it starts with conversational filler e.g. "For Gupta Empire, with the 4 subtopics you listed..." -> "Gupta Empire"
+  const forMatch = clean.match(/^For\s+([^,\n\.]+?)(?:,|\swith|\sfor|\.|$)/i)
+  if (forMatch && forMatch[1].trim().length > 2) {
+    clean = forMatch[1].trim()
+  }
+
+  // 4. If it's a full question statement e.g. "Consider the following statements regarding Gupta Empire Administration: ..."
+  const considerMatch = clean.match(/regarding\s+([^:\n\.]+?)(?:\sAdministration|:|\.|$)/i)
+  if (considerMatch && considerMatch[1].trim().length > 2) {
+    clean = `${considerMatch[1].trim()} Administration`
+  }
+
+  // 5. Cap max length nicely
+  if (clean.length > 75) {
+    clean = clean.slice(0, 75).replace(/[\s,\.\-]+$/, '') + '…'
+  }
+
+  return clean || topic
 }
 
 const timeAgo = (dateStr) => {
@@ -163,7 +195,8 @@ const HistoryPage = () => {
         }
 
         setViewingSession(session)
-        setOverride(['Account', 'Study History', session.topic || fallbackTopic])
+        const cleanTitle = formatTopicTitle(session.topic || fallbackTopic)
+        setOverride(['Account', 'Study History', cleanTitle])
       } else {
         setError('Failed to retrieve session details.')
       }
@@ -211,6 +244,8 @@ const HistoryPage = () => {
   }
 
   if (viewingSession) {
+    const displayTitle = formatTopicTitle(viewingSession.topic)
+
     return (
       <div style={{ maxWidth: 1060, margin: '0 auto', animation: 'fadeIn 0.3s ease forwards' }}>
         {/* Back Button */}
@@ -274,16 +309,16 @@ const HistoryPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 14, borderBottom: '1px solid var(--border)', flexWrap: 'wrap', gap: 10 }}>
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 560, margin: '0 0 4px', color: 'var(--text-1)' }}>
-                    Practice Questions: {viewingSession.topic}
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 650, margin: '0 0 4px', color: 'var(--text-1)' }}>
+                    Practice Questions: {displayTitle}
                   </h2>
                   <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>
-                    Total {viewingSession.metadata.questions.length} questions
+                    Total {viewingSession.metadata.questions.length} questions · {viewingSession.exam || ''}
                   </span>
                 </div>
                 <button
                   onClick={() => exportPrelimsToPdf({
-                    topic: viewingSession.topic,
+                    topic: displayTitle,
                     exam: viewingSession.exam,
                     questions: viewingSession.metadata.questions,
                     date: viewingSession.created_at ? new Date(viewingSession.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined,
@@ -333,8 +368,8 @@ const HistoryPage = () => {
                       {formatDate(viewingSession.created_at)}
                     </span>
                   </div>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
-                    {viewingSession.topic}
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 650, margin: 0, color: 'var(--text-1)' }}>
+                    {displayTitle}
                   </h2>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -373,7 +408,7 @@ const HistoryPage = () => {
                             date: formatDate(viewingSession.created_at),
                           })
                         : exportNotesToPdf({
-                            topic: viewingSession.topic,
+                            topic: displayTitle,
                             exam: viewingSession.exam,
                             content: viewingSession.metadata.content,
                             date: formatDate(viewingSession.created_at),
@@ -399,8 +434,8 @@ const HistoryPage = () => {
           {viewingSession.type === 'eval' && viewingSession.metadata?.evaluation && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div style={{ paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
-                  Evaluation: {viewingSession.topic}
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 650, margin: 0, color: 'var(--text-1)' }}>
+                  Evaluation: {displayTitle}
                 </h2>
               </div>
 
@@ -417,7 +452,7 @@ const HistoryPage = () => {
                     <div style={{ width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--gold-dim)', color: 'var(--gold-hi)' }}>
                       <MessageSquare size={15} />
                     </div>
-                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 650, margin: 0, color: 'var(--text-1)' }}>
                       Examiner's Feedback
                     </h3>
                   </div>
@@ -430,7 +465,7 @@ const HistoryPage = () => {
               {/* Criteria */}
               {viewingSession.metadata.evaluation.criteria?.length > 0 && (
                 <div className="card" style={{ padding: 24 }}>
-                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 560, margin: '0 0 16px', color: 'var(--text-1)' }}>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 650, margin: '0 0 16px', color: 'var(--text-1)' }}>
                     Criteria Breakdown
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -463,7 +498,7 @@ const HistoryPage = () => {
           <div style={{ width: 42, height: 42, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-elevated)', border: '1px solid var(--border)', color: 'var(--text-1)', flexShrink: 0 }}>
             <Clock size={20} />
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
             Study History
           </h1>
         </div>
@@ -533,7 +568,7 @@ const HistoryPage = () => {
         ) : items.length === 0 ? (
           <div style={{ padding: '56px 20px', textAlign: 'center' }}>
             <Inbox size={34} style={{ color: 'var(--text-3)', margin: '0 auto 12px' }} />
-            <p style={{ fontSize: 16, fontWeight: 560, fontFamily: 'var(--font-display)', color: 'var(--text-1)', margin: '0 0 4px' }}>
+            <p style={{ fontSize: 16, fontWeight: 650, fontFamily: 'var(--font-display)', color: 'var(--text-1)', margin: '0 0 4px' }}>
               No {activeTab === 'all' ? 'activity' : TABS.find((t) => t.value === activeTab)?.label?.toLowerCase() || 'records'} yet
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-3)', margin: 0 }}>
@@ -545,11 +580,12 @@ const HistoryPage = () => {
             {items.map((item, i) => {
               const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG.prelims
               const Icon = cfg.icon
+              const cleanTitle = formatTopicTitle(item.topic)
 
               return (
                 <div
                   key={item._id || item.id || i}
-                  onClick={() => handleViewSessionById(item.id, item.topic)}
+                  onClick={() => handleViewSessionById(item.id, cleanTitle)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -583,7 +619,7 @@ const HistoryPage = () => {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.topic || 'Unknown topic'}
+                        {cleanTitle}
                       </span>
                       <span className="tag" style={{ background: cfg.dim, color: cfg.color }}>
                         {cfg.label}
@@ -594,7 +630,7 @@ const HistoryPage = () => {
                         {item.exam || ''}
                       </span>
                       {item.score !== undefined && (
-                        <span style={{ fontSize: 12.5, fontWeight: 600, color: cfg.color, fontFamily: 'var(--font-mono)' }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: cfg.color }}>
                           Score: {item.score}/{item.maxScore || 10}
                         </span>
                       )}
@@ -647,7 +683,6 @@ const HistoryPage = () => {
                     height: 34,
                     borderRadius: 8,
                     fontSize: 13,
-                    fontFamily: 'var(--font-mono)',
                     fontWeight: 600,
                     background: isSel ? 'var(--indigo)' : 'var(--surface)',
                     border: isSel ? 'none' : '1px solid var(--border)',
