@@ -4,8 +4,7 @@ import React from 'react'
  * FormattedQuestionText
  * ─────────────────────────────────────────────────────────────
  * Parses and formats APPSC/UPSC statement-based questions cleanly.
- * Strictly validates that statement markers form a sequential list (1, 2, 3... or I, II, III... or i, ii, iii...).
- * Eliminates false positives on years (e.g. 2020), amounts (e.g. 5171), or random numbers in text.
+ * Uses adaptive theme variables for seamless light & dark mode styling.
  */
 export function parseQuestionText(text = '') {
   if (!text || typeof text !== 'string') return { intro: '', statements: [], prompt: text || '' }
@@ -75,44 +74,56 @@ export default function FormattedQuestionText({ text, className = '' }) {
 
   if (statements.length === 0) {
     return (
-      <p className={`text-sm font-medium leading-relaxed ${className}`} style={{ color: 'var(--color-text)' }}>
+      <p className={className} style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--text-1)', margin: 0 }}>
         {text}
       </p>
     )
   }
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} className={className}>
       {/* Intro Context */}
       {intro && (
-        <p className="text-sm font-semibold leading-relaxed" style={{ color: 'var(--color-text)', fontFamily: 'Sora, sans-serif' }}>
+        <p style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.5, color: 'var(--text-1)', margin: 0 }}>
           {intro}
         </p>
       )}
 
       {/* Structured Statement Cards */}
-      <div className="space-y-2 pl-1">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {statements.map((st, idx) => (
           <div
             key={idx}
-            className="flex items-start gap-3 p-3 rounded-xl transition-all"
             style={{
-              background: 'rgba(21, 32, 54, 0.6)',
-              border: '1px solid rgba(37, 99, 235, 0.25)',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
+              padding: '10px 14px',
+              borderRadius: 10,
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--border)',
             }}
           >
             <span
-              className="flex-shrink-0 w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center mt-0.5"
               style={{
-                background: 'rgba(37, 99, 235, 0.25)',
-                color: '#60A5FA',
-                border: '1px solid rgba(37, 99, 235, 0.4)',
-                fontFamily: 'Sora, sans-serif',
+                flexShrink: 0,
+                width: 22,
+                height: 22,
+                borderRadius: 6,
+                fontSize: 11.5,
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--indigo-dim)',
+                color: 'var(--indigo)',
+                border: '1px solid var(--indigo-border)',
+                marginTop: 2,
               }}
             >
               {st.num}
             </span>
-            <p className="text-xs sm:text-sm leading-relaxed flex-1" style={{ color: 'var(--color-text)' }}>
+            <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-1)', margin: 0, flex: 1 }}>
               {st.content}
             </p>
           </div>
@@ -121,7 +132,7 @@ export default function FormattedQuestionText({ text, className = '' }) {
 
       {/* Concluding Question Prompt */}
       {prompt && (
-        <p className="text-xs sm:text-sm font-bold pt-1" style={{ color: '#F7B500', fontFamily: 'Sora, sans-serif' }}>
+        <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--gold-hi)', margin: '4px 0 0' }}>
           {prompt}
         </p>
       )}

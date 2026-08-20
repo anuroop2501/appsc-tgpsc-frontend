@@ -46,9 +46,9 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index, onAnswe
 
   return (
     <div
+      className="card"
       style={{
-        background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
-        padding: 20, animation: 'fadeIn 0.3s ease forwards',
+        padding: 22, animation: 'fadeIn 0.3s ease forwards',
         animationDelay: `${(index || 0) * 60}ms`, animationFillMode: 'both',
       }}
     >
@@ -58,18 +58,21 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index, onAnswe
           style={{
             flexShrink: 0, width: 26, height: 26, borderRadius: 7,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11.5, fontFamily: 'var(--font-mono)', fontWeight: 600,
+            fontSize: 12, fontWeight: 700,
             background: answered
               ? userGotItRight ? 'var(--emerald-dim)' : 'var(--red-dim)'
               : 'var(--indigo-dim)',
             color: answered
               ? userGotItRight ? 'var(--emerald)' : 'var(--red)'
               : 'var(--indigo)',
+            border: answered
+              ? userGotItRight ? '1px solid var(--emerald-border)' : '1px solid rgba(239,68,68,0.3)'
+              : '1px solid var(--indigo-border)',
           }}
         >
           {(index || 0) + 1}
         </span>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <FormattedQuestionText text={question} />
         </div>
       </div>
@@ -93,17 +96,18 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index, onAnswe
             <span style={{
               flexShrink: 0, width: 22, height: 22, borderRadius: 6,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 600,
+              fontSize: 11.5, fontWeight: 700,
               background: answered && isCorrect(i)
-                ? 'rgba(51,165,131,0.25)'
+                ? 'var(--emerald-dim)'
                 : answered && isSelected(i)
-                ? 'rgba(239,68,68,0.25)'
-                : 'var(--border)',
+                ? 'var(--red-dim)'
+                : 'var(--border-soft)',
               color: 'inherit',
+              border: '1px solid var(--border)',
             }}>
               {OPTION_LABELS[i]}
             </span>
-            <span style={{ flex: 1, fontSize: 13.5 }}>{opt}</span>
+            <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500 }}>{opt}</span>
             {answered && isCorrect(i) && <CheckCircle size={15} style={{ color: 'var(--emerald)', flexShrink: 0 }} />}
             {answered && isSelected(i) && !isCorrect(i) && <XCircle size={15} style={{ color: 'var(--red)', flexShrink: 0 }} />}
           </button>
@@ -114,7 +118,7 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index, onAnswe
       {showExplanation && explanation && (
         <div style={{ marginTop: 14, borderRadius: 10, padding: '12px 14px', background: 'var(--gold-dim)', border: '1px solid var(--gold-border)', animation: 'fadeIn 0.25s ease forwards' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <div style={{ width: 24, height: 24, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,164,48,0.2)' }}>
+            <div style={{ width: 24, height: 24, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'var(--gold-dim)' }}>
               <Lightbulb size={13} style={{ color: 'var(--gold-hi)' }} />
             </div>
             <div>
