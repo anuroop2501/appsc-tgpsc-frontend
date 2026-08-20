@@ -19,71 +19,46 @@ const PrelimsPage = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fromCache, setFromCache] = useState(false)
-
-  /* Score tracker */
-  const answered = questions.filter((_, i) => {
-    const card = document.getElementById(`mcq-answered-${i}`)
-    return card !== null
-  }).length
-
   const [answeredCount, setAnsweredCount] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
 
   const handleGenerate = async () => {
-    if (!topic.trim()) {
-      setError('Please enter or select a topic.')
-      return
-    }
-    setLoading(true)
-    setError('')
-    setQuestions([])
-    setAnsweredCount(0)
-    setCorrectCount(0)
-    setFromCache(false)
-
+    if (!topic.trim()) { setError('Please enter or select a topic.'); return }
+    setLoading(true); setError(''); setQuestions([])
+    setAnsweredCount(0); setCorrectCount(0); setFromCache(false)
     try {
       const data = await generatePrelims({ topic, exam })
       setQuestions(data)
       setFromCache(!!data._fromCache)
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to generate questions.')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
+    <div style={{ maxWidth: 1000, animation: 'fadeIn 0.4s ease forwards' }}>
+
       {/* ── Header ── */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #4F8EF7, #3b7de0)', boxShadow: '0 4px 12px rgba(79,142,247,0.35)' }}
-          >
-            <Sparkles size={20} className="text-white" />
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--indigo-dim)', color: 'var(--indigo)', flexShrink: 0 }}>
+            <Sparkles size={20} />
           </div>
-          <h1
-            className="text-2xl font-bold"
-            style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-          >
-            MCQ Prelims Generator
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
+            MCQ Prelims
           </h1>
         </div>
-        <p className="text-sm ml-14" style={{ color: 'var(--color-muted)' }}>
+        <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px', lineHeight: 1.5 }}>
           Generate 10 exam-pattern multiple choice questions from any APPSC topic
         </p>
       </div>
 
       {/* ── Input Card ── */}
-      <div className="glass-card p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
           {/* Topic */}
-          <div className="md:col-span-2">
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: 'var(--color-text)' }}
-            >
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
               Topic
             </label>
             <TopicAutocomplete
@@ -94,78 +69,45 @@ const PrelimsPage = () => {
             />
           </div>
 
-          {/* Exam selector */}
+          {/* Exam */}
           <div>
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: 'var(--color-text)' }}
-            >
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
               Exam
             </label>
-            <select
-              value={exam}
-              onChange={(e) => setExam(e.target.value)}
-              className="input-field select"
-            >
-              {EXAMS.map((e) => (
-                <option key={e} value={e}>{e}</option>
-              ))}
+            <select value={exam} onChange={(e) => setExam(e.target.value)} className="input select">
+              {EXAMS.map((e) => <option key={e} value={e}>{e}</option>)}
             </select>
           </div>
 
-          {/* Generate button */}
-          <div className="flex items-end">
-            <button
-              onClick={handleGenerate}
-              disabled={loading}
-              className="btn-primary w-full justify-center"
-              style={{ height: 46 }}
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={17} className="animate-spin" />
-                  Preparing…
-                </>
-              ) : (
-                <>
-                  <Sparkles size={17} />
-                  Generate Questions
-                </>
-              )}
+          {/* Generate */}
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button onClick={handleGenerate} disabled={loading} className="btn-primary" style={{ width: '100%', height: 44 }}>
+              {loading
+                ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Preparing…</>
+                : <><Sparkles size={16} /> Generate Questions</>
+              }
             </button>
           </div>
         </div>
 
         {/* Error */}
         {error && (
-          <div
-            className="flex items-center gap-2 p-3 rounded-xl text-sm"
-            style={{
-              background: 'rgba(247, 111, 111, 0.1)',
-              border: '1px solid rgba(247, 111, 111, 0.3)',
-              color: 'var(--color-red)',
-            }}
-          >
-            <XCircle size={15} />
-            {error}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13.5 }}>
+            <XCircle size={15} /> {error}
           </div>
         )}
 
         {/* Cache badge */}
         {fromCache && (
-          <div
-            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full mt-3"
-            style={{ background: 'rgba(61,214,140,0.12)', color: 'var(--color-green)', border: '1px solid rgba(61,214,140,0.3)' }}
-          >
-            <CheckCircle size={12} />
-            Loaded from cache
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11.5, padding: '4px 12px', borderRadius: 20, marginTop: 12, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)' }}>
+            <CheckCircle size={12} /> Loaded from cache
           </div>
         )}
       </div>
 
       {/* ── Loading ── */}
       {loading && (
-        <div className="glass-card">
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14 }}>
           <LoadingDots message="High-quality questions are on the way…" />
         </div>
       )}
@@ -174,68 +116,43 @@ const PrelimsPage = () => {
       {!loading && questions.length > 0 && (
         <>
           {/* Score tracker */}
-          <div
-            className="glass-card px-5 py-4 flex items-center justify-between flex-wrap gap-3"
-          >
-            <div className="flex items-center gap-4">
-              <div>
-                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>Questions</p>
-                <p className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
-                  {questions.length}
-                </p>
-              </div>
-              <div className="w-px h-8" style={{ background: 'var(--color-border)' }} />
-              <div>
-                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>Answered</p>
-                <p className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-accent)' }}>
-                  {answeredCount} / {questions.length}
-                </p>
-              </div>
-              <div className="w-px h-8" style={{ background: 'var(--color-border)' }} />
-              <div>
-                <p className="text-xs" style={{ color: 'var(--color-muted)' }}>Correct</p>
-                <p className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-green)' }}>
-                  {correctCount} / {answeredCount || '—'}
-                </p>
-              </div>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              {[
+                { label: 'Questions', value: questions.length, color: 'var(--text-1)' },
+                { label: 'Answered', value: `${answeredCount} / ${questions.length}`, color: 'var(--indigo)' },
+                { label: 'Correct', value: `${correctCount} / ${answeredCount || '—'}`, color: 'var(--emerald)' },
+              ].map(({ label, value, color }, i, arr) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                  <div>
+                    <p style={{ fontSize: 11, color: 'var(--text-3)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: 17, fontWeight: 600, color, margin: 0 }}>{value}</p>
+                  </div>
+                  {i < arr.length - 1 && <div style={{ width: 1, height: 32, background: 'var(--border)' }} />}
+                </div>
+              ))}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
                 onClick={() => exportPrelimsToPdf({ topic, exam, questions })}
-                className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-all hover:scale-[1.02] active:scale-95"
-                style={{
-                  background: 'rgba(79, 142, 247, 0.15)',
-                  color: 'var(--color-accent)',
-                  border: '1px solid rgba(79, 142, 247, 0.35)',
-                }}
-                title="Download MCQs with Solutions PDF"
+                style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, padding: '8px 14px', borderRadius: 9, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
               >
-                <Download size={15} />
-                Download PDF
+                <Download size={14} /> Download PDF
               </button>
-              <button
-                onClick={handleGenerate}
-                className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-all hover:bg-white/5"
-                style={{ color: 'var(--color-muted)', border: '1px solid var(--color-border)' }}
-              >
-                <RefreshCw size={14} />
-                Regenerate
+              <button onClick={handleGenerate} className="btn-ghost" style={{ fontSize: 13, padding: '8px 14px' }}>
+                <RefreshCw size={13} /> Regenerate
               </button>
             </div>
           </div>
 
           {/* MCQ Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
             {questions.map((q, i) => {
-              // Normalise options — API returns { A: '...', B: '...', C: '...', D: '...' }
-              // MCQCard expects an array ['...', '...', '...', '...']
               const rawOptions = q.opts || q.options || {}
               const optionsArray = Array.isArray(rawOptions)
                 ? rawOptions
                 : ['A', 'B', 'C', 'D'].map((k) => rawOptions[k] || '')
-
-              // correctAnswer is a letter like 'B' — convert to 0-based index
               const correctRaw = q.correct ?? q.ans ?? q.answer ?? q.correctAnswer ?? 'A'
               const correctIndex = typeof correctRaw === 'string' && correctRaw.length === 1
                 ? ['A', 'B', 'C', 'D'].indexOf(correctRaw.toUpperCase())
@@ -249,6 +166,10 @@ const PrelimsPage = () => {
                   options={optionsArray}
                   correctAnswer={correctIndex}
                   explanation={q.explanation || q.exp}
+                  onAnswer={(isCorrect) => {
+                    setAnsweredCount((c) => c + 1)
+                    if (isCorrect) setCorrectCount((c) => c + 1)
+                  }}
                 />
               )
             })}

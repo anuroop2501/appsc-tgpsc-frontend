@@ -43,7 +43,6 @@ const NotesPage = () => {
       return
     }
 
-    // Abort any existing stream
     if (abortRef.current) {
       abortRef.current()
       abortRef.current = null
@@ -84,7 +83,7 @@ const NotesPage = () => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2500)
     } catch {
-      /* clipboard error — silently ignore */
+      /* ignore */
     }
   }
 
@@ -97,102 +96,116 @@ const NotesPage = () => {
     }
   }
 
+  const isGroup2 = (user?.targetExam || '').toLowerCase().includes('group 2')
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div style={{ maxWidth: 1000, animation: 'fadeIn 0.4s ease forwards' }}>
       {/* ── Header ── */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #7B5EF8, #6a48e0)', boxShadow: '0 4px 12px rgba(123,94,248,0.35)' }}
-          >
-            <BookOpen size={20} className="text-white" />
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--emerald-dim)', color: 'var(--emerald)', flexShrink: 0 }}>
+            <BookOpen size={20} />
           </div>
-          <h1
-            className="text-2xl font-bold"
-            style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-          >
-            {(user?.targetExam || '').toLowerCase().includes('group 2') ? 'Group 2 Notes Generator' : 'Mains Notes Generator'}
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
+            {isGroup2 ? 'Group 2 Notes' : 'Mains Notes'}
           </h1>
         </div>
-        <p className="text-sm ml-14" style={{ color: 'var(--color-muted)' }}>
-          AI-structured study notes tailored to your APPSC/TGPSC exam pattern
+        <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px', lineHeight: 1.5 }}>
+          AI-structured study notes tailored to your APPSC exam pattern
         </p>
       </div>
 
       {/* ── Input Card ── */}
-      <div className="glass-card p-6 space-y-5">
-        {/* Topic */}
-        <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
-            Topic
-          </label>
-          <TopicAutocomplete
-            value={topic}
-            onChange={setTopic}
-            exam={exam}
-            placeholder="e.g. Panchayati Raj System, Rivers of Telangana…"
-          />
-        </div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
+          {/* Topic */}
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
+              Topic
+            </label>
+            <TopicAutocomplete
+              value={topic}
+              onChange={setTopic}
+              exam={exam}
+              placeholder="e.g. Panchayati Raj System, Rivers of Andhra Pradesh…"
+            />
+          </div>
 
-        {/* Exam */}
-        <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
-            Exam
-          </label>
-          <select
-            value={exam}
-            onChange={(e) => setExam(e.target.value)}
-            className="input-field select"
-          >
-            {EXAMS.map((e) => (
-              <option key={e} value={e}>{e}</option>
-            ))}
-          </select>
-        </div>
+          {/* Exam */}
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
+              Exam
+            </label>
+            <select value={exam} onChange={(e) => setExam(e.target.value)} className="input select">
+              {EXAMS.map((e) => (
+                <option key={e} value={e}>{e}</option>
+              ))}
+            </select>
+          </div>
 
-        {/* Note Type */}
-        <div>
-          <label className="block text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>
-            Note Type
-          </label>
-          <div className="flex flex-wrap gap-2.5">
-            {NOTE_TYPES.map(({ value, label, icon }) => (
-              <button
-                key={value}
-                onClick={() => setNoteType(value)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
-                style={{
-                  background:
-                    noteType === value
-                      ? 'linear-gradient(135deg, rgba(123,94,248,0.25), rgba(79,142,247,0.2))'
-                      : 'var(--color-surface)',
-                  border:
-                    noteType === value
-                      ? '1px solid rgba(123,94,248,0.5)'
-                      : '1px solid var(--color-border)',
-                  color: noteType === value ? 'var(--color-text)' : 'var(--color-muted)',
-                  transform: noteType === value ? 'scale(1.02)' : 'scale(1)',
-                }}
-              >
-                <span>{icon}</span>
-                {label}
-              </button>
-            ))}
+          {/* Note Type */}
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
+              Note Type
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {NOTE_TYPES.map(({ value, label, icon }) => {
+                const isSel = noteType === value
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setNoteType(value)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '9px 15px',
+                      borderRadius: 10,
+                      fontSize: 13.5,
+                      fontWeight: isSel ? 600 : 500,
+                      background: isSel ? 'var(--emerald-dim)' : 'var(--surface-elevated)',
+                      border: isSel ? '1px solid var(--emerald-border)' : '1px solid var(--border)',
+                      color: isSel ? 'var(--emerald)' : 'var(--text-2)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <span>{icon}</span>
+                    <span>{label}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 
-        {/* Generate / Stop */}
-        <div className="flex gap-3">
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 10 }}>
           <button
             onClick={handleGenerate}
             disabled={isStreaming}
-            className="btn-primary flex-1 justify-center"
-            style={{ height: 48, background: 'linear-gradient(135deg, #7B5EF8, #4F8EF7)' }}
+            style={{
+              flex: 1,
+              height: 44,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              borderRadius: 11,
+              background: 'var(--emerald)',
+              color: '#ffffff',
+              fontSize: 14,
+              fontWeight: 600,
+              border: 'none',
+              cursor: isStreaming ? 'not-allowed' : 'pointer',
+              opacity: isStreaming ? 0.7 : 1,
+              transition: 'opacity 0.15s ease',
+            }}
           >
             {isStreaming ? (
               <>
-                <Loader2 size={17} className="animate-spin" />
+                <Loader2 size={17} className="animate-spin-slow" />
                 Generating…
               </>
             ) : (
@@ -206,8 +219,8 @@ const NotesPage = () => {
           {isStreaming && (
             <button
               onClick={handleStop}
-              className="px-4 py-3 rounded-xl text-sm font-semibold transition-all hover:bg-white/10"
-              style={{ border: '1px solid var(--color-border)', color: 'var(--color-muted)' }}
+              className="btn-ghost"
+              style={{ padding: '0 20px', height: 44 }}
             >
               Stop
             </button>
@@ -216,80 +229,83 @@ const NotesPage = () => {
 
         {/* Error */}
         {error && (
-          <div
-            className="flex items-center gap-2 p-3 rounded-xl text-sm"
-            style={{ background: 'rgba(247,111,111,0.1)', border: '1px solid rgba(247,111,111,0.3)', color: 'var(--color-red)' }}
-          >
-            <XCircle size={15} />
-            {error}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, marginTop: 14, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13.5 }}>
+            <XCircle size={15} /> {error}
           </div>
         )}
       </div>
 
       {/* ── Loading ── */}
       {isStreaming && !content && (
-        <div className="glass-card">
-          <LoadingDots message="Preparing comprehensive study notes…" />
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14 }}>
+          <LoadingDots message="Preparing comprehensive study notes tailored to syllabus…" />
         </div>
       )}
 
       {/* ── Output Card ── */}
       {content && (
-        <div className="glass-card overflow-hidden animate-slide-up">
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderLeft: '3px solid var(--emerald)',
+            borderRadius: 14,
+            overflow: 'hidden',
+            animation: 'fadeIn 0.3s ease forwards',
+          }}
+        >
           {/* Output header */}
           <div
-            className="flex items-center justify-between px-6 py-4 border-b"
-            style={{ borderColor: 'var(--color-border)' }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 24px',
+              borderBottom: '1px solid var(--border-soft)',
+            }}
           >
-            <div className="flex items-center gap-3">
-              <h3
-                className="font-semibold"
-                style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-              >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
                 {topic}
               </h3>
               {isStreaming && (
-                <span
-                  className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
-                  style={{ background: 'rgba(79,142,247,0.15)', color: 'var(--color-accent)' }}
-                >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{ background: 'var(--color-accent)', animation: 'pulseDot 1s infinite' }}
-                  />
+                <span className="tag" style={{ background: 'var(--indigo-dim)', color: 'var(--indigo)' }}>
                   Live
                 </span>
               )}
               {isDone && !isStreaming && (
-                <span
-                  className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
-                  style={{ background: 'rgba(61,214,140,0.15)', color: 'var(--color-green)' }}
-                >
-                  <CheckCheck size={11} />
-                  Complete
+                <span className="tag" style={{ background: 'var(--emerald-dim)', color: 'var(--emerald)' }}>
+                  <CheckCheck size={11} style={{ marginRight: 3 }} /> Complete
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {isDone && (
                 <button
                   onClick={handleGenerate}
-                  className="p-2 rounded-lg hover:bg-white/5 transition-colors"
-                  style={{ color: 'var(--color-muted)' }}
+                  className="btn-ghost"
+                  style={{ padding: '6px 12px', fontSize: 12 }}
                   title="Regenerate"
                 >
-                  <RefreshCw size={15} />
+                  <RefreshCw size={13} />
                 </button>
               )}
               <button
                 onClick={handleCopy}
                 disabled={!content}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                 style={{
-                  background: copied ? 'rgba(61,214,140,0.15)' : 'rgba(79,142,247,0.12)',
-                  border: copied ? '1px solid rgba(61,214,140,0.4)' : '1px solid rgba(79,142,247,0.3)',
-                  color: copied ? 'var(--color-green)' : 'var(--color-accent)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  padding: '7px 14px',
+                  borderRadius: 8,
+                  background: copied ? 'var(--emerald-dim)' : 'var(--surface-elevated)',
+                  border: copied ? '1px solid var(--emerald-border)' : '1px solid var(--border)',
+                  color: copied ? 'var(--emerald)' : 'var(--text-1)',
+                  cursor: 'pointer',
                 }}
               >
                 {copied ? <CheckCheck size={13} /> : <Copy size={13} />}
@@ -299,42 +315,32 @@ const NotesPage = () => {
           </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div style={{ padding: '24px 28px' }} className="prose-dark">
             <MarkdownRenderer content={content} />
-
-            {/* Blinking cursor if streaming */}
-            {isStreaming && (
-              <span
-                className="inline-block w-0.5 h-4 ml-0.5 rounded-sm"
-                style={{
-                  background: 'var(--color-accent)',
-                  animation: 'pulseDot 1s infinite',
-                  verticalAlign: 'text-bottom',
-                }}
-              />
-            )}
           </div>
 
           {/* Tags */}
           {isDone && (
             <div
-              className="flex items-center gap-2 px-6 py-4 border-t flex-wrap"
-              style={{ borderColor: 'var(--color-border)' }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '12px 24px',
+                borderTop: '1px solid var(--border-soft)',
+                background: 'var(--bg-soft)',
+                fontSize: 12,
+                color: 'var(--text-3)',
+              }}
             >
-              <span
-                className="text-xs px-3 py-1 rounded-full"
-                style={{ background: 'rgba(123,94,248,0.15)', color: '#7B5EF8', border: '1px solid rgba(123,94,248,0.3)' }}
-              >
+              <span className="tag" style={{ background: 'var(--surface-elevated)', color: 'var(--text-2)', border: '1px solid var(--border)' }}>
                 {exam}
               </span>
-              <span
-                className="text-xs px-3 py-1 rounded-full"
-                style={{ background: 'rgba(79,142,247,0.12)', color: 'var(--color-accent)', border: '1px solid rgba(79,142,247,0.25)' }}
-              >
+              <span className="tag" style={{ background: 'var(--surface-elevated)', color: 'var(--text-2)', border: '1px solid var(--border)' }}>
                 {noteType}
               </span>
-              <span className="text-xs ml-auto" style={{ color: 'var(--color-muted)' }}>
-                {content.split(' ').length} words
+              <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)' }}>
+                {content.split(/\s+/).length} words
               </span>
             </div>
           )}

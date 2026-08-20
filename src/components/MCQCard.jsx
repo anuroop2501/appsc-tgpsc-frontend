@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, Lightbulb, ChevronDown } from 'lucide-react'
+import { CheckCircle, XCircle, Lightbulb } from 'lucide-react'
 import FormattedQuestionText from './FormattedQuestionText'
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D']
 
-const MCQCard = ({ question, options, correctAnswer, explanation, index }) => {
+const MCQCard = ({ question, options, correctAnswer, explanation, index, onAnswer }) => {
   const [selectedOption, setSelectedOption] = useState(null)
   const [answered, setAnswered] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
@@ -13,155 +13,122 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index }) => {
     if (answered) return
     setSelectedOption(optionIndex)
     setAnswered(true)
+    if (onAnswer) onAnswer(isCorrect(optionIndex))
     setTimeout(() => setShowExplanation(true), 300)
   }
 
   const isCorrect = (i) => i === correctAnswer || options[i] === correctAnswer
   const isSelected = (i) => i === selectedOption
+  const userGotItRight = answered && isCorrect(selectedOption)
 
   const getOptionStyle = (i) => {
-    if (!answered) {
-      return {
-        background: 'var(--color-surface)',
-        border: '1px solid var(--color-border)',
-        color: 'var(--color-text)',
-      }
+    if (!answered) return {
+      background: 'var(--surface-elevated)',
+      border: '1px solid var(--border)',
+      color: 'var(--text-1)',
     }
-    if (isCorrect(i)) {
-      return {
-        background: 'rgba(61, 214, 140, 0.12)',
-        border: '1px solid rgba(61, 214, 140, 0.6)',
-        color: 'var(--color-green)',
-      }
+    if (isCorrect(i)) return {
+      background: 'var(--emerald-dim)',
+      border: '1px solid var(--emerald-border)',
+      color: 'var(--emerald)',
     }
-    if (isSelected(i) && !isCorrect(i)) {
-      return {
-        background: 'rgba(247, 111, 111, 0.12)',
-        border: '1px solid rgba(247, 111, 111, 0.6)',
-        color: 'var(--color-red)',
-      }
+    if (isSelected(i) && !isCorrect(i)) return {
+      background: 'var(--red-dim)',
+      border: '1px solid rgba(239,68,68,0.4)',
+      color: 'var(--red)',
     }
     return {
-      background: 'var(--color-surface)',
-      border: '1px solid var(--color-border)',
-      color: 'var(--color-muted)',
+      background: 'var(--surface-elevated)',
+      border: '1px solid var(--border)',
+      color: 'var(--text-3)',
     }
   }
-
-  const getOptionIcon = (i) => {
-    if (!answered) return null
-    if (isCorrect(i)) return <CheckCircle size={16} style={{ color: '#3DD68C', flexShrink: 0 }} />
-    if (isSelected(i) && !isCorrect(i)) return <XCircle size={16} style={{ color: '#F76F6F', flexShrink: 0 }} />
-    return null
-  }
-
-  const userGotItRight = answered && isCorrect(selectedOption)
 
   return (
     <div
-      className="glass-card p-5 animate-slide-up"
-      style={{ animationDelay: `${(index || 0) * 60}ms`, animationFillMode: 'both' }}
+      style={{
+        background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: 20, animation: 'fadeIn 0.3s ease forwards',
+        animationDelay: `${(index || 0) * 60}ms`, animationFillMode: 'both',
+      }}
     >
-      {/* ── Header ── */}
-      <div className="flex items-start gap-3 mb-4">
+      {/* ── Question header ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
         <span
-          className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
           style={{
+            flexShrink: 0, width: 26, height: 26, borderRadius: 7,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 11.5, fontFamily: 'var(--font-mono)', fontWeight: 600,
             background: answered
-              ? userGotItRight
-                ? 'rgba(61, 214, 140, 0.2)'
-                : 'rgba(247, 111, 111, 0.2)'
-              : 'rgba(79, 142, 247, 0.2)',
+              ? userGotItRight ? 'var(--emerald-dim)' : 'var(--red-dim)'
+              : 'var(--indigo-dim)',
             color: answered
-              ? userGotItRight
-                ? '#3DD68C'
-                : '#F76F6F'
-              : 'var(--color-accent)',
-            fontFamily: 'Sora, sans-serif',
+              ? userGotItRight ? 'var(--emerald)' : 'var(--red)'
+              : 'var(--indigo)',
           }}
         >
           {(index || 0) + 1}
         </span>
-        <div className="flex-1">
+        <div style={{ flex: 1 }}>
           <FormattedQuestionText text={question} />
         </div>
       </div>
 
       {/* ── Options ── */}
-      <div className="space-y-2.5">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {options.map((opt, i) => (
           <button
             key={i}
             onClick={() => handleSelect(i)}
             disabled={answered}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200"
             style={{
               ...getOptionStyle(i),
-              cursor: answered ? 'default' : 'pointer',
-              transform: !answered ? undefined : undefined,
+              width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 14px', borderRadius: 10, textAlign: 'left',
+              cursor: answered ? 'default' : 'pointer', transition: 'all 0.15s ease',
             }}
+            onMouseEnter={e => { if (!answered) e.currentTarget.style.borderColor = 'var(--indigo)' }}
+            onMouseLeave={e => { if (!answered) e.currentTarget.style.borderColor = 'var(--border)' }}
           >
-            <span
-              className="flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold"
-              style={{
-                background: answered && isCorrect(i)
-                  ? 'rgba(61, 214, 140, 0.25)'
-                  : answered && isSelected(i)
-                  ? 'rgba(247, 111, 111, 0.25)'
-                  : 'var(--color-card)',
-                color: 'inherit',
-                fontFamily: 'Sora, sans-serif',
-              }}
-            >
+            <span style={{
+              flexShrink: 0, width: 22, height: 22, borderRadius: 6,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 600,
+              background: answered && isCorrect(i)
+                ? 'rgba(51,165,131,0.25)'
+                : answered && isSelected(i)
+                ? 'rgba(239,68,68,0.25)'
+                : 'var(--border)',
+              color: 'inherit',
+            }}>
               {OPTION_LABELS[i]}
             </span>
-            <span className="flex-1 text-sm">{opt}</span>
-            {getOptionIcon(i)}
+            <span style={{ flex: 1, fontSize: 13.5 }}>{opt}</span>
+            {answered && isCorrect(i) && <CheckCircle size={15} style={{ color: 'var(--emerald)', flexShrink: 0 }} />}
+            {answered && isSelected(i) && !isCorrect(i) && <XCircle size={15} style={{ color: 'var(--red)', flexShrink: 0 }} />}
           </button>
         ))}
       </div>
 
       {/* ── Explanation ── */}
       {showExplanation && explanation && (
-        <div
-          className="mt-4 rounded-xl p-4 animate-slide-down"
-          style={{
-            background: 'rgba(79, 142, 247, 0.07)',
-            border: '1px solid rgba(79, 142, 247, 0.2)',
-          }}
-        >
-          <div className="flex items-start gap-2.5">
-            <div
-              className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-              style={{ background: 'rgba(245, 166, 35, 0.2)' }}
-            >
-              <Lightbulb size={13} style={{ color: 'var(--color-gold)' }} />
+        <div style={{ marginTop: 14, borderRadius: 10, padding: '12px 14px', background: 'var(--gold-dim)', border: '1px solid var(--gold-border)', animation: 'fadeIn 0.25s ease forwards' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <div style={{ width: 24, height: 24, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(201,164,48,0.2)' }}>
+              <Lightbulb size={13} style={{ color: 'var(--gold-hi)' }} />
             </div>
             <div>
-              <p
-                className="text-xs font-semibold mb-1"
-                style={{ color: 'var(--color-gold)', fontFamily: 'Sora, sans-serif' }}
-              >
-                Explanation
-              </p>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text)' }}>
-                {explanation}
-              </p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-hi)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Explanation</p>
+              <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-1)', margin: 0 }}>{explanation}</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Toggle explanation (after answered) ── */}
+      {/* Toggle explanation */}
       {answered && explanation && !showExplanation && (
-        <button
-          onClick={() => setShowExplanation(true)}
-          className="mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors hover:opacity-80"
-          style={{ color: 'var(--color-accent)' }}
-        >
-          <Lightbulb size={13} />
-          Show Explanation
-          <ChevronDown size={13} />
+        <button onClick={() => setShowExplanation(true)} style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-hi)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <Lightbulb size={13} /> Show Explanation
         </button>
       )}
     </div>

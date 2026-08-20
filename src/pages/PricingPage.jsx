@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Zap, Check, Shield, CreditCard, Sparkles, AlertCircle, Loader2, Smartphone, Lock } from 'lucide-react'
+import { Zap, Check, CreditCard, Sparkles, AlertCircle, Loader2, Smartphone, Lock } from 'lucide-react'
 import { getPaymentPlans, createPaymentOrder, verifyPayment } from '../api/payment'
 import useAuthStore from '../store/authStore'
 import useBreadcrumbStore from '../store/breadcrumbStore'
@@ -9,21 +9,20 @@ export default function PricingPage() {
   const updateUser = useAuthStore((s) => s.updateUser)
   const setOverride = useBreadcrumbStore((s) => s.setOverride)
 
-  const [activeTab, setActiveTab] = useState('plans') // 'plans' | 'topups'
+  const [activeTab, setActiveTab] = useState('plans')
   const [plansData, setPlansData] = useState({ plans: [], topups: [] })
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState(null)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
-  // PhonePe Checkout states
   const [phonePeItem, setPhonePeItem] = useState(null)
   const [activeOrder, setActiveOrder] = useState(null)
   const [phonePeUpiId, setPhonePeUpiId] = useState('')
   const [verifyingPhonePe, setVerifyingPhonePe] = useState(false)
 
   useEffect(() => {
-    setOverride(['Dashboard', 'Subscription Plans & Credits'])
+    setOverride(['Dashboard', 'Plans & Pricing'])
     setLoading(true)
     setError('')
     getPaymentPlans()
@@ -66,7 +65,7 @@ export default function PricingPage() {
       })
 
       if (verifyRes.success) {
-        setSuccessMsg(`🎉 Success! PhonePe Payment Confirmed. Added ${verifyRes.creditsAdded} credits to your account!`)
+        setSuccessMsg(`🎉 Success! Added ${verifyRes.creditsAdded} credits to your account!`)
         if (verifyRes.user && updateUser) {
           updateUser(verifyRes.user)
         }
@@ -83,131 +82,138 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in pb-12">
+    <div style={{ maxWidth: 1060, margin: '0 auto', animation: 'fadeIn 0.4s ease forwards', paddingBottom: 40 }}>
       {/* Header Banner */}
-      <div className="text-center max-w-2xl mx-auto pt-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3" style={{ background: 'rgba(95,37,159,0.15)', color: '#A855F7' }}>
-          <Smartphone size={14} /> PhonePe Instant Gateway Active
+      <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto 32px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 20, fontSize: 11.5, fontWeight: 600, marginBottom: 12, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)' }}>
+          <Smartphone size={13} /> PhonePe Instant Gateway Active
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 34, margin: '0 0 10px', color: 'var(--text-1)' }}>
           Unlock Exam-Ready AI Tools
         </h1>
-        <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+        <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
           Full APPSC & TGPSC syllabus coverage, AI mock test generation, Bloom's L3-5 analytical questions, and instant explanations.
         </p>
       </div>
 
       {phonePeItem ? (
         /* PhonePe Active Checkout Panel */
-        <div className="max-w-xl mx-auto glass-card p-6 sm:p-8 rounded-3xl space-y-6 animate-scale-up">
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: 'linear-gradient(135deg, #5F259F, #3F1570)', color: '#FFFFFF' }}>
-              <Smartphone size={32} />
+        <div style={{ maxWidth: 500, margin: '0 auto', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 32 }}>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', background: 'var(--indigo-dim)', color: 'var(--indigo)' }}>
+              <Smartphone size={28} />
             </div>
-            <h3 className="text-2xl font-extrabold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, margin: '0 0 4px', color: 'var(--text-1)' }}>
               PhonePe Payment Checkout
             </h3>
-            <p className="text-xs mt-1" style={{ color: 'var(--color-muted)' }}>
-              {phonePeItem.name} — <strong style={{ color: 'var(--color-text)' }}>₹{phonePeItem.price}</strong>
+            <p style={{ fontSize: 13, color: 'var(--text-3)', margin: 0 }}>
+              {phonePeItem.name} — <strong style={{ color: 'var(--text-1)', fontFamily: 'var(--font-mono)' }}>₹{phonePeItem.price}</strong>
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl space-y-3" style={{ background: 'rgba(95,37,159,0.12)', border: '1px solid rgba(95,37,159,0.3)' }}>
-            <div className="flex justify-between items-center text-xs font-semibold">
-              <span style={{ color: 'var(--color-muted)' }}>Item Selected:</span>
-              <span style={{ color: 'var(--color-text)' }}>{phonePeItem.name}</span>
+          <div style={{ padding: 16, borderRadius: 12, background: 'var(--surface-elevated)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+              <span style={{ color: 'var(--text-3)' }}>Item Selected:</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{phonePeItem.name}</span>
             </div>
-            <div className="flex justify-between items-center text-xs font-semibold">
-              <span style={{ color: 'var(--color-muted)' }}>Credits Added:</span>
-              <span style={{ color: '#3DD68C' }}>+{phonePeItem.credits} AI Credits</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+              <span style={{ color: 'var(--text-3)' }}>Credits Added:</span>
+              <span style={{ fontWeight: 600, color: 'var(--emerald)', fontFamily: 'var(--font-mono)' }}>+{phonePeItem.credits} AI Credits</span>
             </div>
-            <div className="flex justify-between items-center text-sm font-extrabold pt-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-              <span style={{ color: 'var(--color-text)' }}>Total Amount:</span>
-              <span className="text-lg" style={{ color: 'var(--color-accent)' }}>₹{phonePeItem.price}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+              <span style={{ color: 'var(--text-1)' }}>Total Amount:</span>
+              <span style={{ color: 'var(--gold-hi)', fontFamily: 'var(--font-mono)', fontSize: 18 }}>₹{phonePeItem.price}</span>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-xs font-bold" style={{ color: 'var(--color-text)' }}>
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>
               Enter PhonePe VPA / UPI ID:
             </label>
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: 8 }}>
               <input
                 type="text"
                 value={phonePeUpiId}
                 onChange={(e) => setPhonePeUpiId(e.target.value)}
                 placeholder="e.g. mobile@ybl or name@ibl"
-                className="flex-1 px-4 py-3 rounded-xl text-xs outline-none transition-all"
-                style={{
-                  background: 'rgba(42,52,80,0.6)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-text)',
-                }}
+                className="input"
+                style={{ flex: 1 }}
               />
-              <span className="px-3 py-3 rounded-xl text-xs font-bold flex items-center" style={{ background: 'rgba(95,37,159,0.2)', color: '#A855F7' }}>
+              <span style={{ padding: '0 14px', borderRadius: 10, display: 'flex', alignItems: 'center', background: 'var(--surface-elevated)', border: '1px solid var(--border)', fontSize: 12, fontWeight: 600, color: 'var(--text-3)' }}>
                 @ybl
               </span>
             </div>
           </div>
 
           {error && (
-            <div className="p-3 rounded-xl text-xs flex items-center gap-2" style={{ background: 'rgba(247,111,111,0.1)', border: '1px solid rgba(247,111,111,0.3)', color: '#F76F6F' }}>
-              <AlertCircle size={15} /> {error}
+            <div style={{ padding: '10px 12px', borderRadius: 10, marginBottom: 16, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <AlertCircle size={14} /> {error}
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3 rounded-xl text-xs flex items-center gap-2" style={{ background: 'rgba(61,214,140,0.1)', border: '1px solid rgba(61,214,140,0.3)', color: '#3DD68C' }}>
-              <Check size={15} /> {successMsg}
+            <div style={{ padding: '10px 12px', borderRadius: 10, marginBottom: 16, background: 'var(--emerald-dim)', border: '1px solid var(--emerald-border)', color: 'var(--emerald)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Check size={14} /> {successMsg}
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div style={{ display: 'flex', gap: 10 }}>
             <button
               onClick={() => setPhonePeItem(null)}
-              className="flex-1 py-3 rounded-xl text-xs font-bold"
-              style={{ border: '1px solid var(--color-border)', color: 'var(--color-muted)' }}
+              className="btn-ghost"
+              style={{ flex: 1, height: 42 }}
             >
               Cancel
             </button>
             <button
               onClick={handleConfirmPhonePePayment}
               disabled={verifyingPhonePe || !phonePeUpiId}
-              className="flex-[2] py-3.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #5F259F, #7B5EF8)' }}
+              className="btn-primary"
+              style={{ flex: 2, height: 42 }}
             >
               {verifyingPhonePe ? (
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin-slow" />
               ) : (
                 <>
-                  <Smartphone size={16} /> Pay ₹{phonePeItem.price} via PhonePe
+                  <Smartphone size={15} /> Pay ₹{phonePeItem.price} via PhonePe
                 </>
               )}
             </button>
           </div>
         </div>
       ) : (
-        /* Main Plans / Topups View */
         <>
           {/* Tab Toggle */}
-          <div className="flex justify-center">
-            <div className="flex p-1.5 rounded-2xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+            <div style={{ display: 'flex', padding: 4, borderRadius: 12, background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <button
                 onClick={() => setActiveTab('plans')}
-                className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'plans' ? 'shadow-lg' : ''}`}
                 style={{
-                  background: activeTab === 'plans' ? 'linear-gradient(135deg, #5F259F, #7B5EF8)' : 'transparent',
-                  color: activeTab === 'plans' ? '#FFFFFF' : 'var(--color-muted)',
+                  padding: '8px 18px',
+                  borderRadius: 9,
+                  fontSize: 13,
+                  fontWeight: activeTab === 'plans' ? 600 : 500,
+                  border: 'none',
+                  background: activeTab === 'plans' ? 'var(--surface-elevated)' : 'transparent',
+                  color: activeTab === 'plans' ? 'var(--text-1)' : 'var(--text-3)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
                 }}
               >
                 Monthly Subscription Passes
               </button>
               <button
                 onClick={() => setActiveTab('topups')}
-                className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'topups' ? 'shadow-lg' : ''}`}
                 style={{
-                  background: activeTab === 'topups' ? 'linear-gradient(135deg, #5F259F, #7B5EF8)' : 'transparent',
-                  color: activeTab === 'topups' ? '#FFFFFF' : 'var(--color-muted)',
+                  padding: '8px 18px',
+                  borderRadius: 9,
+                  fontSize: 13,
+                  fontWeight: activeTab === 'topups' ? 600 : 500,
+                  border: 'none',
+                  background: activeTab === 'topups' ? 'var(--surface-elevated)' : 'transparent',
+                  color: activeTab === 'topups' ? 'var(--text-1)' : 'var(--text-3)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
                 }}
               >
                 Instant Credit Top-Up Packs
@@ -216,85 +222,101 @@ export default function PricingPage() {
           </div>
 
           {error && (
-            <div className="max-w-2xl mx-auto p-4 rounded-xl text-xs flex items-center gap-2" style={{ background: 'rgba(247,111,111,0.1)', border: '1px solid rgba(247,111,111,0.3)', color: '#F76F6F' }}>
-              <AlertCircle size={16} /> {error}
+            <div style={{ maxWidth: 600, margin: '0 auto 20px', padding: '12px 16px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <AlertCircle size={15} /> {error}
             </div>
           )}
 
           {successMsg && (
-            <div className="max-w-2xl mx-auto p-4 rounded-xl text-xs flex items-center gap-2" style={{ background: 'rgba(61,214,140,0.1)', border: '1px solid rgba(61,214,140,0.3)', color: '#3DD68C' }}>
-              <Check size={16} /> {successMsg}
+            <div style={{ maxWidth: 600, margin: '0 auto 20px', padding: '12px 16px', borderRadius: 10, background: 'var(--emerald-dim)', border: '1px solid var(--emerald-border)', color: 'var(--emerald)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Check size={15} /> {successMsg}
             </div>
           )}
 
           {loading ? (
-            <div className="text-center py-20">
-              <Loader2 size={36} className="animate-spin mx-auto mb-3" style={{ color: 'var(--color-accent)' }} />
-              <p className="text-sm" style={{ color: 'var(--color-muted)' }}>Loading plans & payment gateway...</p>
+            <div style={{ textAlign: 'center', padding: '60px 0' }}>
+              <Loader2 size={32} style={{ color: 'var(--indigo)', animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
+              <p style={{ fontSize: 13.5, color: 'var(--text-3)' }}>Loading plans & payment gateway...</p>
             </div>
           ) : activeTab === 'plans' ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
               {(plansData.plans || []).map((plan) => {
-                const isPopular = plan.badge === 'Best Value'
+                const isPopular = (plan.badge || '').toUpperCase().includes('VALUE') || (plan.badge || '').toUpperCase().includes('POPULAR')
                 return (
                   <div
                     key={plan.id}
-                    className={`relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] ${isPopular ? 'shadow-2xl' : ''}`}
                     style={{
-                      background: isPopular ? 'linear-gradient(180deg, rgba(95,37,159,0.18), rgba(123,94,248,0.08))' : 'var(--color-card)',
-                      border: isPopular ? '2px solid #5F259F' : '1px solid var(--color-border)',
+                      background: 'var(--surface)',
+                      border: isPopular ? '2px solid var(--gold)' : '1px solid var(--border)',
+                      borderRadius: 16,
+                      padding: 28,
+                      position: 'relative',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      transition: 'transform 0.15s ease',
                     }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                   >
                     {plan.badge && (
                       <span
-                        className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider shadow-md"
-                        style={
-                          plan.badge.toUpperCase().includes('BEST VALUE')
-                            ? { background: 'linear-gradient(135deg, #7B5EF8, #5F259F)', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(123,94,248,0.4)' }
-                            : plan.badge.toUpperCase().includes('POPULAR')
-                            ? { background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(37,99,235,0.4)' }
-                            : { background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(245,158,11,0.4)' }
-                        }
+                        style={{
+                          position: 'absolute',
+                          top: -12,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          padding: '3px 12px',
+                          borderRadius: 20,
+                          fontSize: 10.5,
+                          fontWeight: 700,
+                          letterSpacing: '0.06em',
+                          textTransform: 'uppercase',
+                          background: isPopular ? 'linear-gradient(155deg, var(--gold-hi), var(--gold))' : 'var(--indigo)',
+                          color: isPopular ? '#0A0F1C' : '#ffffff',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        }}
                       >
                         {plan.badge}
                       </span>
                     )}
 
                     <div>
-                      <h3 className="text-xl font-bold mb-1 mt-2" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, margin: '6px 0 6px', color: 'var(--text-1)' }}>
                         {plan.name}
                       </h3>
-                      <p className="text-xs mb-6 min-h-[36px]" style={{ color: 'var(--color-muted)' }}>
+                      <p style={{ fontSize: 12.5, color: 'var(--text-3)', lineHeight: 1.5, margin: '0 0 20px', minHeight: 36 }}>
                         {plan.description}
                       </p>
 
-                      <div className="flex items-baseline gap-1 mb-6">
-                        <span className="text-4xl font-extrabold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 36, fontWeight: 600, color: 'var(--text-1)' }}>
                           ₹{plan.price}
                         </span>
-                        <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-                          / {plan.durationDays > 30 ? `${plan.durationDays / 30} months` : 'month'}
+                        <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                          / {plan.durationDays > 30 ? `${plan.durationDays / 30} mo` : 'month'}
                         </span>
                       </div>
 
-                      <div className="p-3.5 rounded-2xl mb-6" style={{ background: 'rgba(95,37,159,0.15)', border: '1px solid rgba(95,37,159,0.3)' }}>
-                        <div className="flex items-center gap-2 text-xs font-bold" style={{ color: '#A855F7' }}>
-                          <Zap size={15} /> {plan.credits} AI Credits Included
-                        </div>
+                      <div style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--gold-dim)', border: '1px solid var(--gold-border)', marginBottom: 22, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Zap size={14} style={{ color: 'var(--gold-hi)' }} />
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--gold-hi)', fontFamily: 'var(--font-mono)' }}>
+                          {plan.credits} AI Credits Included
+                        </span>
                       </div>
 
-                      <ul className="space-y-3 mb-8 text-xs" style={{ color: 'var(--color-text)' }}>
-                        <li className="flex items-center gap-2">
-                          <Check size={15} style={{ color: '#3DD68C' }} /> All APPSC & TGPSC Subjects
+                      <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13, color: 'var(--text-2)' }}>
+                        <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Check size={14} style={{ color: 'var(--emerald)' }} /> All APPSC & TGPSC Subjects
                         </li>
-                        <li className="flex items-center gap-2">
-                          <Check size={15} style={{ color: '#3DD68C' }} /> Bloom's L3-5 Question Quality
+                        <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Check size={14} style={{ color: 'var(--emerald)' }} /> Bloom's L3-5 Question Quality
                         </li>
-                        <li className="flex items-center gap-2">
-                          <Check size={15} style={{ color: '#3DD68C' }} /> Detailed Answer Explanations
+                        <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Check size={14} style={{ color: 'var(--emerald)' }} /> Detailed Answer Explanations
                         </li>
-                        <li className="flex items-center gap-2">
-                          <Check size={15} style={{ color: '#3DD68C' }} /> Test History & Review Mode
+                        <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Check size={14} style={{ color: 'var(--emerald)' }} /> Test History & Review Mode
                         </li>
                       </ul>
                     </div>
@@ -302,18 +324,14 @@ export default function PricingPage() {
                     <button
                       onClick={() => handleInitiatePhonePe(plan)}
                       disabled={processingId === plan.id}
-                      className="w-full py-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-                      style={{
-                        background: 'linear-gradient(135deg, #5F259F, #7B5EF8)',
-                        color: '#FFFFFF',
-                        boxShadow: '0 4px 20px rgba(95,37,159,0.4)',
-                      }}
+                      className={isPopular ? 'btn-gold' : 'btn-primary'}
+                      style={{ width: '100%', height: 42, fontSize: 13 }}
                     >
                       {processingId === plan.id ? (
-                        <Loader2 size={16} className="animate-spin" />
+                        <Loader2 size={16} className="animate-spin-slow" />
                       ) : (
                         <>
-                          <Smartphone size={16} /> Pay ₹{plan.price} via PhonePe
+                          <Smartphone size={14} /> Pay ₹{plan.price} via PhonePe
                         </>
                       )}
                     </button>
@@ -322,52 +340,54 @@ export default function PricingPage() {
               })}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
               {(plansData.topups || []).map((topup) => (
                 <div
                   key={topup.id}
-                  className="rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02]"
                   style={{
-                    background: 'var(--color-card)',
-                    border: '1px solid var(--color-border)',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 16,
+                    padding: 28,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
                   }}
                 >
                   <div>
-                    <h3 className="text-xl font-bold mb-1" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, margin: '0 0 6px', color: 'var(--text-1)' }}>
                       {topup.name}
                     </h3>
-                    <p className="text-xs mb-6" style={{ color: 'var(--color-muted)' }}>
+                    <p style={{ fontSize: 12.5, color: 'var(--text-3)', margin: '0 0 20px' }}>
                       {topup.description}
                     </p>
 
-                    <div className="flex items-baseline gap-1 mb-6">
-                      <span className="text-4xl font-extrabold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 36, fontWeight: 600, color: 'var(--text-1)' }}>
                         ₹{topup.price}
                       </span>
-                      <span className="text-xs" style={{ color: 'var(--color-muted)' }}>one-time</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-3)' }}>one-time</span>
                     </div>
 
-                    <div className="p-3.5 rounded-2xl mb-6" style={{ background: 'rgba(61,214,140,0.1)', border: '1px solid rgba(61,214,140,0.2)' }}>
-                      <div className="flex items-center gap-2 text-xs font-bold" style={{ color: '#3DD68C' }}>
-                        <Zap size={15} /> +{topup.credits} Extra Credits
-                      </div>
+                    <div style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--emerald-dim)', border: '1px solid var(--emerald-border)', marginBottom: 22, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Zap size={14} style={{ color: 'var(--emerald)' }} />
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--emerald)', fontFamily: 'var(--font-mono)' }}>
+                        +{topup.credits} Extra Credits
+                      </span>
                     </div>
                   </div>
 
                   <button
                     onClick={() => handleInitiatePhonePe(topup)}
                     disabled={processingId === topup.id}
-                    className="w-full py-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-                    style={{
-                      background: 'linear-gradient(135deg, #5F259F, #3DD68C)',
-                      color: '#FFFFFF',
-                    }}
+                    className="btn-primary"
+                    style={{ width: '100%', height: 42, fontSize: 13 }}
                   >
                     {processingId === topup.id ? (
-                      <Loader2 size={16} className="animate-spin" />
+                      <Loader2 size={16} className="animate-spin-slow" />
                     ) : (
                       <>
-                        <Smartphone size={16} /> Pay ₹{topup.price} via PhonePe
+                        <Smartphone size={14} /> Pay ₹{topup.price} via PhonePe
                       </>
                     )}
                   </button>
@@ -378,21 +398,10 @@ export default function PricingPage() {
         </>
       )}
 
-      {/* Footer Payment Methods Badges */}
-      <div className="pt-8 text-center" style={{ borderTop: '1px solid var(--color-border)' }}>
-        <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-semibold mb-2">
-          <span className="px-3.5 py-1.5 rounded-xl font-bold flex items-center gap-1.5" style={{ background: 'rgba(95,37,159,0.2)', border: '1px solid rgba(95,37,159,0.4)', color: '#A855F7' }}>
-            <Smartphone size={14} /> PhonePe UPI (Active)
-          </span>
-          <span className="px-3 py-1.5 rounded-xl opacity-50" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)', color: 'var(--color-muted)' }}>
-            Google Pay (Coming Soon)
-          </span>
-          <span className="px-3 py-1.5 rounded-xl opacity-50" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)', color: 'var(--color-muted)' }}>
-            Cards & Netbanking (Coming Soon)
-          </span>
-        </div>
-        <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-          <Lock size={12} className="inline mr-1 text-emerald-400" /> Safe & Secure PhonePe Gateway Checkout
+      {/* Footer Security Badges */}
+      <div style={{ paddingTop: 32, marginTop: 40, borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}>
+        <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0 }}>
+          <Lock size={12} style={{ display: 'inline', marginRight: 4, color: 'var(--emerald)' }} /> Safe &amp; Secure PhonePe Gateway Checkout · 256-bit SSL Encrypted
         </p>
       </div>
     </div>

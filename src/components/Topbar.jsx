@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { Menu, Bell, ChevronRight, CheckCircle, Info, Calendar, Zap, Sun, Moon } from 'lucide-react'
+import { Menu, Bell, ChevronRight, CheckCircle, Info, Calendar } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import useBreadcrumbStore from '../store/breadcrumbStore'
-import { useTheme } from '../context/ThemeContext'
 import PricingModal from './PricingModal'
 import { getUserBalance } from '../api/payment'
 
@@ -16,44 +15,40 @@ const getRouteLabels = (targetExam = '') => {
     '/notes':      ['AI Tools', isGroup2 ? 'Group 2 Notes' : 'Mains Notes'],
     '/evaluator':  ['AI Tools', 'Answer Evaluator'],
     '/planner':    ['AI Tools', 'Study Planner'],
-    '/history':    ['Dashboard', 'Study History'],
+    '/history':    ['Account', 'Study History'],
   }
 }
 
 const CRUMB_PATHS = {
   'Dashboard': '/dashboard',
-  'AI Tools': '/dashboard',
-  'Account': '/dashboard',
-  'Study History': '/history',
+  'AI Tools':  '/dashboard',
+  'Account':   '/dashboard',
 }
 
 const INITIAL_NOTIFICATIONS = [
   {
     id: 1,
     title: 'Knowledge Base Ready',
-    desc: '36,526 study chunks loaded successfully. Dynamic RAG search active.',
+    desc: '36,526 study chunks loaded. Dynamic RAG search active.',
     time: 'Just now',
-    type: 'info',
     icon: CheckCircle,
-    color: '#3DD68C',
+    color: 'var(--emerald)',
   },
   {
     id: 2,
     title: 'AI Vision OCR Configured',
-    desc: 'You can now upload scanner sheets or hand-written PDFs directly.',
+    desc: 'Upload scanned sheets or hand-written PDFs directly.',
     time: '2 hours ago',
-    type: 'success',
     icon: Info,
-    color: '#4F8EF7',
+    color: 'var(--indigo)',
   },
   {
     id: 3,
     title: 'Welcome to APPSC AI',
-    desc: 'Complete your profile setup and select your focus subjects.',
+    desc: 'Complete your profile and select your focus subjects.',
     time: '1 day ago',
-    type: 'system',
     icon: Calendar,
-    color: '#7B5EF8',
+    color: 'var(--gold)',
   },
 ]
 
@@ -61,7 +56,6 @@ const Topbar = ({ onMenuClick }) => {
   const { pathname } = useLocation()
   const user = useAuthStore((s) => s.user)
   const updateUser = useAuthStore((s) => s.updateUser)
-  const { theme, toggleTheme } = useTheme()
   const [credits, setCredits] = useState(user?.credits || 0)
   const [isPricingOpen, setIsPricingOpen] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
@@ -73,11 +67,7 @@ const Topbar = ({ onMenuClick }) => {
   useEffect(() => {
     if (user?.id || user?.userId) {
       getUserBalance()
-        .then((data) => {
-          if (data.credits !== undefined) {
-            setCredits(data.credits)
-          }
-        })
+        .then((data) => { if (data.credits !== undefined) setCredits(data.credits) })
         .catch(() => {})
     }
   }, [user])
@@ -90,15 +80,15 @@ const Topbar = ({ onMenuClick }) => {
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U'
 
-  // Close notifications dropdown on clicking outside
+  // Close on outside click
   useEffect(() => {
-    const handleOutsideClick = (e) => {
+    const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setShowNotifications(false)
       }
     }
-    document.addEventListener('mousedown', handleOutsideClick)
-    return () => document.removeEventListener('mousedown', handleOutsideClick)
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
   }, [])
 
   const handleBellClick = () => {
@@ -106,68 +96,48 @@ const Topbar = ({ onMenuClick }) => {
     setUnread(false)
   }
 
-  const clearAllNotifications = () => {
-    setNotifications([])
-  }
-
   return (
     <header
-      className="sticky top-0 z-20 flex items-center justify-between px-6 py-3"
       style={{
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        height: 60,
+        position: 'sticky', top: 0, zIndex: 20,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 40px',
+        background: 'var(--bg-soft)',
+        borderBottom: '1px solid var(--border-soft)',
+        height: 64,
       }}
     >
-      {/* ── Left: menu + breadcrumb ── */}
-      <div className="flex items-center gap-4">
+      {/* ── Left: hamburger + breadcrumb ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <button
           onClick={onMenuClick}
-          className="p-2 rounded-lg hover:bg-white/5 transition-colors lg:hidden"
-          style={{ color: 'var(--color-text)' }}
-        >
-          <Menu size={20} />
-        </button>
-        <button
-          onClick={onMenuClick}
-          className="p-2 rounded-lg hover:bg-white/5 transition-colors hidden lg:block"
-          style={{ color: 'var(--color-muted)' }}
+          style={{
+            padding: '6px', borderRadius: 8, border: 'none',
+            background: 'transparent', cursor: 'pointer', color: 'var(--text-3)',
+            display: 'flex', alignItems: 'center',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
         >
           <Menu size={20} />
         </button>
 
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5">
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {crumbs.map((crumb, i) => {
             const isLast = i === crumbs.length - 1
             const path = CRUMB_PATHS[crumb]
-
             return (
-              <span key={i} className="flex items-center gap-1.5">
-                {i > 0 && (
-                  <ChevronRight size={13} style={{ color: 'var(--color-muted)' }} />
-                )}
+              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {i > 0 && <ChevronRight size={12} style={{ color: 'var(--text-3)' }} />}
                 {isLast || !path ? (
-                  <span
-                    className="text-sm font-medium"
-                    style={{
-                      color: 'var(--color-text)',
-                      fontFamily: 'Sora, sans-serif',
-                    }}
-                  >
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)', fontFamily: 'var(--font-display)' }}>
                     {crumb}
                   </span>
                 ) : (
                   <Link
                     to={path}
-                    className="text-sm font-medium transition-colors hover:text-white"
-                    style={{
-                      color: 'var(--color-muted)',
-                      fontFamily: 'DM Sans, sans-serif',
-                      textDecoration: 'none',
-                    }}
+                    style={{ fontSize: 13.5, color: 'var(--text-3)', textDecoration: 'none', fontWeight: 500 }}
                   >
                     {crumb}
                   </Link>
@@ -178,54 +148,57 @@ const Topbar = ({ onMenuClick }) => {
         </nav>
       </div>
 
-      {/* ── Right: credits + notifications + avatar ── */}
-      <div className="flex items-center gap-3 relative" ref={dropdownRef}>
-        {/* Credit Balance Pill Button */}
-        <button
-          onClick={() => setIsPricingOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105"
-          style={{
-            background: 'rgba(79, 142, 247, 0.12)',
-            border: '1px solid rgba(79, 142, 247, 0.3)',
-            color: 'var(--color-accent)',
-          }}
-          title="Click to view plans & credit top-ups"
-        >
-          <Zap size={14} style={{ color: '#F5A623' }} />
-          <span>{credits} Cr</span>
-          <span
-            className="px-1.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase"
-            style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)', color: '#FFFFFF' }}
-          >
-            + Top Up
-          </span>
-        </button>
+      {/* ── Right: credits + bell + avatar ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }} ref={dropdownRef}>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-lg hover:bg-white/5 transition-colors flex items-center justify-center"
-          style={{ color: 'var(--color-muted)' }}
-          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        {/* Credits Pill */}
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            border: '1px solid var(--border)',
+            background: 'var(--surface)', borderRadius: 10,
+            padding: '7px 8px 7px 14px',
+          }}
         >
-          {theme === 'dark' ? (
-            <Sun size={18} className="text-amber-400 hover:rotate-45 transition-transform" />
-          ) : (
-            <Moon size={18} className="text-indigo-600 hover:-rotate-12 transition-transform" />
-          )}
-        </button>
+          <div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13.5, fontWeight: 600, color: 'var(--gold-hi)' }}>
+              {credits.toLocaleString()}
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Credits
+            </div>
+          </div>
+          <button
+            onClick={() => setIsPricingOpen(true)}
+            style={{
+              background: 'var(--gold-dim)', color: 'var(--gold-hi)',
+              border: '1px solid var(--gold-border)',
+              fontSize: 11.5, fontWeight: 600, padding: '5px 10px',
+              borderRadius: 7, cursor: 'pointer',
+            }}
+          >
+            Top up
+          </button>
+        </div>
 
         {/* Bell */}
         <button
           onClick={handleBellClick}
-          className="relative p-2 rounded-lg hover:bg-white/5 transition-colors"
-          style={{ color: 'var(--color-muted)' }}
+          style={{
+            width: 38, height: 38, borderRadius: 10,
+            border: '1px solid var(--border)', background: 'var(--surface)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'relative', cursor: 'pointer', color: 'var(--text-2)',
+          }}
         >
-          <Bell size={18} />
+          <Bell size={16} />
           {unread && (
             <span
-              className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full animate-pulse"
-              style={{ background: 'var(--color-accent)' }}
+              style={{
+                position: 'absolute', top: 8, right: 8,
+                width: 6, height: 6, borderRadius: '50%',
+                background: 'var(--gold)',
+              }}
             />
           )}
         </button>
@@ -233,56 +206,45 @@ const Topbar = ({ onMenuClick }) => {
         {/* Notifications Dropdown */}
         {showNotifications && (
           <div
-            className="absolute right-0 top-12 w-80 rounded-xl overflow-hidden z-50 animate-slide-down"
+            className="animate-slide-down"
             style={{
-              background: 'rgba(19, 24, 38, 0.98)',
-              border: '1px solid var(--color-border)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
+              position: 'absolute', right: 0, top: 50,
+              width: 320, borderRadius: 12, overflow: 'hidden', zIndex: 50,
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
               boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
             }}
           >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-text)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--border-soft)' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-1)' }}>
                 Notifications
               </span>
               {notifications.length > 0 && (
                 <button
-                  onClick={clearAllNotifications}
-                  className="text-[10px] font-semibold hover:opacity-80"
-                  style={{ color: 'var(--color-accent)' }}
+                  onClick={() => setNotifications([])}
+                  style={{ fontSize: 11, color: 'var(--indigo)', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   Clear all
                 </button>
               )}
             </div>
-
-            <div className="max-h-72 overflow-y-auto divide-y divide-border/30">
+            <div style={{ maxHeight: 280, overflowY: 'auto' }}>
               {notifications.length === 0 ? (
-                <div className="py-8 text-center text-xs" style={{ color: 'var(--color-muted)' }}>
+                <div style={{ padding: '32px 16px', textAlign: 'center', fontSize: 12, color: 'var(--text-3)' }}>
                   No new notifications
                 </div>
               ) : (
                 notifications.map((n) => {
                   const IconComponent = n.icon
                   return (
-                    <div key={n.id} className="p-4 hover:bg-white/[0.02] transition-colors flex items-start gap-3">
-                      <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ background: `${n.color}15` }}
-                      >
-                        <IconComponent size={14} style={{ color: n.color }} />
+                    <div key={n.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px', borderBottom: '1px solid var(--border-soft)' }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: `${n.color}22` }}>
+                        <IconComponent size={13} style={{ color: n.color }} />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold truncate" style={{ color: 'var(--color-text)' }}>
-                          {n.title}
-                        </p>
-                        <p className="text-[11px] leading-relaxed mt-0.5" style={{ color: 'var(--color-muted)' }}>
-                          {n.desc}
-                        </p>
-                        <span className="text-[9px] mt-1.5 block" style={{ color: 'var(--color-muted)' }}>
-                          {n.time}
-                        </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>{n.title}</p>
+                        <p style={{ fontSize: 11.5, color: 'var(--text-2)', margin: '3px 0 0', lineHeight: 1.4 }}>{n.desc}</p>
+                        <span style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 4, display: 'block' }}>{n.time}</span>
                       </div>
                     </div>
                   )
@@ -292,32 +254,21 @@ const Topbar = ({ onMenuClick }) => {
           </div>
         )}
 
-        {/* Avatar + name */}
-        <div className="flex items-center gap-2.5 pl-2 border-l" style={{ borderColor: 'var(--color-border)' }}>
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)' }}
-          >
-            {initials}
-          </div>
-          <div className="hidden sm:block">
-            <p
-              className="text-sm font-semibold leading-none"
-              style={{ color: 'var(--color-text)', fontFamily: 'Sora, sans-serif' }}
-            >
-              {user?.name?.split(' ')[0] || 'User'}
-            </p>
-            <p
-              className="text-xs mt-0.5"
-              style={{ color: 'var(--color-muted)' }}
-            >
-              {user?.targetExam || 'Student'}
-            </p>
-          </div>
+        {/* Avatar chip */}
+        <div
+          style={{
+            width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+            background: 'linear-gradient(160deg, #3A4A78, #232C4A)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600,
+            color: 'var(--text-1)', border: '1px solid var(--border)', cursor: 'pointer',
+          }}
+        >
+          {initials}
         </div>
       </div>
 
-      {/* Pricing & Credit Upgrade Modal */}
+      {/* Pricing Modal */}
       <PricingModal
         isOpen={isPricingOpen}
         onClose={() => setIsPricingOpen(false)}

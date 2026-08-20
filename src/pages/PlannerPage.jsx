@@ -10,7 +10,6 @@ import {
   Loader2,
   Target,
   Flame,
-  CheckCircle,
   Sliders,
   FileSpreadsheet,
 } from 'lucide-react'
@@ -142,7 +141,6 @@ const PlannerPage = () => {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Extract day topics to build quick actions
   const extractQuickTopics = () => {
     if (!content) return []
     const topics = []
@@ -168,93 +166,107 @@ const PlannerPage = () => {
   const quickTopics = extractQuickTopics()
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-12">
+    <div style={{ maxWidth: 1000, animation: 'fadeIn 0.4s ease forwards', paddingBottom: 40 }}>
       {/* ── Header ── */}
-      <div className="glass-card p-6 sm:p-8 rounded-3xl relative overflow-hidden">
-        <div className="flex items-center gap-3.5 mb-2">
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #1579E6, #2563EB)', color: '#FFFFFF' }}
-          >
-            <Calendar size={24} />
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--indigo-dim)', color: 'var(--indigo)', flexShrink: 0 }}>
+            <Calendar size={20} />
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
-              Your Study Planner
-            </h1>
-            <p className="text-xs sm:text-sm mt-0.5" style={{ color: 'var(--color-muted)' }}>
-              Comprehensive day-by-day timetables designed for APPSC syllabus, 8-hour daily schedules, and direct integration with Notes & MCQs
-            </p>
-          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
+            Study Planner
+          </h1>
         </div>
+        <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px', lineHeight: 1.5 }}>
+          Day-by-day timetables designed for APPSC syllabus, customized daily schedules, and quick notes/MCQ drills
+        </p>
       </div>
 
       {/* ── Configuration Form ── */}
-      <div className="glass-card p-6 sm:p-8 rounded-3xl space-y-6">
-        <h2 className="text-lg font-bold flex items-center gap-2" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
-          <Target size={18} style={{ color: 'var(--color-accent)' }} />
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 24 }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 560, display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 20px', color: 'var(--text-1)' }}>
+          <Target size={16} style={{ color: 'var(--indigo)' }} />
           Configure Your Study Plan
         </h2>
 
         {errorMsg && (
-          <div className="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444' }}>
-            <span>⚠️ {errorMsg}</span>
+          <div style={{ padding: '12px 14px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13, marginBottom: 18 }}>
+            ⚠️ {errorMsg}
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 20 }}>
           {/* Target Exam */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>
+            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 8 }}>
               Target Exam
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              {EXAMS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => setExam(e)}
-                  className="px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-center"
-                  style={{
-                    background: exam === e ? 'linear-gradient(135deg, #1579E6, #2563EB)' : 'var(--color-surface)',
-                    color: exam === e ? '#FFFFFF' : 'var(--color-text)',
-                    border: exam === e ? '1px solid #1579E6' : '1px solid var(--color-border)',
-                  }}
-                >
-                  {e}
-                </button>
-              ))}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {EXAMS.map((e) => {
+                const isSel = exam === e
+                return (
+                  <button
+                    key={e}
+                    type="button"
+                    onClick={() => setExam(e)}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 10,
+                      fontSize: 13,
+                      fontWeight: isSel ? 600 : 500,
+                      background: isSel ? 'var(--indigo-dim)' : 'var(--surface-elevated)',
+                      color: isSel ? 'var(--indigo)' : 'var(--text-2)',
+                      border: isSel ? '1px solid var(--indigo-border)' : '1px solid var(--border)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {e}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* Daily Study Hours Stepper */}
+          {/* Daily Study Hours */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>
+            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 8 }}>
               Daily Study Time
             </label>
-            <div className="flex items-center gap-2.5">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
                 type="button"
                 onClick={() => setDailyHours((h) => Math.max(4, h - 1))}
-                className="w-11 h-11 rounded-xl text-lg font-bold flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}
-                title="Decrease Hours"
+                className="btn-ghost"
+                style={{ width: 42, height: 42, padding: 0, fontSize: 18, fontWeight: 700 }}
               >
                 -
               </button>
               <div
-                className="flex-1 py-2.5 px-4 rounded-xl text-center font-extrabold text-sm flex items-center justify-center gap-2 shadow-inner"
-                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}
+                style={{
+                  flex: 1,
+                  height: 42,
+                  borderRadius: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  background: 'var(--surface-elevated)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-1)',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  fontFamily: 'var(--font-mono)',
+                }}
               >
-                <Clock size={16} style={{ color: 'var(--color-accent)' }} />
+                <Clock size={15} style={{ color: 'var(--indigo)' }} />
                 <span>{dailyHours} Hours / Day</span>
               </div>
               <button
                 type="button"
                 onClick={() => setDailyHours((h) => Math.min(14, h + 1))}
-                className="w-11 h-11 rounded-xl text-lg font-bold flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}
-                title="Increase Hours"
+                className="btn-ghost"
+                style={{ width: 42, height: 42, padding: 0, fontSize: 18, fontWeight: 700 }}
               >
                 +
               </button>
@@ -263,19 +275,19 @@ const PlannerPage = () => {
         </div>
 
         {/* Plan Duration Selection */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--color-muted)' }}>
-              <Sliders size={14} style={{ color: 'var(--color-accent)' }} />
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <label style={{ fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Sliders size={13} style={{ color: 'var(--indigo)' }} />
               Plan Duration (Days)
             </label>
-            <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ background: 'rgba(37,99,235,0.15)', color: 'var(--color-accent)', border: '1px solid rgba(37,99,235,0.3)' }}>
-              {targetDays} Days Plan ({Math.round((targetDays / 30) * 10) / 10} Months)
+            <span style={{ fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', fontFamily: 'var(--font-mono)' }}>
+              {targetDays} Days ({Math.round((targetDays / 30) * 10) / 10} Mo)
             </span>
           </div>
 
           {/* Preset Chips */}
-          <div className="flex items-center gap-2 flex-wrap mb-4">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
             {DURATION_PRESETS.map((p) => {
               const isSelected = !isCustomDays && targetDays === p.days
               return (
@@ -286,12 +298,16 @@ const PlannerPage = () => {
                     setTargetDays(p.days)
                     setIsCustomDays(false)
                   }}
-                  className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
                   style={{
-                    background: isSelected ? 'linear-gradient(135deg, #1579E6, #2563EB)' : 'var(--color-surface)',
-                    color: isSelected ? '#FFFFFF' : 'var(--color-text)',
-                    border: isSelected ? '1px solid #1579E6' : '1px solid var(--color-border)',
-                    boxShadow: isSelected ? '0 4px 12px rgba(37,99,235,0.25)' : 'none',
+                    padding: '7px 14px',
+                    borderRadius: 9,
+                    fontSize: 12.5,
+                    fontWeight: isSelected ? 600 : 500,
+                    background: isSelected ? 'var(--indigo)' : 'var(--surface-elevated)',
+                    color: isSelected ? '#ffffff' : 'var(--text-2)',
+                    border: isSelected ? '1px solid var(--indigo)' : '1px solid var(--border)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
                   }}
                 >
                   {p.label}
@@ -301,90 +317,85 @@ const PlannerPage = () => {
             <button
               type="button"
               onClick={() => setIsCustomDays(true)}
-              className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
               style={{
-                background: isCustomDays ? 'linear-gradient(135deg, #1579E6, #2563EB)' : 'var(--color-surface)',
-                color: isCustomDays ? '#FFFFFF' : 'var(--color-text)',
-                border: isCustomDays ? '1px solid #1579E6' : '1px solid var(--color-border)',
+                padding: '7px 14px',
+                borderRadius: 9,
+                fontSize: 12.5,
+                fontWeight: isCustomDays ? 600 : 500,
+                background: isCustomDays ? 'var(--indigo)' : 'var(--surface-elevated)',
+                color: isCustomDays ? '#ffffff' : 'var(--text-2)',
+                border: isCustomDays ? '1px solid var(--indigo)' : '1px solid var(--border)',
+                cursor: 'pointer',
               }}
             >
-              Custom Days...
+              Custom...
             </button>
           </div>
 
-          {/* Custom Days Input Box */}
           {isCustomDays && (
-            <div className="p-4 rounded-2xl flex items-center gap-3 animate-fade-in" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <label className="text-xs font-bold whitespace-nowrap" style={{ color: 'var(--color-text)' }}>
-                Enter Custom Duration:
-              </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderRadius: 10, background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 13, color: 'var(--text-1)' }}>Days:</span>
               <input
                 type="number"
                 min="7"
                 max="180"
                 value={targetDays}
                 onChange={(e) => setTargetDays(Math.max(7, Math.min(180, parseInt(e.target.value, 10) || 7)))}
-                placeholder="e.g. 75, 100, 150"
-                className="input-field max-w-[140px]"
+                className="input"
+                style={{ width: 100, height: 36, padding: '4px 10px' }}
               />
-              <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-                Days (Min 7 days, Max 180 days / 6 months)
-              </span>
+              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Min 7, Max 180 days</span>
             </div>
           )}
         </div>
 
-        {/* Preparation Stage & Focus Topics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Preparation Level & Weak Subjects */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 24 }}>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>
+            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 8 }}>
               Preparation Level
             </label>
             <select
               value={prepLevel}
               onChange={(e) => setPrepLevel(e.target.value)}
-              className="input-field"
+              className="input select"
             >
-              <option value="Beginner">Beginner (Foundation & Concept Building)</option>
-              <option value="Intermediate">Intermediate (Comprehensive Syllabus Coverage)</option>
-              <option value="Revision Sprint">Revision Sprint (Rapid Mock & Topic Drills)</option>
+              <option value="Beginner">Beginner (Foundation &amp; Concept Building)</option>
+              <option value="Intermediate">Intermediate (Comprehensive Coverage)</option>
+              <option value="Revision Sprint">Revision Sprint (Rapid Mock Drills)</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>
-              Focus / Weak Subjects (Optional)
+            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 8 }}>
+              Focus Subjects (Optional)
             </label>
             <input
               type="text"
-              placeholder="e.g. AP Economy, Indian History, Science & Tech"
+              placeholder="e.g. AP Economy, Indian History, S&amp;T"
               value={focusTopics}
               onChange={(e) => setFocusTopics(e.target.value)}
-              className="input-field"
+              className="input"
             />
           </div>
         </div>
 
-        {/* Submit CTA */}
+        {/* Submit */}
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="w-full py-4 rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
-          style={{
-            background: 'linear-gradient(135deg, #1579E6, #2563EB)',
-            color: '#FFFFFF',
-            boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
-          }}
+          className="btn-primary"
+          style={{ width: '100%', height: 46, fontSize: 14 }}
         >
           {loading ? (
             <>
-              <Loader2 size={18} className="animate-spin" />
+              <Loader2 size={17} className="animate-spin-slow" />
               Generating Custom {targetDays}-Day Study Plan...
             </>
           ) : (
             <>
-              <Sparkles size={18} />
-              Generate {targetDays}-Day Study Plan • 50 Credits ({dailyHours}h Daily Schedule)
+              <Sparkles size={16} />
+              Generate {targetDays}-Day Study Plan • 50 Credits ({dailyHours}h Daily)
             </>
           )}
         </button>
@@ -392,34 +403,30 @@ const PlannerPage = () => {
 
       {/* ── Generated Plan Output View ── */}
       {content && (
-        <div className="space-y-6 animate-fade-in">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeIn 0.3s ease forwards' }}>
           {/* Action Bar */}
-          <div className="glass-card p-4 sm:p-6 rounded-3xl flex flex-wrap items-center justify-between gap-4">
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs px-3 py-0.5 rounded-full font-bold" style={{ background: 'rgba(37,99,235,0.15)', color: 'var(--color-accent)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span className="tag" style={{ background: 'var(--indigo-dim)', color: 'var(--indigo)' }}>
                   {exam}
                 </span>
-                <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-                  {targetDays} Days • {dailyHours} Hours/Day Schedule
+                <span style={{ fontSize: 12, color: 'var(--text-3)', fontFamily: 'var(--font-mono)' }}>
+                  {targetDays} Days • {dailyHours}h/Day
                 </span>
               </div>
-              <h3 className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
                 Your Day-by-Day Study Schedule
               </h3>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <button
                 onClick={handleCopy}
-                className="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all"
-                style={{
-                  background: copied ? 'rgba(61,214,140,0.15)' : 'var(--color-surface)',
-                  color: copied ? 'var(--color-green)' : 'var(--color-text)',
-                  border: '1px solid var(--color-border)',
-                }}
+                className="btn-ghost"
+                style={{ padding: '7px 14px', fontSize: 12 }}
               >
-                {copied ? <CheckCheck size={14} /> : <Copy size={14} />}
+                {copied ? <CheckCheck size={13} style={{ color: 'var(--emerald)' }} /> : <Copy size={13} />}
                 {copied ? 'Copied' : 'Copy Plan'}
               </button>
 
@@ -431,15 +438,10 @@ const PlannerPage = () => {
                     content,
                   })
                 }
-                className="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
-                style={{
-                  background: 'rgba(16,185,129,0.15)',
-                  color: '#10B981',
-                  border: '1px solid rgba(16,185,129,0.3)',
-                }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 8, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)', cursor: 'pointer' }}
               >
-                <FileSpreadsheet size={14} />
-                Export Excel (.csv)
+                <FileSpreadsheet size={13} />
+                Export CSV
               </button>
 
               <button
@@ -451,47 +453,51 @@ const PlannerPage = () => {
                     date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
                   })
                 }
-                className="px-4 py-2.5 rounded-xl text-xs font-bold text-white flex items-center gap-2 transition-all hover:scale-105"
-                style={{ background: 'linear-gradient(135deg, #1579E6, #2563EB)', boxShadow: '0 4px 15px rgba(37,99,235,0.3)' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 8, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
               >
-                <Download size={14} />
+                <Download size={13} />
                 Download PDF
               </button>
             </div>
           </div>
 
-          {/* Quick Module Launchers Bar */}
+          {/* Quick Module Launchers */}
           {quickTopics.length > 0 && (
-            <div className="glass-card p-5 rounded-3xl space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-muted)' }}>
-                <Flame size={14} style={{ color: 'var(--color-gold)' }} />
-                Quick Action Shortcuts for Topics in Your Plan
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 10 }}>
+                <Flame size={13} style={{ color: 'var(--gold-hi)' }} />
+                Quick Action Shortcuts
               </div>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
                 {quickTopics.map((top, idx) => (
                   <div
                     key={idx}
-                    className="flex-shrink-0 flex items-center gap-1.5 p-2 rounded-xl text-xs"
-                    style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+                    style={{
+                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '6px 10px',
+                      borderRadius: 8,
+                      background: 'var(--surface-elevated)',
+                      border: '1px solid var(--border)',
+                      fontSize: 12,
+                    }}
                   >
-                    <span className="font-semibold truncate max-w-[140px]" style={{ color: 'var(--color-text)' }}>
+                    <span style={{ fontWeight: 500, color: 'var(--text-1)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {top}
                     </span>
                     <button
                       onClick={() => navigate(`/notes?topic=${encodeURIComponent(top)}&exam=${encodeURIComponent(exam)}`)}
-                      className="px-2 py-0.5 rounded-md text-[11px] font-bold transition-all hover:scale-105"
-                      style={{ background: 'rgba(123,94,248,0.15)', color: '#7B5EF8' }}
-                      title="Generate Notes"
+                      style={{ padding: '2px 6px', borderRadius: 5, fontSize: 10.5, fontWeight: 600, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: 'none', cursor: 'pointer' }}
                     >
-                      📖 Notes
+                      Notes
                     </button>
                     <button
                       onClick={() => navigate(`/prelims?topic=${encodeURIComponent(top)}&exam=${encodeURIComponent(exam)}`)}
-                      className="px-2 py-0.5 rounded-md text-[11px] font-bold transition-all hover:scale-105"
-                      style={{ background: 'rgba(37,99,235,0.15)', color: 'var(--color-accent)' }}
-                      title="Practice 10 MCQs"
+                      style={{ padding: '2px 6px', borderRadius: 5, fontSize: 10.5, fontWeight: 600, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: 'none', cursor: 'pointer' }}
                     >
-                      ⚡ MCQs
+                      MCQs
                     </button>
                   </div>
                 ))}
@@ -499,8 +505,8 @@ const PlannerPage = () => {
             </div>
           )}
 
-          {/* Main Markdown Timetable Container */}
-          <div className="glass-card p-6 sm:p-10 rounded-3xl" style={{ background: 'var(--color-card)' }}>
+          {/* Timetable Markdown */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px 32px' }} className="prose-dark">
             <MarkdownRenderer content={content} />
           </div>
         </div>

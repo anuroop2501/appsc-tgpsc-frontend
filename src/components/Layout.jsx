@@ -6,7 +6,7 @@ import useAuthStore from '../store/authStore'
 import useSyllabusStore from '../store/syllabusStore'
 import { getSyllabus } from '../api/syllabus'
 
-const SIDEBAR_WIDTH = 240
+const SIDEBAR_WIDTH = 272
 
 const Layout = () => {
   const user = useAuthStore((s) => s.user)
@@ -33,9 +33,7 @@ const Layout = () => {
       exams.forEach((exam) => {
         getSyllabus(exam)
           .then((data) => setTopics(exam, data))
-          .catch(() => {
-            /* Syllabus fetch is non-critical; silently ignore */
-          })
+          .catch(() => { /* non-critical */ })
       })
     }
   }, [loaded, setTopics])
@@ -43,7 +41,7 @@ const Layout = () => {
   const effectiveWidth = sidebarOpen && !isMobile ? SIDEBAR_WIDTH : 0
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
       {/* Sidebar */}
       <Sidebar
         open={sidebarOpen}
@@ -54,19 +52,30 @@ const Layout = () => {
       {/* Mobile overlay */}
       {isMobile && sidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-30 bg-black/60"
+          style={{ backdropFilter: 'blur(4px)' }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Main area */}
       <div
-        className="flex flex-col min-h-screen transition-all duration-300"
-        style={{ marginLeft: effectiveWidth }}
+        className="flex flex-col min-h-screen"
+        style={{
+          marginLeft: effectiveWidth,
+          transition: 'margin-left 0.3s ease',
+        }}
       >
         <Topbar onMenuClick={() => setSidebarOpen((o) => !o)} />
 
-        <main className="flex-1 p-6 overflow-auto">
+        <main
+          style={{
+            flex: 1,
+            padding: '36px 40px 60px',
+            maxWidth: 1220,
+            width: '100%',
+          }}
+        >
           <Outlet />
         </main>
       </div>

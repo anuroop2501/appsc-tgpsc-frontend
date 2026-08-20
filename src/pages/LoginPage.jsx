@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Mail, Lock, Eye, EyeOff, Zap, AlertCircle, Loader2 } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react'
 import { login } from '../api/auth'
 import useAuthStore from '../store/authStore'
 
@@ -12,11 +12,8 @@ const LoginPage = () => {
 
   const from = location.state?.from?.pathname || '/dashboard'
 
-  // Redirect away from login if already authenticated
   useEffect(() => {
-    if (token) {
-      navigate(from, { replace: true })
-    }
+    if (token) navigate(from, { replace: true })
   }, [token, navigate, from])
 
   const [form, setForm] = useState({ email: '', password: '' })
@@ -31,26 +28,15 @@ const LoginPage = () => {
 
   const submit = async (e) => {
     e.preventDefault()
-    if (!form.email || !form.password) {
-      setError('Please fill in all fields.')
-      return
-    }
+    if (!form.email || !form.password) { setError('Please fill in all fields.'); return }
     setLoading(true)
     setError('')
     try {
       const data = await login(form)
-      setAuth({
-        user: data.user,
-        token: data.token || data.accessToken,
-        refreshToken: data.refreshToken,
-      })
+      setAuth({ user: data.user, token: data.token || data.accessToken, refreshToken: data.refreshToken })
       navigate(from, { replace: true })
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          'Login failed. Please try again.'
-      )
+      setError(err.response?.data?.message || err.message || 'Login failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -58,202 +44,152 @@ const LoginPage = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
       style={{
-        background:
-          'radial-gradient(ellipse at top left, rgba(79,142,247,0.15) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(123,94,248,0.15) 0%, transparent 50%), #0B0F1A',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        background: 'var(--bg)',
       }}
     >
-      {/* Background decoration */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute -top-40 -right-40 w-96 h-96 rounded-full opacity-10 blur-3xl"
-          style={{ background: 'var(--color-accent)' }}
-        />
-        <div
-          className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full opacity-10 blur-3xl"
-          style={{ background: 'var(--color-purple)' }}
-        />
+      {/* Subtle ambient glows */}
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(100,130,232,0.08) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,164,48,0.06) 0%, transparent 70%)' }} />
       </div>
 
-      {/* Card */}
-      <div
-        className="relative w-full max-w-md animate-slide-up"
-        style={{ animationDuration: '0.5s' }}
-      >
+      <div style={{ width: '100%', maxWidth: 420, position: 'relative', animation: 'fadeIn 0.4s ease forwards' }}>
+        {/* Card */}
         <div
-          className="rounded-2xl p-8"
           style={{
-            background: 'rgba(26, 32, 53, 0.85)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid var(--color-border)',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 20,
+            padding: '40px 36px',
             boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
           }}
         >
-          {/* ── Logo ── */}
-          <div className="flex flex-col items-center mb-8">
+          {/* Brand */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 animate-float"
               style={{
-                background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)',
-                boxShadow: '0 8px 24px rgba(79, 142, 247, 0.4)',
+                width: 48, height: 48, borderRadius: 13, marginBottom: 16,
+                background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 20, color: '#0A0F1C',
               }}
             >
-              <Zap size={26} className="text-white" />
+              A
             </div>
-            <h1
-              className="text-2xl font-bold tracking-tight"
-              style={{
-                fontFamily: 'Sora, sans-serif',
-                background: 'linear-gradient(135deg, #1579E6, #60A5FA)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              APPSC <span style={{ color: '#F7B500', WebkitTextFillColor: '#F7B500' }}>AI</span>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 22, margin: 0 }}>
+              APPSC <span style={{ color: 'var(--gold-hi)' }}>AI</span>
             </h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-              AI-powered APPSC & TGPSC Exam Preparation Platform
+            <p style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 4, letterSpacing: '0.04em' }}>
+              AI-powered APPSC preparation by Ace with Ease IAS
             </p>
           </div>
 
-          {/* ── Heading ── */}
-          <div className="mb-6">
-            <h2
-              className="text-xl font-bold"
-              style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-            >
+          {/* Heading */}
+          <div style={{ marginBottom: 24 }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 24, margin: '0 0 4px', color: 'var(--text-1)' }}>
               Welcome back
             </h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
+            <p style={{ fontSize: 13.5, color: 'var(--text-2)', margin: 0 }}>
               Sign in to continue your preparation
             </p>
           </div>
 
-          {/* ── Error ── */}
+          {/* Error */}
           {error && (
             <div
-              className="flex items-center gap-2.5 p-3 rounded-xl mb-5 text-sm animate-slide-down"
               style={{
-                background: 'rgba(247, 111, 111, 0.1)',
-                border: '1px solid rgba(247, 111, 111, 0.3)',
-                color: 'var(--color-red)',
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px', borderRadius: 10, marginBottom: 18,
+                background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)',
+                color: 'var(--red)', fontSize: 13.5,
               }}
             >
-              <AlertCircle size={16} className="flex-shrink-0" />
+              <AlertCircle size={15} style={{ flexShrink: 0 }} />
               {error}
             </div>
           )}
 
-          {/* ── Form ── */}
-          <form onSubmit={submit} className="space-y-4">
+          {/* Form */}
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {/* Email */}
             <div>
-              <label
-                className="block text-sm font-medium mb-1.5"
-                style={{ color: 'var(--color-text)' }}
-              >
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>
                 Email address
               </label>
-              <div className="relative">
-                <div
-                  className="absolute left-3 top-1/2 -translate-y-1/2"
-                  style={{ color: 'var(--color-muted)' }}
-                >
-                  <Mail size={16} />
-                </div>
+              <div style={{ position: 'relative' }}>
+                <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
                 <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handle}
-                  placeholder="you@example.com"
-                  className="input-field"
-                  style={{ paddingLeft: '2.5rem' }}
-                  autoComplete="email"
+                  type="email" name="email" value={form.email} onChange={handle}
+                  placeholder="you@example.com" autoComplete="email"
+                  className="input"
+                  style={{ paddingLeft: 38 }}
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label
-                className="block text-sm font-medium mb-1.5"
-                style={{ color: 'var(--color-text)' }}
-              >
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>
                 Password
               </label>
-              <div className="relative">
-                <div
-                  className="absolute left-3 top-1/2 -translate-y-1/2"
-                  style={{ color: 'var(--color-muted)' }}
-                >
-                  <Lock size={16} />
-                </div>
+              <div style={{ position: 'relative' }}>
+                <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
                 <input
-                  type={showPass ? 'text' : 'password'}
-                  name="password"
-                  value={form.password}
-                  onChange={handle}
-                  placeholder="••••••••"
-                  className="input-field"
-                  style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem' }}
-                  autoComplete="current-password"
+                  type={showPass ? 'text' : 'password'} name="password" value={form.password} onChange={handle}
+                  placeholder="••••••••" autoComplete="current-password"
+                  className="input"
+                  style={{ paddingLeft: 38, paddingRight: 40 }}
                 />
                 <button
-                  type="button"
-                  onClick={() => setShowPass((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:opacity-70 transition-opacity"
-                  style={{ color: 'var(--color-muted)' }}
+                  type="button" onClick={() => setShowPass((s) => !s)}
+                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2 }}
                 >
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
 
             {/* Submit */}
             <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full justify-center mt-2"
-              style={{ height: 48 }}
+              type="submit" disabled={loading}
+              className="btn-primary"
+              style={{ width: '100%', height: 46, marginTop: 6, fontSize: 15 }}
             >
-              {loading ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  Signing in…
-                </>
-              ) : (
-                'Sign In'
-              )}
+              {loading ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} /> Signing in…</> : 'Sign In'}
             </button>
           </form>
 
-          {/* ── Divider ── */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
-            <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-              New to APPSC AI?
-            </span>
-            <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>New to APPSC AI?</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
 
           <Link
             to="/signup"
-            className="block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:bg-white/5"
             style={{
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-accent)',
+              display: 'block', width: '100%', textAlign: 'center',
+              padding: '11px 0', borderRadius: 11,
+              border: '1px solid var(--border)',
+              color: 'var(--indigo)', fontSize: 13.5, fontWeight: 600,
+              textDecoration: 'none', transition: 'all 0.15s ease',
             }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-elevated)'; e.currentTarget.style.borderColor = 'var(--indigo-border)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
             Create an account
           </Link>
         </div>
 
-        {/* Footer note */}
-        <p className="text-center text-xs mt-4" style={{ color: 'var(--color-muted)' }}>
-          APPSC AI — Powered by Precision RAG Engine
+        <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--text-3)', marginTop: 16 }}>
+          Ace with Ease IAS — Powered by Precision AI
         </p>
       </div>
     </div>

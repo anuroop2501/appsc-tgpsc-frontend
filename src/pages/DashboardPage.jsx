@@ -1,21 +1,11 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Zap,
-  BookOpen,
-  Star,
-  Sparkles,
-  ArrowRight,
-  Clock,
-  TrendingUp,
-  Activity,
-} from 'lucide-react'
+import { BookOpen, Star, Sparkles, ArrowRight, Clock, Activity } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import { getStats, getHistory } from '../api/history'
-import SessionDetailModal from '../components/SessionDetailModal'
 
 /* ── Animated counter ── */
-const AnimatedNumber = ({ target, suffix = '' }) => {
+const AnimatedNumber = ({ target }) => {
   const [current, setCurrent] = useState(0)
   const rafRef = useRef(null)
 
@@ -23,10 +13,9 @@ const AnimatedNumber = ({ target, suffix = '' }) => {
     if (target === 0) return
     const start = performance.now()
     const duration = 1200
-
     const animate = (now) => {
       const progress = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3) // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
       setCurrent(Math.floor(eased * target))
       if (progress < 1) rafRef.current = requestAnimationFrame(animate)
     }
@@ -34,34 +23,35 @@ const AnimatedNumber = ({ target, suffix = '' }) => {
     return () => cancelAnimationFrame(rafRef.current)
   }, [target])
 
-  return (
-    <span>
-      {current}
-      {suffix}
-    </span>
-  )
+  return <span>{current}</span>
 }
 
 /* ── Time ago helper ── */
 const timeAgo = (dateStr) => {
-  if (!dateStr) return '';
-  const parsed = new Date(dateStr);
-  if (isNaN(parsed.getTime())) return '';
-  const diff = Date.now() - parsed.getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+  if (!dateStr) return ''
+  const parsed = new Date(dateStr)
+  if (isNaN(parsed.getTime())) return ''
+  const diff = Date.now() - parsed.getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
 }
 
 const TYPE_META = {
-  prelims: { label: 'MCQ', color: '#4F8EF7', bg: 'rgba(79,142,247,0.15)' },
-  notes: { label: 'Notes', color: '#7B5EF8', bg: 'rgba(123,94,248,0.15)' },
-  evaluation: { label: 'Eval', color: '#F5A623', bg: 'rgba(245,166,35,0.15)' },
+  prelims:    { label: 'MCQ',   colorVar: 'var(--indigo)',  dimVar: 'var(--indigo-dim)' },
+  notes:      { label: 'NOTES', colorVar: 'var(--emerald)', dimVar: 'var(--emerald-dim)' },
+  evaluation: { label: 'EVAL',  colorVar: 'var(--gold-hi)', dimVar: 'var(--gold-dim)' },
 }
+
+const STAT_CARDS = (stats, isGroup2) => [
+  { label: 'All Activity',       value: stats.sessionsCount, icon: Activity, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'all' },
+  { label: 'MCQ Practice',       value: stats.prelimsCount,  icon: Sparkles, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'prelims' },
+  { label: 'Study Notes',        value: stats.notesCount,    icon: BookOpen, accent: 'var(--emerald)', dim: 'var(--emerald-dim)', tab: 'notes' },
+  { label: 'Answers Evaluated',  value: stats.evalsCount,    icon: Star,     accent: 'var(--gold-hi)', dim: 'var(--gold-dim)', tab: 'evaluation' },
+]
 
 const DashboardPage = () => {
   const user = useAuthStore((s) => s.user)
@@ -71,7 +61,6 @@ const DashboardPage = () => {
   const [recentActivity, setRecentActivity] = useState([])
   const [loading, setLoading] = useState(true)
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -80,319 +69,232 @@ const DashboardPage = () => {
           getHistory({ page: 1, type: 'all' }),
         ])
         if (statsData.status === 'fulfilled') {
-          setStats(statsData.value.stats || statsData.value || { sessionsCount: 0, prelimsCount: 0, notesCount: 0, evalsCount: 0 })
+          setStats(statsData.value.stats || statsData.value || {})
         }
         if (historyData.status === 'fulfilled') {
           const items = historyData.value?.sessions || historyData.value?.items || historyData.value || []
           setRecentActivity(Array.isArray(items) ? items.slice(0, 5) : [])
         }
-      } catch {
-        /* silently handle */
-      } finally {
-        setLoading(false)
-      }
+      } catch { /* silent */ } finally { setLoading(false) }
     }
     fetchData()
   }, [])
 
-  const statCards = [
-    {
-      label: 'All Activity',
-      value: stats.sessionsCount,
-      icon: Activity,
-      gradient: 'linear-gradient(135deg, #4F8EF7, #3b7de0)',
-      glow: 'rgba(79,142,247,0.3)',
-      suffix: '',
-      activeTab: 'all',
-    },
-    {
-      label: 'MCQ Practice',
-      value: stats.prelimsCount,
-      icon: Sparkles,
-      gradient: 'linear-gradient(135deg, #10B981, #059669)',
-      glow: 'rgba(16,185,129,0.3)',
-      suffix: '',
-      activeTab: 'prelims',
-    },
-    {
-      label: 'Study Notes',
-      value: stats.notesCount,
-      icon: BookOpen,
-      gradient: 'linear-gradient(135deg, #7B5EF8, #6a48e0)',
-      glow: 'rgba(123,94,248,0.3)',
-      suffix: '',
-      activeTab: 'notes',
-    },
-    {
-      label: 'Answers Evaluated',
-      value: stats.evalsCount,
-      icon: Star,
-      gradient: 'linear-gradient(135deg, #F5A623, #e8930f)',
-      glow: 'rgba(245,166,35,0.3)',
-      suffix: '',
-      activeTab: 'evaluation',
-    },
-  ]
-
   const isGroup2 = (user?.targetExam || '').toLowerCase().includes('group 2')
+  const firstName = user?.name?.split(' ')[0] || 'Aspirant'
 
   const featureCards = [
-    {
-      title: 'MCQ Prelims',
-      desc: 'Generate 10 exam-ready MCQs instantly from any topic',
-      icon: Sparkles,
-      gradient: 'linear-gradient(135deg, rgba(79,142,247,0.15), rgba(79,142,247,0.05))',
-      border: 'rgba(79,142,247,0.3)',
-      iconBg: 'linear-gradient(135deg, #4F8EF7, #3b7de0)',
-      glow: 'rgba(79,142,247,0.2)',
-      path: '/prelims',
-      accent: '#4F8EF7',
-    },
-    {
-      title: isGroup2 ? 'Group 2 Notes' : 'Mains Notes',
-      desc: 'AI-structured notes tailored to your exam pattern',
-      icon: BookOpen,
-      gradient: 'linear-gradient(135deg, rgba(123,94,248,0.15), rgba(123,94,248,0.05))',
-      border: 'rgba(123,94,248,0.3)',
-      iconBg: 'linear-gradient(135deg, #7B5EF8, #6a48e0)',
-      glow: 'rgba(123,94,248,0.2)',
-      path: '/notes',
-      accent: '#7B5EF8',
-    },
-    // Answer Evaluator only for Group 1 exams
-    ...(!isGroup2 ? [{
-      title: 'Answer Evaluator',
-      desc: 'Get expert AI feedback on your mains answers with scores',
-      icon: Star,
-      gradient: 'linear-gradient(135deg, rgba(245,166,35,0.15), rgba(245,166,35,0.05))',
-      border: 'rgba(245,166,35,0.3)',
-      iconBg: 'linear-gradient(135deg, #F5A623, #e8930f)',
-      glow: 'rgba(245,166,35,0.2)',
-      path: '/evaluator',
-      accent: '#F5A623',
-    }] : []),
+    { title: 'MCQ Prelims', desc: 'Generate ten exam-ready MCQs instantly from any topic, weighted to the APPSC Prelims pattern.', icon: Sparkles, color: 'indigo', path: '/prelims', cta: 'Start practice' },
+    { title: isGroup2 ? 'Group 2 Notes' : 'Mains Notes', desc: 'AI-structured notes tailored to your exam pattern, organised by subtopic for quick revision.', icon: BookOpen, color: 'emerald', path: '/notes', cta: 'Generate notes' },
+    ...(!isGroup2 ? [{ title: 'Answer Evaluator', desc: 'Get expert AI feedback on your Mains answers with scores, benchmarked against topper responses.', icon: Star, color: 'gold', path: '/evaluator', cta: 'Evaluate an answer' }] : []),
   ]
 
+  const cardColors = {
+    indigo: { border: 'var(--indigo)', dim: 'var(--indigo-dim)', cta: 'var(--indigo)', iconBg: 'var(--indigo-dim)' },
+    emerald: { border: 'var(--emerald)', dim: 'var(--emerald-dim)', cta: 'var(--emerald)', iconBg: 'var(--emerald-dim)' },
+    gold: { border: 'var(--gold)', dim: 'var(--gold-dim)', cta: 'var(--gold-hi)', iconBg: 'var(--gold-dim)' },
+  }
+
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
-      {/* ── Welcome header ── */}
-      <div className="flex items-start justify-between flex-wrap gap-4">
+    <div style={{ maxWidth: 1100, animation: 'fadeIn 0.4s ease forwards' }}>
+
+      {/* ── HERO ── */}
+      <section
+        style={{
+          display: 'grid', gridTemplateColumns: '1fr 224px', gap: 32, alignItems: 'center',
+          paddingBottom: 32, marginBottom: 32, borderBottom: '1px solid var(--border-soft)',
+        }}
+      >
         <div>
-          <h1
-            className="text-3xl font-bold"
-            style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-          >
-            Welcome back,{' '}
-            <span
-              style={{
-                background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              {user?.name?.split(' ')[0] || 'Aspirant'}
-            </span>{' '}
-            👋
+          <div style={{ fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--gold-hi)', fontWeight: 600, marginBottom: 10 }}>
+            Your preparation overview
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 36, letterSpacing: '-0.3px', lineHeight: 1.1, margin: '0 0 10px' }}>
+            Welcome back, <em style={{ fontStyle: 'normal', color: 'var(--gold-hi)' }}>{firstName}.</em>
           </h1>
-          <p className="mt-2 text-sm" style={{ color: 'var(--color-muted)' }}>
-            Ready to ace your exam today? Let's get studying.
+          <p style={{ color: 'var(--text-2)', fontSize: 14.5, maxWidth: 480, margin: 0, lineHeight: 1.6 }}>
+            {loading
+              ? 'Loading your stats…'
+              : `You've completed ${stats.sessionsCount || 0} sessions — ${stats.prelimsCount || 0} MCQ sets and ${stats.notesCount || 0} notes. Keep the Answer Evaluator in rotation this week to close the gap on Mains scoring.`
+            }
           </p>
         </div>
-        {user?.targetExam && (
-          <div
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
-            style={{
-              background: 'rgba(79, 142, 247, 0.12)',
-              border: '1px solid rgba(79, 142, 247, 0.3)',
-              color: 'var(--color-accent)',
-              fontFamily: 'Sora, sans-serif',
-            }}
-          >
-            <TrendingUp size={14} />
-            {user.targetExam}
-          </div>
-        )}
-      </div>
 
-      {/* ── Stat Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 stagger-children">
-        {statCards.map(({ label, value, icon: Icon, gradient, glow, suffix, activeTab }) => (
+        {/* Readiness Gauge */}
+        <div
+          style={{
+            background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
+            padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+          }}
+        >
+          <div style={{ fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', fontWeight: 600 }}>
+            Exam Readiness
+          </div>
+          <svg width="130" height="130" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="58" stroke="var(--border)" strokeWidth="10" fill="none" />
+            <circle cx="70" cy="70" r="58"
+              stroke="url(#dashGauge)" strokeWidth="10" fill="none"
+              strokeLinecap="round"
+              strokeDasharray="364.4"
+              strokeDashoffset={loading ? 364 : Math.max(364 - (stats.sessionsCount || 0) * 2, 80)}
+              transform="rotate(-90 70 70)"
+              style={{ transition: 'stroke-dashoffset 1.2s ease' }}
+            />
+            <defs>
+              <linearGradient id="dashGauge" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="var(--indigo)" />
+                <stop offset="55%" stopColor="var(--emerald)" />
+                <stop offset="100%" stopColor="var(--gold-hi)" />
+              </linearGradient>
+            </defs>
+            <text x="70" y="66" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="18" fontWeight="600" fill="var(--text-1)">
+              {loading ? '…' : `${Math.min(Math.round((stats.sessionsCount || 0) * 0.5), 99)}%`}
+            </text>
+            <text x="70" y="82" textAnchor="middle" fontSize="10" fill="var(--text-3)" fontFamily="Inter">on track</text>
+          </svg>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2, textAlign: 'center' }}>
+            Based on MCQ, Notes & Evaluations
+          </div>
+        </div>
+      </section>
+
+      {/* ── STATS ── */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 40 }}>
+        {STAT_CARDS(stats, isGroup2).map(({ label, value, icon: Icon, accent, dim, tab }) => (
           <button
             key={label}
-            onClick={() => navigate('/history', { state: { activeTab } })}
-            className="glass-card p-5 text-left animate-slide-up group hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200"
-            style={{ 
-              boxShadow: `0 4px 20px ${glow}`,
-              cursor: 'pointer',
-              background: 'var(--color-card)',
+            onClick={() => navigate('/history', { state: { activeTab: tab } })}
+            style={{
+              background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
+              padding: 20, textAlign: 'left', cursor: 'pointer',
+              transition: 'transform 0.15s ease, border-color 0.15s ease',
             }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = accent }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider mb-2.5" style={{ color: 'var(--color-muted)', fontFamily: 'Sora, sans-serif' }}>
-                  {label}
-                </p>
-                <p
-                  className="text-3xl font-bold"
-                  style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-                >
-                  {loading ? '—' : <AnimatedNumber target={value} suffix={suffix} />}
-                </p>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+              <span style={{ fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', fontWeight: 600 }}>
+                {label}
+              </span>
+              <div style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: dim, color: accent, flexShrink: 0 }}>
+                <Icon size={15} />
               </div>
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300"
-                style={{ background: gradient, boxShadow: `0 4px 12px ${glow}` }}
-              >
-                <Icon size={18} className="text-white" />
-              </div>
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 30, fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.5px' }}>
+              {loading ? '—' : <AnimatedNumber target={value || 0} />}
             </div>
           </button>
         ))}
-      </div>
+      </section>
 
-      {/* ── Feature Cards ── */}
-      <div>
-        <h2
-          className="text-lg font-bold mb-4"
-          style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-        >
-          AI Tools
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 stagger-children">
-          {featureCards.map(({ title, desc, icon: Icon, gradient, border, iconBg, glow, path, accent }) => (
-            <button
-              key={title}
-              onClick={() => navigate(path)}
-              className="glass-card p-6 text-left group animate-slide-up"
-              style={{
-                background: gradient,
-                borderColor: border,
-                transition: 'all 0.25s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)'
-                e.currentTarget.style.boxShadow = `0 16px 40px ${glow}`
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = ''
-              }}
-            >
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                style={{ background: iconBg, boxShadow: `0 4px 12px ${glow}` }}
-              >
-                <Icon size={22} className="text-white" />
-              </div>
-              <h3
-                className="text-base font-bold mb-1.5"
-                style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-              >
-                {title}
-              </h3>
-              <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--color-muted)' }}>
-                {desc}
-              </p>
-              <div
-                className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all"
-                style={{ color: accent }}
-              >
-                Get started
-                <ArrowRight size={13} />
-              </div>
-            </button>
-          ))}
+      {/* ── AI TOOLS ── */}
+      <section style={{ marginBottom: 40 }}>
+        <div className="section-head">
+          <h2>AI Tools</h2>
+          <span>Three tools, one preparation loop</span>
         </div>
-      </div>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${featureCards.length}, 1fr)`, gap: 18 }}>
+          {featureCards.map(({ title, desc, icon: Icon, color, path, cta }) => {
+            const c = cardColors[color]
+            return (
+              <button
+                key={title}
+                onClick={() => navigate(path)}
+                style={{
+                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
+                  padding: 24, textAlign: 'left', cursor: 'pointer', position: 'relative', overflow: 'hidden',
+                  transition: 'transform 0.15s ease, border-color 0.15s ease',
+                  borderLeft: `3px solid ${c.border}`,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
+              >
+                <div style={{ width: 42, height: 42, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, background: c.iconBg, color: c.border }}>
+                  <Icon size={20} />
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 560, margin: '0 0 8px', color: 'var(--text-1)' }}>
+                  {title}
+                </h3>
+                <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.55, margin: '0 0 20px', minHeight: 40 }}>
+                  {desc}
+                </p>
+                <span style={{ fontSize: 12.5, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, color: c.cta }}>
+                  {cta} <ArrowRight size={13} />
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
 
-      {/* ── Recent Activity ── */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2
-            className="text-lg font-bold"
-            style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-          >
-            Recent Activity
-          </h2>
+      {/* ── RECENT ACTIVITY ── */}
+      <section>
+        <div className="section-head">
+          <h2>Recent Activity</h2>
           <button
             onClick={() => navigate('/history')}
-            className="text-xs font-semibold flex items-center gap-1 hover:opacity-70 transition-opacity"
-            style={{ color: 'var(--color-accent)' }}
+            style={{ fontSize: 12.5, color: 'var(--text-3)', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            View all <ArrowRight size={12} />
+            View all →
           </button>
         </div>
 
-        <div className="glass-card overflow-hidden">
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
           {loading ? (
-            <div className="p-6 space-y-4">
+            <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <div className="skeleton w-10 h-10 rounded-xl" />
-                  <div className="flex-1 space-y-2">
-                    <div className="skeleton h-3.5 w-1/3 rounded" />
-                    <div className="skeleton h-3 w-1/2 rounded" />
+                <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--surface-elevated)' }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ height: 12, width: '40%', borderRadius: 4, background: 'var(--surface-elevated)', marginBottom: 8 }} />
+                    <div style={{ height: 10, width: '60%', borderRadius: 4, background: 'var(--border)' }} />
                   </div>
                 </div>
               ))}
             </div>
           ) : recentActivity.length === 0 ? (
-            <div className="p-10 flex flex-col items-center text-center">
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                style={{ background: 'rgba(79, 142, 247, 0.1)' }}
-              >
-                <Clock size={28} style={{ color: 'var(--color-accent)' }} />
-              </div>
-              <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-                No activity yet
-              </p>
-              <p className="text-xs mt-1" style={{ color: 'var(--color-muted)' }}>
-                Start with an MCQ session or generate study notes
-              </p>
+            <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+              <Clock size={28} style={{ color: 'var(--text-3)', margin: '0 auto 12px' }} />
+              <p style={{ fontSize: 13.5, color: 'var(--text-2)', fontWeight: 500, margin: '0 0 4px' }}>No activity yet</p>
+              <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0 }}>Start with an MCQ session or generate study notes</p>
             </div>
           ) : (
-            <div>
-              {recentActivity.map((item, i) => {
-                const meta = TYPE_META[item.type] || TYPE_META.prelims
-                return (
-                  <div
-                    key={item.id || i}
-                    onClick={() => navigate('/history', { state: { viewSessionId: item.id } })}
-                    className="flex items-center gap-4 px-5 py-4 hover:bg-white/3 transition-colors cursor-pointer"
-                    style={{
-                      borderBottom: i < recentActivity.length - 1 ? '1px solid var(--color-border)' : 'none',
-                    }}
-                  >
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold"
-                      style={{ background: meta.bg, color: meta.color, fontFamily: 'Sora, sans-serif' }}
-                    >
-                      {meta.label}
+            recentActivity.map((item, i) => {
+              const meta = TYPE_META[item.type] || TYPE_META.prelims
+              return (
+                <div
+                  key={item.id || i}
+                  onClick={() => navigate('/history', { state: { viewSessionId: item.id } })}
+                  style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 14,
+                    padding: '15px 20px', cursor: 'pointer',
+                    borderBottom: i < recentActivity.length - 1 ? '1px solid var(--border-soft)' : 'none',
+                    transition: 'background 0.12s ease',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-elevated)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <span className="tag" style={{ background: meta.dimVar, color: meta.colorVar, marginTop: 2, flexShrink: 0 }}>
+                    {meta.label}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.5 }}>
+                      {item.topic || 'Unknown topic'}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="text-sm font-semibold truncate"
-                        style={{ color: 'var(--color-text)' }}
-                      >
-                        {item.topic || 'Unknown topic'}
-                      </p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--color-muted)' }}>
-                        {item.exam || ''}
-                        {item.score !== undefined && ` · Score: ${item.score}/${item.maxScore || 10}`}
-                        {item.noteType && ` · ${item.noteType}`}
-                      </p>
+                    <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 3 }}>
+                      {item.exam || ''}
+                      {item.score !== undefined && ` · Score: ${item.score}/${item.maxScore || 10}`}
                     </div>
-                    <span className="text-xs flex-shrink-0" style={{ color: 'var(--color-muted)' }}>
-                      {timeAgo(item.created_at || item.createdAt || item.timestamp)}
-                    </span>
                   </div>
-                )
-              })}
-            </div>
+                  <span style={{ fontSize: 11.5, color: 'var(--text-3)', whiteSpace: 'nowrap', paddingTop: 2 }}>
+                    {timeAgo(item.created_at || item.createdAt || item.timestamp)}
+                  </span>
+                </div>
+              )
+            })
           )}
         </div>
-      </div>
+      </section>
     </div>
   )
 }

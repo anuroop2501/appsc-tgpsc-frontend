@@ -1,16 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Zap,
-  AlertCircle,
-  User,
-  GraduationCap,
-  Loader2,
-} from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle, User, GraduationCap, Loader2 } from 'lucide-react'
 import { signup } from '../api/auth'
 import useAuthStore from '../store/authStore'
 
@@ -25,25 +15,15 @@ const SignupPage = () => {
   const setAuth = useAuthStore((s) => s.setAuth)
 
   useEffect(() => {
-    if (token) {
-      navigate('/dashboard', { replace: true })
-    }
+    if (token) navigate('/dashboard', { replace: true })
   }, [token, navigate])
 
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    targetExam: 'APPSC Group 1',
-  })
+  const [form, setForm] = useState({ name: '', email: '', password: '', targetExam: 'APPSC Group 1' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handle = (e) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-    setError('')
-  }
+  const handle = (e) => { setForm((f) => ({ ...f, [e.target.name]: e.target.value })); setError('') }
 
   const validate = () => {
     if (!form.name.trim()) return 'Name is required.'
@@ -57,275 +37,111 @@ const SignupPage = () => {
     e.preventDefault()
     const err = validate()
     if (err) { setError(err); return }
-
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
     try {
       const data = await signup(form)
-      setAuth({
-        user: data.user,
-        token: data.token || data.accessToken,
-        refreshToken: data.refreshToken,
-      })
+      setAuth({ user: data.user, token: data.token || data.accessToken, refreshToken: data.refreshToken })
       navigate('/dashboard', { replace: true })
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          'Signup failed. Please try again.'
-      )
-    } finally {
-      setLoading(false)
-    }
+      setError(err.response?.data?.message || err.message || 'Signup failed. Please try again.')
+    } finally { setLoading(false) }
   }
 
+  const Field = ({ label, icon: Icon, children }) => (
+    <div>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>{label}</label>
+      <div style={{ position: 'relative' }}>
+        <Icon size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', zIndex: 1 }} />
+        {children}
+      </div>
+    </div>
+  )
+
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 py-10"
-      style={{
-        background:
-          'radial-gradient(ellipse at top right, rgba(123,94,248,0.15) 0%, transparent 50%), radial-gradient(ellipse at bottom left, rgba(79,142,247,0.12) 0%, transparent 50%), #0B0F1A',
-      }}
-    >
-      {/* Background blobs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute -top-32 -left-32 w-80 h-80 rounded-full opacity-10 blur-3xl"
-          style={{ background: 'var(--color-purple)' }}
-        />
-        <div
-          className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full opacity-10 blur-3xl"
-          style={{ background: 'var(--color-accent)' }}
-        />
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'var(--bg)' }}>
+      {/* Ambient glows */}
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: '-15%', left: '-10%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,164,48,0.07) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', bottom: '-15%', right: '-10%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(100,130,232,0.07) 0%, transparent 70%)' }} />
       </div>
 
-      <div
-        className="relative w-full max-w-md animate-slide-up"
-        style={{ animationDuration: '0.5s' }}
-      >
-        <div
-          className="rounded-2xl p-8"
-          style={{
-            background: 'rgba(26, 32, 53, 0.85)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid var(--color-border)',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
-          }}
-        >
-          {/* ── Logo ── */}
-          <div className="flex flex-col items-center mb-7">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
-              style={{
-                background: 'linear-gradient(135deg, #7B5EF8, #4F8EF7)',
-                boxShadow: '0 8px 24px rgba(123, 94, 248, 0.4)',
-              }}
-            >
-              <Zap size={26} className="text-white" />
+      <div style={{ width: '100%', maxWidth: 440, position: 'relative', animation: 'fadeIn 0.4s ease forwards' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 20, padding: '40px 36px', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+          {/* Brand */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 13, marginBottom: 14, background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 20, color: '#0A0F1C' }}>
+              A
             </div>
-            <h1
-              className="text-2xl font-bold tracking-tight"
-              style={{
-                fontFamily: 'Sora, sans-serif',
-                background: 'linear-gradient(135deg, #1579E6, #60A5FA)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              APPSC <span style={{ color: '#F7B500', WebkitTextFillColor: '#F7B500' }}>AI</span>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 22, margin: 0 }}>
+              APPSC <span style={{ color: 'var(--gold-hi)' }}>AI</span>
             </h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-              AI-powered APPSC & TGPSC Exam Preparation Platform
+            <p style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 4, letterSpacing: '0.04em' }}>
+              AI-powered APPSC preparation by Ace with Ease IAS
             </p>
           </div>
 
-          {/* ── Heading ── */}
-          <div className="mb-6">
-            <h2
-              className="text-xl font-bold"
-              style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-            >
+          {/* Heading */}
+          <div style={{ marginBottom: 22 }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 24, margin: '0 0 4px', color: 'var(--text-1)' }}>
               Create your account
             </h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
+            <p style={{ fontSize: 13.5, color: 'var(--text-2)', margin: 0 }}>
               Join thousands of aspirants preparing smarter
             </p>
           </div>
 
-          {/* ── Error ── */}
+          {/* Error */}
           {error && (
-            <div
-              className="flex items-center gap-2.5 p-3 rounded-xl mb-5 text-sm animate-slide-down"
-              style={{
-                background: 'rgba(247, 111, 111, 0.1)',
-                border: '1px solid rgba(247, 111, 111, 0.3)',
-                color: 'var(--color-red)',
-              }}
-            >
-              <AlertCircle size={16} className="flex-shrink-0" />
-              {error}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, marginBottom: 16, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13.5 }}>
+              <AlertCircle size={15} style={{ flexShrink: 0 }} /> {error}
             </div>
           )}
 
-          {/* ── Form ── */}
-          <form onSubmit={submit} className="space-y-4">
-            {/* Name */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-1.5"
-                style={{ color: 'var(--color-text)' }}
-              >
-                Full Name
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-muted)' }}>
-                  <User size={16} />
-                </div>
-                <input
-                  type="text"
-                  name="name"
-                  value={form.name}
-                  onChange={handle}
-                  placeholder="Ravi Kumar"
-                  className="input-field"
-                  style={{ paddingLeft: '2.5rem' }}
-                  autoComplete="name"
-                />
-              </div>
-            </div>
+          {/* Form */}
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Field label="Full Name" icon={User}>
+              <input type="text" name="name" value={form.name} onChange={handle} placeholder="Ravi Kumar" autoComplete="name" className="input" style={{ paddingLeft: 38 }} />
+            </Field>
 
-            {/* Email */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-1.5"
-                style={{ color: 'var(--color-text)' }}
-              >
-                Email address
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-muted)' }}>
-                  <Mail size={16} />
-                </div>
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handle}
-                  placeholder="you@example.com"
-                  className="input-field"
-                  style={{ paddingLeft: '2.5rem' }}
-                  autoComplete="email"
-                />
-              </div>
-            </div>
+            <Field label="Email address" icon={Mail}>
+              <input type="email" name="email" value={form.email} onChange={handle} placeholder="you@example.com" autoComplete="email" className="input" style={{ paddingLeft: 38 }} />
+            </Field>
 
-            {/* Password */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-1.5"
-                style={{ color: 'var(--color-text)' }}
-              >
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-muted)' }}>
-                  <Lock size={16} />
-                </div>
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  name="password"
-                  value={form.password}
-                  onChange={handle}
-                  placeholder="Minimum 6 characters"
-                  className="input-field"
-                  style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem' }}
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:opacity-70 transition-opacity"
-                  style={{ color: 'var(--color-muted)' }}
-                >
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
+            <Field label="Password" icon={Lock}>
+              <input type={showPass ? 'text' : 'password'} name="password" value={form.password} onChange={handle} placeholder="Minimum 6 characters" autoComplete="new-password" className="input" style={{ paddingLeft: 38, paddingRight: 40 }} />
+              <button type="button" onClick={() => setShowPass((s) => !s)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2 }}>
+                {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </Field>
 
-            {/* Target Exam */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-1.5"
-                style={{ color: 'var(--color-text)' }}
-              >
-                Target Exam
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-muted)' }}>
-                  <GraduationCap size={16} />
-                </div>
-                <select
-                  name="targetExam"
-                  value={form.targetExam}
-                  onChange={handle}
-                  className="input-field select"
-                  style={{ paddingLeft: '2.5rem' }}
-                >
-                  {EXAMS.map((e) => (
-                    <option key={e.value} value={e.value}>
-                      {e.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <Field label="Target Exam" icon={GraduationCap}>
+              <select name="targetExam" value={form.targetExam} onChange={handle} className="input select" style={{ paddingLeft: 38 }}>
+                {EXAMS.map((e) => <option key={e.value} value={e.value}>{e.label}</option>)}
+              </select>
+            </Field>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full justify-center mt-2"
-              style={{
-                height: 48,
-                background: 'linear-gradient(135deg, #7B5EF8, #4F8EF7)',
-                boxShadow: '0 4px 15px rgba(123, 94, 248, 0.35)',
-              }}
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  Creating account…
-                </>
-              ) : (
-                'Create Account'
-              )}
+            <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', height: 46, marginTop: 6, fontSize: 15 }}>
+              {loading ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} /> Creating account…</> : 'Create Account'}
             </button>
           </form>
 
-          {/* ── Divider ── */}
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
-            <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-              Already have an account?
-            </span>
-            <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '22px 0' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Already have an account?</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
 
-          <Link
-            to="/login"
-            className="block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:bg-white/5"
-            style={{
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-accent)',
-            }}
+          <Link to="/login" style={{ display: 'block', width: '100%', textAlign: 'center', padding: '11px 0', borderRadius: 11, border: '1px solid var(--border)', color: 'var(--indigo)', fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-elevated)'; e.currentTarget.style.borderColor = 'var(--indigo-border)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
             Sign in instead
           </Link>
         </div>
 
-        <p className="text-center text-xs mt-4" style={{ color: 'var(--color-muted)' }}>
-          By signing up, you agree to our Terms & Privacy Policy
+        <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--text-3)', marginTop: 16 }}>
+          By signing up, you agree to our Terms &amp; Privacy Policy
         </p>
       </div>
     </div>

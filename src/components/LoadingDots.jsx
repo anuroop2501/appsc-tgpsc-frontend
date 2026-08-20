@@ -1,47 +1,34 @@
-const LoadingDots = ({ message = 'High-quality questions are on the way…' }) => {
+const LoadingDots = ({ message = 'Generating your content…' }) => {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 py-10">
-      {/* ── Dots ── */}
-      <div className="flex items-center gap-2">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '40px 24px' }}>
+      {/* Dots */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="block w-2.5 h-2.5 rounded-full"
             style={{
-              background: 'var(--color-accent)',
-              animation: `pulseDot 1.4s ease-in-out ${i * 0.2}s infinite`,
-              boxShadow: '0 0 8px rgba(79, 142, 247, 0.6)',
+              display: 'block', width: 8, height: 8, borderRadius: '50%',
+              background: 'var(--gold-hi)',
+              animation: `dotBounce 1.2s ease-in-out ${i * 0.2}s infinite`,
             }}
           />
         ))}
       </div>
 
-      {/* ── Message ── */}
-      <p
-        className="text-sm font-medium"
-        style={{
-          color: 'var(--color-muted)',
-          fontFamily: 'DM Sans, sans-serif',
-          letterSpacing: '0.02em',
-        }}
-      >
+      {/* Message */}
+      <p style={{ fontSize: 13.5, color: 'var(--text-2)', margin: 0, letterSpacing: '0.02em', fontFamily: 'var(--font-body)' }}>
         {message}
       </p>
 
-      {/* ── Progress bar ── */}
-      <div
-        className="w-48 h-1 rounded-full overflow-hidden"
-        style={{ background: 'var(--color-border)' }}
-      >
-        <div
-          style={{
-            height: '100%',
-            background: 'linear-gradient(90deg, var(--color-accent), var(--color-purple))',
-            borderRadius: '9999px',
-            animation: 'shimmer 2s linear infinite',
-            backgroundSize: '200% 100%',
-          }}
-        />
+      {/* Progress bar */}
+      <div style={{ width: 180, height: 2, borderRadius: 99, overflow: 'hidden', background: 'var(--border)' }}>
+        <div style={{
+          height: '100%',
+          background: 'linear-gradient(90deg, var(--indigo), var(--emerald), var(--gold-hi))',
+          borderRadius: 99,
+          animation: 'shimmer 2s linear infinite',
+          backgroundSize: '200% 100%',
+        }} />
       </div>
     </div>
   )

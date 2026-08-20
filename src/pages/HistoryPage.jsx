@@ -38,45 +38,45 @@ const TYPE_CONFIG = {
   prelims: {
     icon: Sparkles,
     label: 'MCQ',
-    color: '#4F8EF7',
-    bg: 'rgba(79,142,247,0.15)',
-    border: 'rgba(79,142,247,0.3)',
+    color: 'var(--indigo)',
+    dim: 'var(--indigo-dim)',
+    border: 'var(--indigo-border)',
   },
   notes: {
     icon: BookOpen,
     label: 'Notes',
-    color: '#7B5EF8',
-    bg: 'rgba(123,94,248,0.15)',
-    border: 'rgba(123,94,248,0.3)',
+    color: 'var(--emerald)',
+    dim: 'var(--emerald-dim)',
+    border: 'var(--emerald-border)',
   },
   evaluation: {
     icon: Star,
     label: 'Eval',
-    color: '#F5A623',
-    bg: 'rgba(245,166,35,0.15)',
-    border: 'rgba(245,166,35,0.3)',
+    color: 'var(--gold-hi)',
+    dim: 'var(--gold-dim)',
+    border: 'var(--gold-border)',
   },
   planner: {
     icon: Calendar,
     label: 'Planner',
-    color: '#2563EB',
-    bg: 'rgba(37,99,235,0.15)',
-    border: 'rgba(37,99,235,0.3)',
+    color: 'var(--indigo)',
+    dim: 'var(--indigo-dim)',
+    border: 'var(--indigo-border)',
   },
 }
 
 const timeAgo = (dateStr) => {
-  if (!dateStr) return '—';
-  const parsed = new Date(dateStr);
-  if (isNaN(parsed.getTime())) return '—';
-  const diff = Date.now() - parsed.getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins} min ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} hr${hrs > 1 ? 's' : ''} ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days} day${days > 1 ? 's' : ''} ago`;
+  if (!dateStr) return '—'
+  const parsed = new Date(dateStr)
+  if (isNaN(parsed.getTime())) return '—'
+  const diff = Date.now() - parsed.getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins} min ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs} hr${hrs > 1 ? 's' : ''} ago`
+  const days = Math.floor(hrs / 24)
+  return `${days} day${days > 1 ? 's' : ''} ago`
 }
 
 const formatDate = (dateStr) => {
@@ -102,7 +102,6 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   
-  // Inline session viewing states
   const [viewingSession, setViewingSession] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
@@ -149,7 +148,6 @@ const HistoryPage = () => {
       if (data.success && data.session) {
         let session = data.session
 
-        // Auto-regenerate if notes or prelims content is missing!
         if (
           (session.type === 'notes' && !session.metadata?.content) ||
           (session.type === 'prelims' && !session.metadata?.questions)
@@ -180,7 +178,6 @@ const HistoryPage = () => {
     fetchHistory(activeTab, page)
   }, [activeTab, page, fetchHistory])
 
-  // Clear override and reset state on location change
   useEffect(() => {
     const viewId = location.state?.viewSessionId
     if (viewId) {
@@ -204,9 +201,9 @@ const HistoryPage = () => {
 
   if (detailLoading) {
     return (
-      <div className="max-w-4xl mx-auto py-20 flex flex-col items-center justify-center gap-3">
-        <Loader2 size={32} className="animate-spin text-accent animate-pulse" style={{ color: 'var(--color-accent)' }} />
-        <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+      <div style={{ maxWidth: 800, margin: '80px auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+        <Loader2 size={32} style={{ color: 'var(--indigo)', animation: 'spin 1s linear infinite' }} />
+        <p style={{ fontSize: 13.5, color: 'var(--text-2)' }}>
           Retrieving study session details...
         </p>
       </div>
@@ -215,13 +212,13 @@ const HistoryPage = () => {
 
   if (viewingSession) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+      <div style={{ maxWidth: 1000, animation: 'fadeIn 0.3s ease forwards' }}>
         {/* Back Button */}
-        <div>
+        <div style={{ marginBottom: 20 }}>
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-all hover:bg-white/5"
-            style={{ color: 'var(--color-muted)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
+            className="btn-ghost"
+            style={{ padding: '8px 14px', fontSize: 12.5 }}
           >
             <ArrowLeft size={14} />
             Back to Study History
@@ -229,77 +226,58 @@ const HistoryPage = () => {
         </div>
 
         {/* Content Box */}
-        <div className="space-y-6">
-          {/* If cache expired / no content saved (pre-migration items) */}
-          {viewingSession.type === 'prelims' && !viewingSession.metadata.questions && (
-            <div className="glass-card py-16 text-center max-w-md mx-auto">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto bg-amber-500/10 text-amber-400">
-                <Clock size={24} />
-              </div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Missing data banners */}
+          {viewingSession.type === 'prelims' && !viewingSession.metadata?.questions && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '40px 20px', textAlign: 'center', maxWidth: 500, margin: '0 auto' }}>
+              <Clock size={28} style={{ color: 'var(--gold-hi)', margin: '0 auto 12px' }} />
+              <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-1)', margin: '0 0 6px' }}>
                 Session Data Expired
               </p>
-              <p className="text-xs mt-2 mb-5 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5, margin: '0 0 20px' }}>
                 This practice session was created before full database persistence was enabled. You can regenerate the questions now to save them permanently.
               </p>
               <button
                 onClick={handleRegenerate}
                 disabled={regenerating}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-50 inline-flex items-center gap-2"
-                style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)' }}
+                className="btn-primary"
               >
-                {regenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={15} />}
+                {regenerating ? <Loader2 size={16} className="animate-spin-slow" /> : <Sparkles size={15} />}
                 Regenerate Questions Now
               </button>
             </div>
           )}
 
-          {viewingSession.type === 'notes' && !viewingSession.metadata.content && (
-            <div className="glass-card py-16 text-center max-w-md mx-auto">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto bg-amber-500/10 text-amber-400">
-                <Clock size={24} />
-              </div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+          {viewingSession.type === 'notes' && !viewingSession.metadata?.content && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '40px 20px', textAlign: 'center', maxWidth: 500, margin: '0 auto' }}>
+              <Clock size={28} style={{ color: 'var(--gold-hi)', margin: '0 auto 12px' }} />
+              <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-1)', margin: '0 0 6px' }}>
                 Notes Content Expired
               </p>
-              <p className="text-xs mt-2 mb-5 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5, margin: '0 0 20px' }}>
                 This study notes session was created before full database persistence was enabled. You can regenerate these notes now to save them permanently in your account.
               </p>
               <button
                 onClick={handleRegenerate}
                 disabled={regenerating}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-50 inline-flex items-center gap-2"
-                style={{ background: 'linear-gradient(135deg, #4F8EF7, #7B5EF8)' }}
+                className="btn-primary"
+                style={{ background: 'var(--emerald)' }}
               >
-                {regenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={15} />}
+                {regenerating ? <Loader2 size={16} className="animate-spin-slow" /> : <Sparkles size={15} />}
                 Regenerate Study Notes Now
               </button>
             </div>
           )}
 
-          {viewingSession.type === 'eval' && !viewingSession.metadata.evaluation && (
-            <div className="glass-card py-16 text-center max-w-md mx-auto">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto bg-amber-500/10 text-amber-400">
-                <Clock size={24} />
-              </div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                Evaluation Expired
-              </p>
-              <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
-                This evaluation report was created before full database persistence was enabled, and its temporary cache has expired.
-              </p>
-            </div>
-          )}
-
           {/* ── PRELIMS RENDERING ── */}
-          {viewingSession.type === 'prelims' && viewingSession.metadata.questions && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 flex-wrap gap-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+          {viewingSession.type === 'prelims' && viewingSession.metadata?.questions && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12, borderBottom: '1px solid var(--border)', flexWrap: 'wrap', gap: 10 }}>
                 <div>
-                  <h2 className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, margin: '0 0 4px', color: 'var(--text-1)' }}>
                     Practice Questions: {viewingSession.topic}
                   </h2>
-                  <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
                     Total {viewingSession.metadata.questions.length} questions
                   </span>
                 </div>
@@ -310,19 +288,12 @@ const HistoryPage = () => {
                     questions: viewingSession.metadata.questions,
                     date: viewingSession.created_at ? new Date(viewingSession.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined,
                   })}
-                  className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:scale-105"
-                  style={{
-                    background: 'rgba(79, 142, 247, 0.15)',
-                    color: 'var(--color-accent)',
-                    border: '1px solid rgba(79, 142, 247, 0.35)',
-                  }}
-                  title="Download MCQs with Solutions PDF"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, padding: '7px 14px', borderRadius: 8, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
                 >
-                  <Download size={13} />
-                  Download PDF
+                  <Download size={13} /> Download PDF
                 </button>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
                 {viewingSession.metadata.questions.map((q, idx) => {
                   const rawOptions = q.opts || q.options || {}
                   const optionsArray = Array.isArray(rawOptions)
@@ -350,31 +321,30 @@ const HistoryPage = () => {
           )}
 
           {/* ── NOTES & PLANNER RENDERING ── */}
-          {(viewingSession.type === 'notes' || viewingSession.type === 'planner') && viewingSession.metadata.content && (
-            <div className="space-y-6">
-              {/* Header Box */}
-              <div className="glass-card p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+          {(viewingSession.type === 'notes' || viewingSession.type === 'planner') && viewingSession.metadata?.content && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold" style={{ background: viewingSession.type === 'planner' ? 'rgba(37,99,235,0.15)' : 'rgba(123,94,248,0.15)', color: viewingSession.type === 'planner' ? 'var(--color-accent)' : '#7B5EF8', border: '1px solid var(--color-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <span className="tag" style={{ background: viewingSession.type === 'planner' ? 'var(--indigo-dim)' : 'var(--emerald-dim)', color: viewingSession.type === 'planner' ? 'var(--indigo)' : 'var(--emerald)', border: '1px solid var(--border)' }}>
                       {viewingSession.exam || (viewingSession.type === 'planner' ? 'Study Plan' : 'Study Notes')}
                     </span>
-                    <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
                       {formatDate(viewingSession.created_at)}
                     </span>
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-extrabold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
                     {viewingSession.topic}
                   </h2>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(viewingSession.metadata.content)
                       alert('Copied to clipboard!')
                     }}
-                    className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
-                    style={{ background: 'rgba(79,142,247,0.15)', color: 'var(--color-accent)', border: '1px solid rgba(79,142,247,0.3)' }}
+                    className="btn-ghost"
+                    style={{ padding: '7px 14px', fontSize: 12 }}
                   >
                     Copy Content
                   </button>
@@ -387,11 +357,10 @@ const HistoryPage = () => {
                           content: viewingSession.metadata.content,
                         })
                       }
-                      className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
-                      style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.3)' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 8, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)', cursor: 'pointer' }}
                     >
-                      <FileSpreadsheet size={14} />
-                      Export Excel (.csv)
+                      <FileSpreadsheet size={13} />
+                      Export CSV
                     </button>
                   )}
                   <button
@@ -410,64 +379,59 @@ const HistoryPage = () => {
                             date: formatDate(viewingSession.created_at),
                           })
                     }
-                    className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
-                    style={{ background: 'rgba(61,214,140,0.15)', color: '#3DD68C', border: '1px solid rgba(61,214,140,0.3)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 8, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)', cursor: 'pointer' }}
                   >
-                    <Download size={14} />
+                    <Download size={13} />
                     Download PDF
                   </button>
                 </div>
               </div>
 
-              {/* Document Container */}
-              <div className="glass-card p-6 sm:p-10 rounded-2xl" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px 32px' }} className="prose-dark">
                 <MarkdownRenderer content={viewingSession.metadata.content} />
               </div>
             </div>
           )}
 
           {/* ── EVALUATION RENDERING ── */}
-          {viewingSession.type === 'eval' && viewingSession.metadata.evaluation && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between pb-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <h2 className="text-lg font-bold" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+          {viewingSession.type === 'eval' && viewingSession.metadata?.evaluation && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
                   Evaluation: {viewingSession.topic}
                 </h2>
               </div>
 
               {/* Score + Comment */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="glass-card p-6 flex flex-col items-center justify-center bg-white/[0.01]">
+              <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16 }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <ScoreRing
                     score={viewingSession.metadata.evaluation.score || 0}
                     maxScore={viewingSession.metadata.marks || 10}
                   />
                 </div>
-                <div className="md:col-span-2 glass-card p-6 bg-white/[0.01]">
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(245,166,35,0.15)' }}>
-                      <MessageSquare size={15} style={{ color: 'var(--color-gold)' }} />
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 20 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--gold-dim)', color: 'var(--gold-hi)' }}>
+                      <MessageSquare size={14} />
                     </div>
-                    <h3 className="font-bold text-sm" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
                       Examiner's Feedback
                     </h3>
                   </div>
-                  <p
-                    className="text-sm leading-relaxed italic"
-                    style={{ color: 'var(--color-text)', borderLeft: '3px solid var(--color-gold)', paddingLeft: 16 }}
-                  >
+                  <p style={{ fontSize: 13.5, fontStyle: 'italic', lineHeight: 1.6, color: 'var(--text-2)', borderLeft: '3px solid var(--gold)', paddingLeft: 14, margin: 0 }}>
                     {viewingSession.metadata.evaluation.examinerComment || 'No comment available.'}
                   </p>
                 </div>
               </div>
 
-              {/* Rubric Breakdown */}
+              {/* Criteria */}
               {viewingSession.metadata.evaluation.criteria?.length > 0 && (
-                <div className="glass-card p-6 bg-white/[0.01]">
-                  <h3 className="text-sm font-bold mb-4" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 20 }}>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 560, margin: '0 0 14px', color: 'var(--text-1)' }}>
                     Criteria Breakdown
                   </h3>
-                  <div className="space-y-3">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {viewingSession.metadata.evaluation.criteria.map((c, i) => (
                       <RubricBar
                         key={c.name || i}
@@ -482,75 +446,6 @@ const HistoryPage = () => {
                   </div>
                 </div>
               )}
-
-              {/* User Question & Answer */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="glass-card p-5 bg-white/[0.01]">
-                  <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>Question</p>
-                  <p className="text-sm leading-relaxed font-medium" style={{ color: 'var(--color-text)' }}>
-                    {viewingSession.metadata.question || 'N/A'}
-                  </p>
-                </div>
-                <div className="glass-card p-5 bg-white/[0.01]">
-                  <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>Your Answer</p>
-                  <p className="text-sm leading-relaxed whitespace-pre-line text-slate-300 max-h-48 overflow-y-auto pr-2 scrollbar-thin">
-                    {viewingSession.metadata.answer || 'N/A'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Strengths & Improvements */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {viewingSession.metadata.evaluation.strengths?.length > 0 && (
-                  <div className="glass-card p-6 bg-white/[0.01]">
-                    <div className="flex items-center gap-2 mb-4">
-                      <CheckCircleIcon size={16} style={{ color: 'var(--color-green)' }} />
-                      <h3 className="font-bold text-sm" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>Strengths</h3>
-                    </div>
-                    <div className="space-y-2.5">
-                      {viewingSession.metadata.evaluation.strengths.map((s, i) => (
-                        <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-green-500/[0.04] border border-green-500/20">
-                          <CheckCircleIcon size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--color-green)' }} />
-                          <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text)' }}>{s}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {viewingSession.metadata.evaluation.improvements?.length > 0 && (
-                  <div className="glass-card p-6 bg-white/[0.01]">
-                    <div className="flex items-center gap-2 mb-4">
-                      <AlertTriangle size={16} style={{ color: 'var(--color-gold)' }} />
-                      <h3 className="font-bold text-sm" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>Areas to Improve</h3>
-                    </div>
-                    <div className="space-y-2.5">
-                      {viewingSession.metadata.evaluation.improvements.map((s, i) => (
-                        <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/[0.04] border border-amber-500/20">
-                          <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--color-gold)' }} />
-                          <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text)' }}>{s}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Model Answer */}
-              {viewingSession.metadata.evaluation.modelAnswer && (
-                <div className="glass-card p-6 bg-white/[0.01]">
-                  <div className="flex items-center gap-2.5 mb-4">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(79,142,247,0.15)' }}>
-                      <BookMarked size={15} style={{ color: 'var(--color-accent)' }} />
-                    </div>
-                    <h3 className="font-bold text-sm" style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}>
-                      Model Answer Reference
-                    </h3>
-                  </div>
-                  <div className="p-4 rounded-xl border border-border" style={{ background: 'var(--color-surface)' }}>
-                    <MarkdownRenderer content={viewingSession.metadata.evaluation.modelAnswer} />
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -559,147 +454,150 @@ const HistoryPage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div style={{ maxWidth: 1000, animation: 'fadeIn 0.4s ease forwards' }}>
       {/* ── Header ── */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #7A8BAA, #4F8EF7)', boxShadow: '0 4px 12px rgba(79,142,247,0.25)' }}
-          >
-            <Clock size={20} className="text-white" />
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-elevated)', border: '1px solid var(--border)', color: 'var(--text-1)', flexShrink: 0 }}>
+            <Clock size={20} />
           </div>
-          <h1
-            className="text-2xl font-bold"
-            style={{ fontFamily: 'Sora, sans-serif', color: 'var(--color-text)' }}
-          >
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
             Study History
           </h1>
         </div>
-        <p className="text-sm ml-14" style={{ color: 'var(--color-muted)' }}>
+        <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px' }}>
           Track all your MCQ sessions, generated notes, and answer evaluations
         </p>
       </div>
 
       {/* ── Filter Tabs ── */}
       <div
-        className="flex gap-1 p-1 rounded-xl"
-        style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', width: 'fit-content' }}
+        style={{
+          display: 'flex',
+          gap: 6,
+          padding: 4,
+          borderRadius: 10,
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          width: 'fit-content',
+          marginBottom: 20,
+        }}
       >
-        {TABS.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => handleTabChange(value)}
-            className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
-            style={{
-              background:
-                activeTab === value
-                  ? 'linear-gradient(135deg, rgba(79,142,247,0.2), rgba(123,94,248,0.15))'
-                  : 'transparent',
-              border: activeTab === value ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-              color: activeTab === value ? 'var(--color-text)' : 'var(--color-muted)',
-              fontFamily: 'DM Sans, sans-serif',
-              cursor: 'pointer',
-            }}
-          >
-            {label}
-          </button>
-        ))}
+        {TABS.map(({ value, label }) => {
+          const isSel = activeTab === value
+          return (
+            <button
+              key={value}
+              onClick={() => handleTabChange(value)}
+              style={{
+                padding: '7px 14px',
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: isSel ? 600 : 500,
+                background: isSel ? 'var(--surface-elevated)' : 'transparent',
+                border: isSel ? '1px solid var(--gold-border)' : '1px solid transparent',
+                color: isSel ? 'var(--gold-hi)' : 'var(--text-2)',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {label}
+            </button>
+          )
+        })}
       </div>
 
-      {/* ── Content ── */}
-      <div className="glass-card overflow-hidden">
+      {/* ── Items List ── */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
         {loading ? (
-          <div className="p-6 space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center gap-4 p-1">
-                <div className="skeleton w-11 h-11 rounded-xl flex-shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="skeleton h-3.5 rounded" style={{ width: `${30 + i * 10}%` }} />
-                  <div className="skeleton h-3 rounded" style={{ width: `${20 + i * 8}%` }} />
+          <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--surface-elevated)' }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ height: 12, width: '40%', borderRadius: 4, background: 'var(--surface-elevated)', marginBottom: 8 }} />
+                  <div style={{ height: 10, width: '60%', borderRadius: 4, background: 'var(--border)' }} />
                 </div>
-                <div className="skeleton h-3 w-16 rounded" />
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="p-10 text-center">
-            <p className="text-sm" style={{ color: 'var(--color-red)' }}>{error}</p>
-            <button
-              onClick={() => fetchHistory(activeTab, page)}
-              className="mt-3 text-xs font-semibold underline"
-              style={{ color: 'var(--color-accent)', cursor: 'pointer' }}
-            >
+          <div style={{ padding: 40, textAlign: 'center' }}>
+            <p style={{ fontSize: 13.5, color: 'var(--red)', margin: '0 0 10px' }}>{error}</p>
+            <button onClick={() => fetchHistory(activeTab, page)} className="btn-ghost" style={{ fontSize: 12 }}>
               Try again
             </button>
           </div>
         ) : items.length === 0 ? (
-          <div className="py-16 flex flex-col items-center text-center px-6">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-              style={{ background: 'rgba(122,139,170,0.1)' }}
-            >
-              <Inbox size={28} style={{ color: 'var(--color-muted)' }} />
-            </div>
-            <p className="text-base font-semibold" style={{ color: 'var(--color-text)', fontFamily: 'Sora, sans-serif' }}>
+          <div style={{ padding: '48px 20px', textAlign: 'center' }}>
+            <Inbox size={32} style={{ color: 'var(--text-3)', margin: '0 auto 12px' }} />
+            <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-1)', margin: '0 0 4px' }}>
               No {activeTab === 'all' ? 'activity' : TABS.find((t) => t.value === activeTab)?.label?.toLowerCase() || 'records'} yet
             </p>
-            <p className="text-sm mt-1.5" style={{ color: 'var(--color-muted)' }}>
-              {activeTab === 'all'
-                ? 'Start generating MCQs, notes, or evaluating answers'
-                : `Generate ${TABS.find((t) => t.value === activeTab)?.label} to see them here`}
+            <p style={{ fontSize: 12.5, color: 'var(--text-3)', margin: 0 }}>
+              {activeTab === 'all' ? 'Start practicing MCQs or generating study notes' : `Generate ${TABS.find((t) => t.value === activeTab)?.label} to see them here`}
             </p>
           </div>
         ) : (
-          <>
+          <div>
             {items.map((item, i) => {
               const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG.prelims
               const Icon = cfg.icon
 
               return (
                 <div
-                  key={item._id || i}
+                  key={item._id || item.id || i}
                   onClick={() => handleViewSessionById(item.id, item.topic)}
-                  className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.03] transition-colors group cursor-pointer"
                   style={{
-                    borderBottom: i < items.length - 1 ? '1px solid var(--color-border)' : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 16,
+                    padding: '16px 20px',
+                    cursor: 'pointer',
+                    borderBottom: i < items.length - 1 ? '1px solid var(--border-soft)' : 'none',
+                    transition: 'background 0.12s ease',
                   }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-elevated)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   {/* Icon */}
                   <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: cfg.dim,
+                      color: cfg.color,
+                      flexShrink: 0,
+                    }}
                   >
-                    <Icon size={16} style={{ color: cfg.color }} />
+                    <Icon size={16} />
                   </div>
 
                   {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span
-                        className="text-sm font-semibold truncate"
-                        style={{ color: 'var(--color-text)' }}
-                      >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.topic || 'Unknown topic'}
                       </span>
-                      <span
-                        className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
-                        style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Sora, sans-serif' }}
-                      >
+                      <span className="tag" style={{ background: cfg.dim, color: cfg.color }}>
                         {cfg.label}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                      <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 3 }}>
+                      <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
                         {item.exam || ''}
                       </span>
                       {item.score !== undefined && (
-                        <span className="text-xs font-semibold" style={{ color: cfg.color }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: cfg.color, fontFamily: 'var(--font-mono)' }}>
                           Score: {item.score}/{item.maxScore || 10}
                         </span>
                       )}
                       {item.noteType && (
-                        <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                        <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
                           {item.noteType}
                         </span>
                       )}
@@ -707,52 +605,51 @@ const HistoryPage = () => {
                   </div>
 
                   {/* Timestamp */}
-                  <div className="flex-shrink-0 text-right">
-                    <p className="text-xs font-medium" style={{ color: 'var(--color-muted)' }}>
+                  <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                    <p style={{ fontSize: 12, color: 'var(--text-2)', margin: 0 }}>
                       {timeAgo(item.created_at || item.createdAt || item.timestamp)}
                     </p>
-                    <p className="text-xs mt-0.5 opacity-60" style={{ color: 'var(--color-muted)' }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-3)', margin: '2px 0 0' }}>
                       {formatDate(item.created_at || item.createdAt || item.timestamp)}
                     </p>
                   </div>
                 </div>
               )
             })}
-          </>
+          </div>
         )}
       </div>
 
       {/* ── Pagination ── */}
       {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 24 }}>
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page <= 1}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-30"
-            style={{
-              background: 'var(--color-card)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text)',
-              cursor: page <= 1 ? 'default' : 'pointer',
-            }}
+            className="btn-ghost"
+            style={{ padding: '6px 12px', fontSize: 12.5, opacity: page <= 1 ? 0.4 : 1 }}
           >
-            <ChevronLeft size={15} />
-            Previous
+            <ChevronLeft size={14} /> Previous
           </button>
 
-          <div className="flex items-center gap-1.5">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
               const p = i + 1
+              const isSel = page === p
               return (
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className="w-8 h-8 rounded-lg text-sm font-semibold transition-all"
                   style={{
-                    background: page === p ? 'var(--color-accent)' : 'var(--color-card)',
-                    border: page === p ? 'none' : '1px solid var(--color-border)',
-                    color: page === p ? '#fff' : 'var(--color-muted)',
-                    fontFamily: 'Sora, sans-serif',
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 600,
+                    background: isSel ? 'var(--indigo)' : 'var(--surface)',
+                    border: isSel ? 'none' : '1px solid var(--border)',
+                    color: isSel ? '#ffffff' : 'var(--text-2)',
                     cursor: 'pointer',
                   }}
                 >
@@ -760,24 +657,15 @@ const HistoryPage = () => {
                 </button>
               )
             })}
-            {totalPages > 5 && (
-              <span style={{ color: 'var(--color-muted)' }}>…{totalPages}</span>
-            )}
           </div>
 
           <button
             onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
             disabled={page >= totalPages}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-30"
-            style={{
-              background: 'var(--color-card)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text)',
-              cursor: page >= totalPages ? 'default' : 'pointer',
-            }}
+            className="btn-ghost"
+            style={{ padding: '6px 12px', fontSize: 12.5, opacity: page >= totalPages ? 0.4 : 1 }}
           >
-            Next
-            <ChevronRight size={15} />
+            Next <ChevronRight size={14} />
           </button>
         </div>
       )}
