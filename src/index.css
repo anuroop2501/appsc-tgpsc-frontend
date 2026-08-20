@@ -44,7 +44,7 @@
   /* Fonts */
   --font-body:        'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-display:     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono:        'Fraunces', Georgia, serif; /* Distinctive serif accent for numeric stats / numbers */
+  --font-mono:        'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* Clean consistent Inter across all numbers and stats */
   --font-code:        'IBM Plex Mono', 'Courier New', monospace;
 
   /* Radii */
