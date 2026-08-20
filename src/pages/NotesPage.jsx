@@ -111,7 +111,7 @@ const NotesPage = () => {
           </h1>
         </div>
         <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px', lineHeight: 1.5 }}>
-          AI-structured study notes tailored to your APPSC exam pattern
+          Structured study notes tailored to your APPSC exam pattern
         </p>
       </div>
 
@@ -238,7 +238,7 @@ const NotesPage = () => {
       {/* ── Loading ── */}
       {isStreaming && !content && (
         <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-          <LoadingDots message="Preparing comprehensive study notes tailored to APPSC syllabus…" />
+          <LoadingDots message="Preparing structured study notes tailored to APPSC syllabus…" />
         </div>
       )}
 

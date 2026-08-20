@@ -53,7 +53,6 @@ const calculateStreak = (sessions = []) => {
   let streak = 0
   let checkDate = new Date()
   
-  // Check today or yesterday
   const todayStr = checkDate.toISOString().slice(0, 10)
   checkDate.setDate(checkDate.getDate() - 1)
   const yesterdayStr = checkDate.toISOString().slice(0, 10)
@@ -62,7 +61,6 @@ const calculateStreak = (sessions = []) => {
     return uniqueDays.size > 0 ? 1 : 0
   }
 
-  // Count consecutive days
   let currentCheck = uniqueDays.has(todayStr) ? new Date() : checkDate
   while (true) {
     const dStr = currentCheck.toISOString().slice(0, 10)
@@ -123,8 +121,8 @@ const DashboardPage = () => {
 
   const featureCards = [
     { title: 'MCQ Prelims', desc: 'Generate ten exam-ready MCQs instantly from any topic, weighted to the APPSC Prelims pattern.', icon: Sparkles, color: 'indigo', path: '/prelims', cta: 'Start practice' },
-    { title: isGroup2 ? 'Group 2 Notes' : 'Mains Notes', desc: 'AI-structured notes tailored to your exam pattern, organised by subtopic for quick revision.', icon: BookOpen, color: 'emerald', path: '/notes', cta: 'Generate notes' },
-    ...(!isGroup2 ? [{ title: 'Answer Evaluator', desc: 'Get expert AI feedback on your Mains answers with scores, benchmarked against topper responses.', icon: Star, color: 'gold', path: '/evaluator', cta: 'Evaluate an answer' }] : []),
+    { title: isGroup2 ? 'Group 2 Notes' : 'Mains Notes', desc: 'Structured study notes tailored to your APPSC exam pattern, organised by subtopic for quick revision.', icon: BookOpen, color: 'emerald', path: '/notes', cta: 'Generate notes' },
+    ...(!isGroup2 ? [{ title: 'Answer Evaluator', desc: 'Get expert evaluation with scores, rubric breakdown, and benchmark model answers.', icon: Star, color: 'gold', path: '/evaluator', cta: 'Evaluate an answer' }] : []),
   ]
 
   const cardColors = {
@@ -148,7 +146,7 @@ const DashboardPage = () => {
             <span className="tag tag-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Flame size={12} /> {streak} Day Practice Streak
             </span>
-            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>• Daily AI prep loop</span>
+            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>• Daily prep loop</span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 34, letterSpacing: '-0.3px', lineHeight: 1.15, margin: '0 0 10px', color: 'var(--text-1)' }}>
             Welcome back, <em style={{ fontStyle: 'normal', color: 'var(--gold-hi)' }}>{firstName}.</em>
@@ -212,10 +210,10 @@ const DashboardPage = () => {
         ))}
       </section>
 
-      {/* ── AI TOOLS ── */}
+      {/* ── STUDY MODULES ── */}
       <section style={{ marginBottom: 36 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, color: 'var(--text-1)', margin: 0 }}>AI Study Modules</h2>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, color: 'var(--text-1)', margin: 0 }}>Study Modules</h2>
           <span style={{ fontSize: 13, color: 'var(--text-3)' }}>Everything you need for APPSC &amp; TGPSC</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${featureCards.length}, 1fr)`, gap: 18 }}>

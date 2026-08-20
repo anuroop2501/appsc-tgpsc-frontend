@@ -11,11 +11,11 @@ const getRouteLabels = (targetExam = '') => {
   const isGroup2 = (targetExam || '').toLowerCase().includes('group 2')
   return {
     '/dashboard':  ['Dashboard'],
-    '/prelims':    ['AI Tools', 'MCQ Prelims'],
-    '/test':       ['AI Tools', 'Mock Test'],
-    '/notes':      ['AI Tools', isGroup2 ? 'Group 2 Notes' : 'Mains Notes'],
-    '/evaluator':  ['AI Tools', 'Answer Evaluator'],
-    '/planner':    ['AI Tools', 'Study Planner'],
+    '/prelims':    ['Modules', 'MCQ Prelims'],
+    '/test':       ['Modules', 'Mock Test'],
+    '/notes':      ['Modules', isGroup2 ? 'Group 2 Notes' : 'Mains Notes'],
+    '/evaluator':  ['Modules', 'Answer Evaluator'],
+    '/planner':    ['Modules', 'Study Planner'],
     '/history':    ['Account', 'Study History'],
     '/pricing':    ['Account', 'Plans & Pricing'],
   }
@@ -23,7 +23,7 @@ const getRouteLabels = (targetExam = '') => {
 
 const CRUMB_PATHS = {
   'Dashboard': '/dashboard',
-  'AI Tools':  '/dashboard',
+  'Modules':   '/dashboard',
   'Account':   '/dashboard',
   'Study History': '/history',
 }
@@ -39,7 +39,7 @@ const INITIAL_NOTIFICATIONS = [
   },
   {
     id: 2,
-    title: 'AI Vision OCR Configured',
+    title: 'Vision OCR Configured',
     desc: 'Upload scanned sheets or hand-written PDFs directly.',
     time: '2 hours ago',
     icon: Info,
@@ -78,7 +78,6 @@ const Topbar = ({ onMenuClick }) => {
   const override = useBreadcrumbStore((s) => s.override)
   const clearOverride = useBreadcrumbStore((s) => s.clearOverride)
 
-  // Clear breadcrumb override automatically whenever the route changes!
   useEffect(() => {
     clearOverride()
   }, [pathname, clearOverride])
@@ -287,9 +286,9 @@ const Topbar = ({ onMenuClick }) => {
         <div
           style={{
             width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-            background: 'linear-gradient(160deg, #3A4A78, #232C4A)',
+            background: 'linear-gradient(135deg, var(--indigo), #4338CA)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600,
+            fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700,
             color: '#ffffff', border: '1px solid var(--border)', cursor: 'pointer',
           }}
         >

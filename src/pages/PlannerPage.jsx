@@ -303,9 +303,9 @@ const PlannerPage = () => {
                     borderRadius: 9,
                     fontSize: 13,
                     fontWeight: isSelected ? 600 : 500,
-                    background: isSelected ? 'var(--indigo)' : 'var(--surface-elevated)',
-                    color: isSelected ? '#ffffff' : 'var(--text-2)',
-                    border: isSelected ? '1px solid var(--indigo)' : '1px solid var(--border)',
+                    background: isSelected ? 'var(--indigo-dim)' : 'var(--surface-elevated)',
+                    color: isSelected ? 'var(--indigo)' : 'var(--text-2)',
+                    border: isSelected ? '1px solid var(--indigo-border)' : '1px solid var(--border)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
@@ -322,9 +322,9 @@ const PlannerPage = () => {
                 borderRadius: 9,
                 fontSize: 13,
                 fontWeight: isCustomDays ? 600 : 500,
-                background: isCustomDays ? 'var(--indigo)' : 'var(--surface-elevated)',
-                color: isCustomDays ? '#ffffff' : 'var(--text-2)',
-                border: isCustomDays ? '1px solid var(--indigo)' : '1px solid var(--border)',
+                background: isCustomDays ? 'var(--indigo-dim)' : 'var(--surface-elevated)',
+                color: isCustomDays ? 'var(--indigo)' : 'var(--text-2)',
+                border: isCustomDays ? '1px solid var(--indigo-border)' : '1px solid var(--border)',
                 cursor: 'pointer',
               }}
             >

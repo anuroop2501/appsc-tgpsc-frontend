@@ -18,18 +18,18 @@ function getNavItems(targetExam = '') {
   const exam = (targetExam || '').toLowerCase()
   const isGroup2 = exam.includes('group 2')
 
-  const aiItems = [
+  const moduleItems = [
     { to: '/prelims', icon: Sparkles, label: 'MCQ Prelims' },
   ]
 
   if (isGroup2) {
-    aiItems.push({ to: '/notes', icon: FileText, label: 'Group 2 Notes' })
+    moduleItems.push({ to: '/notes', icon: FileText, label: 'Group 2 Notes' })
   } else {
-    aiItems.push({ to: '/notes',     icon: BookOpen, label: 'Mains Notes' })
-    aiItems.push({ to: '/evaluator', icon: Star,     label: 'Answer Evaluator' })
+    moduleItems.push({ to: '/notes',     icon: BookOpen, label: 'Mains Notes' })
+    moduleItems.push({ to: '/evaluator', icon: Star,     label: 'Answer Evaluator' })
   }
 
-  aiItems.push({ to: '/planner', icon: Calendar, label: 'Study Planner' })
+  moduleItems.push({ to: '/planner', icon: Calendar, label: 'Study Planner' })
 
   return [
     {
@@ -39,8 +39,8 @@ function getNavItems(targetExam = '') {
       ],
     },
     {
-      section: 'AI Tools',
-      items: aiItems,
+      section: 'Modules',
+      items: moduleItems,
     },
     {
       section: 'Account',
@@ -106,11 +106,8 @@ const Sidebar = ({ open, onClose, isMobile }) => {
           A
         </div>
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 19, letterSpacing: 0.2, color: 'var(--text-1)' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 20, letterSpacing: 0.2, color: 'var(--text-1)' }}>
             APPSC <span style={{ color: 'var(--gold-hi)' }}>AI</span>
-          </div>
-          <div style={{ fontSize: 10.5, color: 'var(--text-3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 1 }}>
-            Ace with Ease IAS
           </div>
         </div>
       </div>

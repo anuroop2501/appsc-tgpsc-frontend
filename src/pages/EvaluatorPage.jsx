@@ -187,7 +187,7 @@ const EvaluatorPage = () => {
           </h1>
         </div>
         <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px', lineHeight: 1.5 }}>
-          Get expert AI evaluation with scores, rubric breakdown, and benchmark model answers
+          Get expert evaluation with scores, rubric breakdown, and benchmark model answers.
         </p>
       </div>
 
