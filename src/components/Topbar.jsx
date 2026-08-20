@@ -116,22 +116,24 @@ const Topbar = ({ onMenuClick, sidebarOpen = true }) => {
         transition: 'background 0.2s ease, border-color 0.2s ease',
       }}
     >
-      {/* ── Left: toggle icon (Back / Hamburger) + breadcrumb ── */}
+      {/* ── Left: hamburger button (when sidebar collapsed) + breadcrumb ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
-        <button
-          onClick={onMenuClick}
-          style={{
-            padding: '7px', borderRadius: 8, border: '1px solid var(--border)',
-            background: 'var(--surface)', cursor: 'pointer', color: 'var(--text-2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            transition: 'all 0.15s ease',
-          }}
-          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-1)'; e.currentTarget.style.borderColor = 'var(--indigo)' }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--border)' }}
-        >
-          {sidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
-        </button>
+        {!sidebarOpen && (
+          <button
+            onClick={onMenuClick}
+            style={{
+              padding: '7px', borderRadius: 8, border: '1px solid var(--border)',
+              background: 'var(--surface)', cursor: 'pointer', color: 'var(--text-2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              transition: 'all 0.15s ease',
+            }}
+            title="Open sidebar"
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-1)'; e.currentTarget.style.borderColor = 'var(--indigo)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+          >
+            <Menu size={18} />
+          </button>
+        )}
 
         {/* Breadcrumb */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>

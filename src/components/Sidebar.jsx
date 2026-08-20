@@ -10,6 +10,7 @@ import {
   CreditCard,
   FileText,
   Calendar,
+  ChevronLeft,
 } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 
@@ -80,36 +81,42 @@ const Sidebar = ({ open, onClose, isMobile }) => {
         transition: 'background 0.2s ease, border-color 0.2s ease',
       }}
     >
-      {/* ── Mobile close ── */}
-      {isMobile && (
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-lg"
-          style={{ color: 'var(--text-3)' }}
-        >
-          <X size={16} />
-        </button>
-      )}
-
-      {/* ── Brand ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 22 }}>
-        <div
-          style={{
-            width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-            background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 18,
-            color: '#0A0F1C',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          }}
-        >
-          A
-        </div>
-        <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 20, letterSpacing: 0.2, color: 'var(--text-1)' }}>
+      {/* ── Brand & Collapse Button ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 22 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div
+            style={{
+              width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+              background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 18,
+              color: '#0A0F1C',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            }}
+          >
+            A
+          </div>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 20, letterSpacing: 0.2, color: 'var(--text-1)' }}>
             APPSC <span style={{ color: 'var(--gold-hi)' }}>AI</span>
           </div>
         </div>
+
+        {/* Back / Collapse Button inside Sidebar */}
+        <button
+          onClick={onClose}
+          style={{
+            width: 32, height: 32, borderRadius: 8,
+            border: '1px solid var(--border)', background: 'var(--surface)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-2)', cursor: 'pointer',
+            transition: 'all 0.15s ease',
+          }}
+          title="Collapse sidebar"
+          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-1)'; e.currentTarget.style.borderColor = 'var(--indigo)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+        >
+          <ChevronLeft size={17} />
+        </button>
       </div>
 
       {/* ── Exam Pill ── */}
