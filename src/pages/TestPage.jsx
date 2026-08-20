@@ -8,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { startTestJob, getTestJobStatus, submitTestResults, getTestHistory, getTestDetail } from '../api/test'
 import useAuthStore from '../store/authStore'
+import { useLanguage } from '../context/LanguageContext'
 import PricingModal from '../components/PricingModal'
 import FormattedQuestionText from '../components/FormattedQuestionText'
 
@@ -698,6 +699,7 @@ const ResultsScreen = ({ questions, answers, durationMinutes, timeTaken, onRetak
 // ─── Main TestPage ────────────────────────────────────────────────────────────
 const TestPage = () => {
   const navigate = useNavigate()
+  const { language, t } = useLanguage()
   const [phase, setPhase] = useState(PHASES.SETUP)
   const [testConfig, setTestConfig] = useState(null)    // { exam, questionCount, durationMinutes }
   const [progressInfo, setProgressInfo] = useState({ progressPct: 5, completedBatches: 0, totalBatches: 0, questionsGenerated: 0 })
@@ -853,7 +855,6 @@ const TestPage = () => {
     }
   }, [phase, questions, answers, flagged, currentQ, secondsLeft, testConfig, activeTestId])
 
-  // ── Start test ──────────────────────────────────────────────────────────────
   const handleStart = async (exam, questionCount, durationMinutes) => {
     const config = { exam, questionCount, durationMinutes }
     setTestConfig(config)
@@ -862,7 +863,7 @@ const TestPage = () => {
     setError('')
 
     try {
-      const data = await startTestJob({ exam, questionCount, durationMinutes })
+      const data = await startTestJob({ exam, questionCount, durationMinutes, language })
       if (!data?.jobId) throw new Error('Failed to initiate test generation job.')
 
       sessionStorage.setItem('active_test_job', JSON.stringify({ jobId: data.jobId, testConfig: config }))

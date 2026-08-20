@@ -2,11 +2,11 @@ import api from './axiosInstance'
 
 /**
  * Initiate an asynchronous test generation job.
- * @param {{ exam: string, questionCount: 50|100|200, durationMinutes: 30|60|120 }} params
+ * @param {{ exam: string, questionCount: 50|100|200, durationMinutes: 30|60|120, language?: string }} params
  * @returns {Promise<{ success: boolean, jobId: string }>}
  */
-export const startTestJob = async ({ exam, questionCount, durationMinutes }) => {
-  const res = await api.post('/api/ai/test/start', { exam, questionCount, durationMinutes })
+export const startTestJob = async ({ exam, questionCount, durationMinutes, language = 'en' }) => {
+  const res = await api.post('/api/ai/test/start', { exam, questionCount, durationMinutes, language })
   return res.data
 }
 

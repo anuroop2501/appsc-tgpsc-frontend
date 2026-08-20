@@ -14,8 +14,11 @@ import {
   FileSpreadsheet,
 } from 'lucide-react'
 import MarkdownRenderer from '../components/MarkdownRenderer'
+import PricingModal from '../components/PricingModal'
 import { exportPlannerToPdf, exportPlannerToCsv } from '../lib/exportPdf'
+import { getUserBalance } from '../api/payment'
 import useAuthStore from '../store/authStore'
+import { useLanguage } from '../context/LanguageContext'
 
 const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 const DURATION_PRESETS = [
@@ -34,6 +37,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || ''
 const PlannerPage = () => {
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const { language, t } = useLanguage()
   const [exam, setExam] = useState(user?.target_exam || 'APPSC Group 1')
   const [targetDays, setTargetDays] = useState(30)
   const [isCustomDays, setIsCustomDays] = useState(false)
@@ -45,8 +49,20 @@ const PlannerPage = () => {
   const [content, setContent] = useState('')
   const [copied, setCopied] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [credits, setCredits] = useState(user?.credits !== undefined ? user.credits : 100)
+  const [isPricingOpen, setIsPricingOpen] = useState(false)
 
   const abortRef = useRef(null)
+
+  useEffect(() => {
+    if (user?.id || user?.userId) {
+      getUserBalance()
+        .then((data) => {
+          if (data.credits !== undefined) setCredits(data.credits)
+        })
+        .catch(() => {})
+    }
+  }, [user])
 
   useEffect(() => {
     return () => {
@@ -56,6 +72,12 @@ const PlannerPage = () => {
 
   const handleGenerate = async () => {
     if (!exam) return
+
+    if (credits < 25) {
+      setErrorMsg(t('common.insufficientCredits', 'Insufficient credits (25 required). Please recharge or upgrade.'))
+      setIsPricingOpen(true)
+      return
+    }
 
     setLoading(true)
     setContent('')
@@ -79,15 +101,32 @@ const PlannerPage = () => {
           dailyHours,
           prepLevel,
           focusTopics,
+          language,
         }),
         signal: controller.signal,
       })
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
+        if (response.status === 402) {
+          setIsPricingOpen(true)
+        }
         setErrorMsg(errData.error || errData.message || `Failed to generate plan (HTTP ${response.status})`)
         setLoading(false)
         return
+      }
+
+      // Automatically sync updated credit balance
+      const headerCredits = response.headers?.get?.('x-remaining-credits')
+      if (headerCredits) {
+        const remaining = parseInt(headerCredits, 10)
+        if (!isNaN(remaining)) {
+          setCredits(remaining)
+          useAuthStore.getState().setCredits(remaining)
+        }
+      } else {
+        setCredits((prev) => Math.max(0, prev - 25))
+        useAuthStore.getState().deductCredits(25)
       }
 
       const reader = response.body.getReader()
@@ -174,11 +213,11 @@ const PlannerPage = () => {
             <Calendar size={20} />
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
-            Study Planner
+            {t('planner.title', 'Study Planner')}
           </h1>
         </div>
         <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px', lineHeight: 1.5 }}>
-          Day-by-day timetables designed for APPSC syllabus, customized daily schedules, and quick notes/MCQ drills
+          {t('planner.subtitle', 'Personalized day-by-day master preparation timetable aligned to your exam timeline')}
         </p>
       </div>
 
@@ -186,7 +225,7 @@ const PlannerPage = () => {
       <div className="card" style={{ padding: 28, marginBottom: 24 }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 560, display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 22px', color: 'var(--text-1)' }}>
           <Target size={18} style={{ color: 'var(--indigo)' }} />
-          Configure Your Study Plan
+          {t('planner.title', 'Configure Your Study Plan')}
         </h2>
 
         {errorMsg && (
@@ -199,7 +238,7 @@ const PlannerPage = () => {
           {/* Target Exam */}
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-              Target Exam
+              {t('common.targetExam', 'Target Exam')}
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {EXAMS.map((e) => {
@@ -231,7 +270,7 @@ const PlannerPage = () => {
           {/* Daily Study Hours */}
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-              Daily Study Time
+              {t('planner.dailyHoursLabel', 'Daily Study Time')}
             </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
@@ -397,11 +436,22 @@ const PlannerPage = () => {
           ) : (
             <>
               <Sparkles size={17} />
-              Generate {targetDays}-Day Study Plan • 50 Credits ({dailyHours}h Daily Schedule)
+              {t('planner.generatePlanBtn', 'Generate Study Plan (25 Credits)')}
             </>
           )}
         </button>
       </div>
+
+      {/* ── Pricing & Recharge Modal ── */}
+      <PricingModal
+        isOpen={isPricingOpen}
+        onClose={() => setIsPricingOpen(false)}
+        onPaymentSuccess={(updatedUser) => {
+          if (updatedUser?.credits !== undefined) setCredits(updatedUser.credits)
+          setIsPricingOpen(false)
+        }}
+        reason="Generating an AI study timetable requires 25 credits."
+      />
 
       {/* ── Generated Plan Output View ── */}
       {content && (
@@ -451,39 +501,53 @@ const PlannerPage = () => {
                   exportPlannerToPdf({
                     exam,
                     targetDays,
+                    dailyHours,
+                    prepLevel,
+                    focusTopics,
                     content,
-                    date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
                   })
                 }
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, padding: '8px 16px', borderRadius: 8, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
+                style={{
+                  fontSize: 12.5,
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  background: 'var(--indigo-dim)',
+                  color: 'var(--indigo)',
+                  border: '1px solid var(--indigo-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
               >
-                <Download size={14} />
-                Download PDF
+                <Download size={14} /> PDF
               </button>
             </div>
           </div>
 
-          {/* Quick Module Launchers */}
+          {/* Quick Study Shortcuts */}
           {quickTopics.length > 0 && (
-            <div className="card" style={{ padding: '18px 24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 12 }}>
-                <Flame size={14} style={{ color: 'var(--gold-hi)' }} />
-                Quick Action Shortcuts
+            <div className="card" style={{ padding: '16px 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <Flame size={15} style={{ color: 'var(--gold-hi)' }} />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {t('planner.actionShortcuts', 'Instant Study Shortcuts (Jump straight to notes or practice questions)')}
+                </span>
               </div>
-              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {quickTopics.map((top, idx) => (
                   <div
                     key={idx}
                     style={{
-                      flexShrink: 0,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 8,
-                      padding: '7px 12px',
+                      gap: 6,
+                      padding: '5px 10px',
                       borderRadius: 8,
                       background: 'var(--surface-elevated)',
                       border: '1px solid var(--border)',
-                      fontSize: 12.5,
+                      fontSize: 12,
                     }}
                   >
                     <span style={{ fontWeight: 500, color: 'var(--text-1)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

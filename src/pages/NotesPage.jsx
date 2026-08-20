@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import {
   BookOpen,
   Loader2,
@@ -10,20 +10,24 @@ import {
 import TopicAutocomplete from '../components/TopicAutocomplete'
 import MarkdownRenderer from '../components/MarkdownRenderer'
 import LoadingDots from '../components/LoadingDots'
+import PricingModal from '../components/PricingModal'
 import { streamNotes } from '../api/notes'
+import { getUserBalance } from '../api/payment'
 import useAuthStore from '../store/authStore'
+import { useLanguage } from '../context/LanguageContext'
 
 const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 
-const NOTE_TYPES = [
-  { value: 'Comprehensive', label: 'Comprehensive', icon: '📚' },
-  { value: 'Quick Revision', label: 'Quick Revision', icon: '⚡' },
-  { value: 'Facts & Figures', label: 'Facts & Figures', icon: '📊' },
-  { value: 'Current Affairs', label: 'Current Affairs', icon: '🗞️' },
-]
-
 const NotesPage = () => {
   const user = useAuthStore((s) => s.user)
+  const { language, t } = useLanguage()
+
+  const NOTE_TYPES = [
+    { value: 'Comprehensive', label: t('notes.comprehensive', 'Comprehensive'), icon: '📚' },
+    { value: 'Quick Revision', label: t('notes.quickRevision', 'Quick Revision'), icon: '⚡' },
+    { value: 'Facts & Figures', label: t('notes.factsAndFigures', 'Facts & Figures'), icon: '📊' },
+    { value: 'Current Affairs', label: t('notes.currentAffairs', 'Current Affairs'), icon: '🗞️' },
+  ]
 
   const [topic, setTopic] = useState('')
   const [exam, setExam] = useState(user?.targetExam || EXAMS[0])
@@ -33,13 +37,32 @@ const NotesPage = () => {
   const [isDone, setIsDone] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const setAuthCredits = useAuthStore((s) => s.setCredits)
+  const credits = user?.credits !== undefined ? user.credits : 100
+  const [isPricingOpen, setIsPricingOpen] = useState(false)
 
   const abortRef = useRef(null)
   const contentRef = useRef('')
 
+  useEffect(() => {
+    if (user?.id || user?.userId) {
+      getUserBalance()
+        .then((data) => {
+          if (data.credits !== undefined && setAuthCredits) setAuthCredits(data.credits)
+        })
+        .catch(() => {})
+    }
+  }, [user?.id, user?.userId, setAuthCredits])
+
   const handleGenerate = useCallback(async () => {
+    if (credits < 10) {
+      setError(t('common.insufficientCredits', 'Insufficient credits (10 required). Please recharge or upgrade.'))
+      setIsPricingOpen(true)
+      return
+    }
+
     if (!topic.trim()) {
-      setError('Please enter or select a topic.')
+      setError(t('common.topicPlaceholder', 'Please enter or select a topic.'))
       return
     }
 
@@ -55,7 +78,7 @@ const NotesPage = () => {
     setIsStreaming(true)
 
     const abort = await streamNotes(
-      { topic, exam, noteType },
+      { topic, exam, noteType, language },
       (chunk) => {
         contentRef.current += chunk
         setContent(contentRef.current)
@@ -64,10 +87,14 @@ const NotesPage = () => {
         setIsStreaming(false)
         setIsDone(true)
         abortRef.current = null
+        setCredits((prev) => Math.max(0, prev - 10))
       },
       (err) => {
         setIsStreaming(false)
-        setError(err.message || 'Streaming failed. Please try again.')
+        if (err?.message?.includes('402') || err?.statusCode === 402) {
+          setIsPricingOpen(true)
+        }
+        setError(err.message || t('common.error', 'Streaming failed. Please try again.'))
         abortRef.current = null
       }
     )
@@ -75,7 +102,7 @@ const NotesPage = () => {
     if (typeof abort === 'function') {
       abortRef.current = abort
     }
-  }, [topic, exam, noteType])
+  }, [topic, exam, noteType, language, credits, t])
 
   const handleCopy = async () => {
     try {
@@ -107,11 +134,11 @@ const NotesPage = () => {
             <BookOpen size={20} />
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
-            {isGroup2 ? 'Group 2 Notes' : 'Mains Notes'}
+            {isGroup2 ? t('nav.group2Notes', 'Notes') : t('nav.mainsNotes', 'Notes')}
           </h1>
         </div>
         <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px', lineHeight: 1.5 }}>
-          Structured study notes tailored to your APPSC exam pattern
+          {t('notes.subtitle', 'Structured study notes tailored to your APPSC exam pattern')}
         </p>
       </div>
 
@@ -121,20 +148,20 @@ const NotesPage = () => {
           {/* Topic */}
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-              Topic / Syllabus Area
+              {t('common.topicOrSyllabus', 'Topic / Syllabus Area')}
             </label>
             <TopicAutocomplete
               value={topic}
               onChange={setTopic}
               exam={exam}
-              placeholder="e.g. Panchayati Raj System, Rivers of Andhra Pradesh, Judicial Review…"
+              placeholder={t('common.topicPlaceholder', 'e.g. Panchayati Raj System, Rivers of Andhra Pradesh, Judicial Review…')}
             />
           </div>
 
           {/* Exam */}
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-              Target Exam
+              {t('common.targetExam', 'Target Exam')}
             </label>
             <select value={exam} onChange={(e) => setExam(e.target.value)} className="input" style={{ height: 46 }}>
               {EXAMS.map((e) => (
@@ -146,7 +173,7 @@ const NotesPage = () => {
           {/* Note Type */}
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-              Note Format &amp; Style
+              {t('notes.noteStyle', 'Note Format & Style')}
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {NOTE_TYPES.map(({ value, label, icon }) => {
@@ -206,12 +233,12 @@ const NotesPage = () => {
             {isStreaming ? (
               <>
                 <Loader2 size={17} className="animate-spin" />
-                Generating Notes…
+                {t('notes.generating', 'Generating Notes…')}
               </>
             ) : (
               <>
                 <BookOpen size={17} />
-                Generate Notes
+                {t('notes.generateBtn', 'Generate Notes (10 Credits)')}
               </>
             )}
           </button>
@@ -222,7 +249,7 @@ const NotesPage = () => {
               className="btn-ghost"
               style={{ padding: '0 24px', height: 46 }}
             >
-              Stop
+              {t('notes.stopGenerating', 'Stop')}
             </button>
           )}
         </div>
@@ -238,7 +265,7 @@ const NotesPage = () => {
       {/* ── Loading ── */}
       {isStreaming && !content && (
         <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-          <LoadingDots message="Preparing structured study notes tailored to APPSC syllabus…" />
+          <LoadingDots message={t('notes.streamingMessage', 'Preparing structured study notes tailored to APPSC syllabus…')} />
         </div>
       )}
 
@@ -284,7 +311,7 @@ const NotesPage = () => {
                   onClick={handleGenerate}
                   className="btn-ghost"
                   style={{ padding: '6px 12px', fontSize: 12 }}
-                  title="Regenerate"
+                  title={t('common.tryAgain', 'Regenerate')}
                 >
                   <RefreshCw size={13} />
                 </button>
@@ -307,7 +334,7 @@ const NotesPage = () => {
                 }}
               >
                 {copied ? <CheckCheck size={13} /> : <Copy size={13} />}
-                {copied ? 'Copied!' : 'Copy'}
+                {copied ? t('common.copied', 'Copied!') : t('common.copy', 'Copy')}
               </button>
             </div>
           </div>
@@ -344,6 +371,17 @@ const NotesPage = () => {
           )}
         </div>
       )}
+
+      {/* ── Pricing & Recharge Modal ── */}
+      <PricingModal
+        isOpen={isPricingOpen}
+        onClose={() => setIsPricingOpen(false)}
+        onPaymentSuccess={(updatedUser) => {
+          if (updatedUser?.credits !== undefined) setCredits(updatedUser.credits)
+          setIsPricingOpen(false)
+        }}
+        reason="Generating syllabus study notes requires 10 credits."
+      />
     </div>
   )
 }

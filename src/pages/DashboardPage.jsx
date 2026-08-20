@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookOpen, Star, Sparkles, ArrowRight, Clock, Activity, Flame } from 'lucide-react'
 import useAuthStore from '../store/authStore'
+import { useLanguage } from '../context/LanguageContext'
 import { getStats, getHistory } from '../api/history'
 
 /* ── Animated counter ── */
@@ -80,15 +81,9 @@ const TYPE_META = {
   evaluation: { label: 'EVAL',  colorVar: 'var(--gold-hi)', dimVar: 'var(--gold-dim)' },
 }
 
-const STAT_CARDS = (stats) => [
-  { label: 'Total Activity',     value: stats.sessionsCount, icon: Activity, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'all' },
-  { label: 'MCQ Practice',       value: stats.prelimsCount,  icon: Sparkles, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'prelims' },
-  { label: 'Study Notes',        value: stats.notesCount,    icon: BookOpen, accent: 'var(--emerald)', dim: 'var(--emerald-dim)', tab: 'notes' },
-  { label: 'Answers Evaluated',  value: stats.evalsCount,    icon: Star,     accent: 'var(--gold-hi)', dim: 'var(--gold-dim)', tab: 'evaluation' },
-]
-
 const DashboardPage = () => {
   const user = useAuthStore((s) => s.user)
+  const { t } = useLanguage()
   const navigate = useNavigate()
 
   const [stats, setStats] = useState({ sessionsCount: 0, prelimsCount: 0, notesCount: 0, evalsCount: 0 })
@@ -117,12 +112,29 @@ const DashboardPage = () => {
   }, [])
 
   const isGroup2 = (user?.targetExam || '').toLowerCase().includes('group 2')
+  const userPlan = (user?.planTier || user?.plan_tier || 'free').toLowerCase()
+  const isEvalLocked = !['pro_999', 'officer_1999', 'admin'].includes(userPlan)
   const firstName = user?.name?.split(' ')[0] || 'Aspirant'
 
+  const STAT_CARDS = [
+    { label: t('dashboard.totalSessions', 'Total Activity'), value: stats.sessionsCount, icon: Activity, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'all' },
+    { label: t('nav.prelims', 'MCQ Practice'), value: stats.prelimsCount, icon: Sparkles, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'prelims' },
+    { label: isGroup2 ? t('nav.group2Notes', 'Notes') : t('nav.mainsNotes', 'Notes'), value: stats.notesCount, icon: BookOpen, accent: 'var(--emerald)', dim: 'var(--emerald-dim)', tab: 'notes' },
+    { label: t('nav.evaluator', 'Answers Evaluated'), value: stats.evalsCount, icon: Star, accent: 'var(--gold-hi)', dim: 'var(--gold-dim)', tab: 'evaluation' },
+  ]
+
   const featureCards = [
-    { title: 'MCQ Prelims', desc: 'Generate ten exam-ready MCQs instantly from any topic, weighted to the APPSC Prelims pattern.', icon: Sparkles, color: 'indigo', path: '/prelims', cta: 'Start practice' },
-    { title: isGroup2 ? 'Group 2 Notes' : 'Mains Notes', desc: 'Structured study notes tailored to your APPSC exam pattern, organised by subtopic for quick revision.', icon: BookOpen, color: 'emerald', path: '/notes', cta: 'Generate notes' },
-    ...(!isGroup2 ? [{ title: 'Answer Evaluator', desc: 'Get expert evaluation with scores, rubric breakdown, and benchmark model answers.', icon: Star, color: 'gold', path: '/evaluator', cta: 'Evaluate an answer' }] : []),
+    { title: t('nav.prelims', 'MCQ Prelims'), desc: t('dashboard.prelimsDesc', 'Generate ten exam-ready MCQs instantly from any topic, weighted to the APPSC Prelims pattern.'), icon: Sparkles, color: 'indigo', path: '/prelims', cta: t('common.startNow', 'Start practice (10 Cr)') },
+    { title: isGroup2 ? t('nav.group2Notes', 'Notes') : t('nav.mainsNotes', 'Notes'), desc: t('dashboard.notesDesc', 'Structured study notes tailored to your APPSC exam pattern, organised by subtopic for quick revision.'), icon: BookOpen, color: 'emerald', path: '/notes', cta: t('common.generate', 'Generate notes (10 Cr)') },
+    ...(!isGroup2 ? [{
+      title: t('nav.evaluator', 'Answer Evaluator'),
+      desc: t('dashboard.evaluatorDesc', 'Get expert evaluation with scores, rubric breakdown, and benchmark model answers.'),
+      icon: Star,
+      color: 'gold',
+      path: '/evaluator',
+      cta: isEvalLocked ? t('evaluator.upgradeBtn', 'Upgrade to PRO') : t('evaluator.evaluateBtn', 'Evaluate Answer (20 Cr)'),
+      locked: isEvalLocked,
+    }] : []),
   ]
 
   const cardColors = {
@@ -183,7 +195,7 @@ const DashboardPage = () => {
 
       {/* ── STATS ── */}
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 36 }}>
-        {STAT_CARDS(stats).map(({ label, value, icon: Icon, accent, dim, tab }) => (
+        {STAT_CARDS.map(({ label, value, icon: Icon, accent, dim, tab }) => (
           <button
             key={label}
             onClick={() => navigate('/history', { state: { activeTab: tab } })}
@@ -213,11 +225,15 @@ const DashboardPage = () => {
       {/* ── STUDY MODULES ── */}
       <section style={{ marginBottom: 36 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, color: 'var(--text-1)', margin: 0 }}>Study Modules</h2>
-          <span style={{ fontSize: 13, color: 'var(--text-3)' }}>Everything you need for APPSC &amp; TGPSC</span>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, color: 'var(--text-1)', margin: 0 }}>
+            {t('dashboard.modulesHeading', 'Study Modules')}
+          </h2>
+          <span style={{ fontSize: 13, color: 'var(--text-3)' }}>
+            {t('dashboard.modulesSubtitle', 'Everything you need for APPSC')}
+          </span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${featureCards.length}, 1fr)`, gap: 18 }}>
-          {featureCards.map(({ title, desc, icon: Icon, color, path, cta }) => {
+          {featureCards.map(({ title, desc, icon: Icon, color, path, cta, locked }) => {
             const c = cardColors[color]
             return (
               <button
@@ -232,8 +248,25 @@ const DashboardPage = () => {
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)' }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
               >
-                <div style={{ width: 42, height: 42, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, background: c.iconBg, color: c.border }}>
-                  <Icon size={20} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: c.iconBg, color: c.border }}>
+                    <Icon size={20} />
+                  </div>
+                  {locked && (
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        padding: '3px 8px',
+                        borderRadius: 6,
+                        background: 'var(--gold-dim)',
+                        color: 'var(--gold-hi)',
+                        border: '1px solid var(--gold-border)',
+                      }}
+                    >
+                      PRO ONLY
+                    </span>
+                  )}
                 </div>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 560, margin: '0 0 8px', color: 'var(--text-1)' }}>
                   {title}

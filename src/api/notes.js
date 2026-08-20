@@ -9,12 +9,13 @@ const BASE_URL = import.meta.env.VITE_API_URL || ''
  * @param {string}   params.topic
  * @param {string}   params.exam
  * @param {string}   [params.noteType]
+ * @param {string}   [params.language]
  * @param {Function} onChunk  - called with each text token
  * @param {Function} onDone   - called when stream ends
  * @param {Function} onError  - called with error
  * @returns {Function} abort function to cancel the stream
  */
-export const streamNotes = async ({ topic, exam, noteType }, onChunk, onDone, onError) => {
+export const streamNotes = async ({ topic, exam, noteType, language = 'en' }, onChunk, onDone, onError) => {
   const token = useAuthStore.getState().token
   const controller = new AbortController()
 
@@ -25,13 +26,24 @@ export const streamNotes = async ({ topic, exam, noteType }, onChunk, onDone, on
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ topic, exam, noteType }),
+      body: JSON.stringify({ topic, exam, noteType, language }),
       signal: controller.signal,
     })
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}))
       throw new Error(errData.message || `HTTP ${response.status}`)
+    }
+
+    // Automatically sync updated credit balance
+    const headerCredits = response.headers?.get?.('x-remaining-credits')
+    if (headerCredits) {
+      const remaining = parseInt(headerCredits, 10)
+      if (!isNaN(remaining)) {
+        useAuthStore.getState().setCredits(remaining)
+      }
+    } else {
+      useAuthStore.getState().deductCredits(10)
     }
 
     const reader = response.body.getReader()

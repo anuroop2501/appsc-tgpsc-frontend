@@ -3,11 +3,12 @@ import useAuthStore from '../store/authStore'
 
 /**
  * Evaluate a mains answer.
+ * @param {{ topic?: string, exam: string, question: string, answer: string, marks?: number, language?: string }} params
  * @returns {Object} { score, maxScore, criteria, strengths, improvements, examinerComment, modelAnswer }
  */
-export const evaluateAnswer = ({ topic, exam, question, answer, marks }) =>
+export const evaluateAnswer = ({ topic, exam, question, answer, marks, language = 'en' }) =>
   api
-    .post('/api/ai/evaluate', { topic, exam, question, answer, marks })
+    .post('/api/ai/evaluate', { topic, exam, question, answer, marks, language })
     .then((r) => r.data)
 
 /**

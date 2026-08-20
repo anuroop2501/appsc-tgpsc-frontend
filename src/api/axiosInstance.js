@@ -37,7 +37,22 @@ const processQueue = (error, token = null) => {
 }
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Automatically sync updated credit balance across the whole app
+    const remainingHeader = response.headers?.['x-remaining-credits']
+    if (remainingHeader !== undefined && remainingHeader !== null) {
+      const remaining = parseInt(remainingHeader, 10)
+      if (!isNaN(remaining)) {
+        useAuthStore.getState().setCredits(remaining)
+      }
+    } else if (response.data?.remainingCredits !== undefined && response.data?.remainingCredits !== null) {
+      const remaining = parseInt(response.data.remainingCredits, 10)
+      if (!isNaN(remaining)) {
+        useAuthStore.getState().setCredits(remaining)
+      }
+    }
+    return response
+  },
   async (error) => {
     const originalRequest = error.config
 

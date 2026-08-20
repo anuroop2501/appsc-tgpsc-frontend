@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react'
 import { login } from '../api/auth'
 import useAuthStore from '../store/authStore'
+import BrandLogo from '../components/BrandLogo'
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -26,7 +27,7 @@ const LoginPage = () => {
     setError('')
   }
 
-  const submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!form.email || !form.password) { setError('Please fill in all fields.'); return }
     setLoading(true)
@@ -41,6 +42,7 @@ const LoginPage = () => {
       setLoading(false)
     }
   }
+  const submit = handleSubmit
 
   return (
     <div
@@ -72,21 +74,24 @@ const LoginPage = () => {
         >
           {/* Brand */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
-            <div
-              style={{
-                width: 48, height: 48, borderRadius: 13, marginBottom: 16,
-                background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 20, color: '#0A0F1C',
-              }}
-            >
-              A
+            <div style={{ marginBottom: 14 }}>
+              <BrandLogo size={52} showText={false} />
             </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 22, margin: 0 }}>
-              APPSC <span style={{ color: 'var(--gold-hi)' }}>AI</span>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 24, margin: 0, letterSpacing: 0.2 }}>
+              APPSC{' '}
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #FF7A00 0%, #FF5500 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 700,
+                }}
+              >
+                AI
+              </span>
             </h1>
             <p style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 4, letterSpacing: '0.04em' }}>
-              AI-powered APPSC preparation by Ace with Ease IAS
+              AI-Powered Preparation Platform for APPSC
             </p>
           </div>
 
@@ -104,72 +109,93 @@ const LoginPage = () => {
           {error && (
             <div
               style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 14px', borderRadius: 10, marginBottom: 18,
-                background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)',
-                color: 'var(--red)', fontSize: 13.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 14px',
+                borderRadius: 10,
+                marginBottom: 16,
+                background: 'var(--red-dim)',
+                border: '1px solid rgba(239,68,68,0.3)',
+                color: 'var(--red)',
+                fontSize: 13.5,
               }}
             >
               <AlertCircle size={15} style={{ flexShrink: 0 }} />
-              {error}
+              <span>{error}</span>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {/* Email */}
-            <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>
-                Email address
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
-                <input
-                  type="email" name="email" value={form.email} onChange={handle}
-                  placeholder="you@example.com" autoComplete="email"
-                  className="input"
-                  style={{ paddingLeft: 38 }}
-                />
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+              {/* Email */}
+              <div>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>
+                  Email address
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', zIndex: 1 }} />
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handle}
+                    placeholder="you@example.com"
+                    required
+                    className="input"
+                    style={{ paddingLeft: 36, height: 44 }}
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>
+                  Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', zIndex: 1 }} />
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    name="password"
+                    value={form.password}
+                    onChange={handle}
+                    placeholder="••••••••••••"
+                    required
+                    className="input"
+                    style={{ paddingLeft: 36, paddingRight: 38, height: 44 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: 0 }}
+                  >
+                    {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Password */}
-            <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>
-                Password
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
-                <input
-                  type={showPass ? 'text' : 'password'} name="password" value={form.password} onChange={handle}
-                  placeholder="••••••••" autoComplete="current-password"
-                  className="input"
-                  style={{ paddingLeft: 38, paddingRight: 40 }}
-                />
-                <button
-                  type="button" onClick={() => setShowPass((s) => !s)}
-                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2 }}
-                >
-                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Submit */}
             <button
-              type="submit" disabled={loading}
+              type="submit"
+              disabled={loading}
               className="btn-primary"
-              style={{ width: '100%', height: 46, marginTop: 6, fontSize: 15 }}
+              style={{ width: '100%', height: 46, fontSize: 14.5, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
             >
-              {loading ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} /> Signing in…</> : 'Sign In'}
+              {loading && <Loader2 size={16} className="animate-spin" />}
+              {loading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
 
           {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
-            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>New to APPSC AI?</span>
-            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          <div style={{ position: 'relative', margin: '24px 0', textAlign: 'center' }}>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+              <div style={{ width: '100%', borderTop: '1px solid var(--border-soft)' }} />
+            </div>
+            <span style={{ position: 'relative', background: 'var(--surface)', padding: '0 12px', fontSize: 12, color: 'var(--text-3)' }}>
+              New to APPSC AI?
+            </span>
           </div>
 
           <Link
@@ -189,7 +215,7 @@ const LoginPage = () => {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--text-3)', marginTop: 16 }}>
-          Ace with Ease IAS — Powered by Precision AI
+          APPSC AI — Precision Preparation Platform
         </p>
       </div>
     </div>

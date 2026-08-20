@@ -92,7 +92,7 @@ export default function PricingPage() {
           Unlock Exam-Ready AI Tools
         </h1>
         <p style={{ fontSize: 14.5, color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
-          Full APPSC &amp; TGPSC syllabus coverage, AI mock test generation, Bloom's L3-5 analytical questions, and instant explanations.
+          Full APPSC syllabus coverage, AI mock test generation, Bloom's L3-5 analytical questions, and instant explanations.
         </p>
       </div>
 
@@ -308,7 +308,7 @@ export default function PricingPage() {
 
                       <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13.5, color: 'var(--text-2)' }}>
                         <li style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <Check size={16} style={{ color: 'var(--emerald)', flexShrink: 0 }} /> All APPSC &amp; TGPSC Subjects
+                          <Check size={16} style={{ color: 'var(--emerald)', flexShrink: 0 }} /> All APPSC Subjects
                         </li>
                         <li style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <Check size={16} style={{ color: 'var(--emerald)', flexShrink: 0 }} /> Bloom's L3-5 Question Quality

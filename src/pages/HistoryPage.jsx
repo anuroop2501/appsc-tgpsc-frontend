@@ -22,14 +22,7 @@ import ScoreRing from '../components/ScoreRing'
 import RubricBar from '../components/RubricBar'
 import MarkdownRenderer from '../components/MarkdownRenderer'
 import useBreadcrumbStore from '../store/breadcrumbStore'
-
-const TABS = [
-  { value: 'all', label: 'All Activity' },
-  { value: 'prelims', label: 'MCQ Sessions' },
-  { value: 'notes', label: 'Study Notes' },
-  { value: 'evaluation', label: 'Evaluations' },
-  { value: 'planner', label: 'Study Plans' },
-]
+import { useLanguage } from '../context/LanguageContext'
 
 const TYPE_CONFIG = {
   prelims: {
@@ -123,9 +116,18 @@ const formatDate = (dateStr) => {
 }
 
 const HistoryPage = () => {
+  const { t } = useLanguage()
   const location = useLocation()
   const queryTab = new URLSearchParams(location.search).get('tab')
   const defaultTab = queryTab || location.state?.activeTab || 'all'
+
+  const TABS = [
+    { value: 'all', label: t('history.allActivity', 'All Activity') },
+    { value: 'prelims', label: t('history.mcqSessions', 'MCQ Sessions') },
+    { value: 'notes', label: t('history.studyNotes', 'Study Notes') },
+    { value: 'evaluation', label: t('history.evaluations', 'Evaluations') },
+    { value: 'planner', label: t('history.studyPlans', 'Study Plans') },
+  ]
 
   const [activeTab, setActiveTab] = useState(defaultTab)
   const [items, setItems] = useState([])
@@ -499,11 +501,11 @@ const HistoryPage = () => {
             <Clock size={20} />
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
-            Study History
+            {t('history.title', 'Study History')}
           </h1>
         </div>
         <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px' }}>
-          Track all your MCQ sessions, generated notes, and answer evaluations
+          {t('history.subtitle', 'Track all your MCQ sessions, generated notes, and answer evaluations')}
         </p>
       </div>
 
@@ -562,17 +564,17 @@ const HistoryPage = () => {
           <div style={{ padding: 40, textAlign: 'center' }}>
             <p style={{ fontSize: 14, color: 'var(--red)', margin: '0 0 12px' }}>{error}</p>
             <button onClick={() => fetchHistory(activeTab, page)} className="btn-ghost" style={{ fontSize: 13 }}>
-              Try again
+              {t('common.tryAgain', 'Try again')}
             </button>
           </div>
         ) : items.length === 0 ? (
           <div style={{ padding: '56px 20px', textAlign: 'center' }}>
             <Inbox size={34} style={{ color: 'var(--text-3)', margin: '0 auto 12px' }} />
             <p style={{ fontSize: 16, fontWeight: 650, fontFamily: 'var(--font-display)', color: 'var(--text-1)', margin: '0 0 4px' }}>
-              No {activeTab === 'all' ? 'activity' : TABS.find((t) => t.value === activeTab)?.label?.toLowerCase() || 'records'} yet
+              {t('history.noSessions', 'No activity yet')}
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-3)', margin: 0 }}>
-              {activeTab === 'all' ? 'Start practicing MCQs or generating study notes' : `Generate ${TABS.find((t) => t.value === activeTab)?.label} to see them here`}
+              {t('history.noSessionsDesc', 'Start practicing MCQs or generating study notes')}
             </p>
           </div>
         ) : (

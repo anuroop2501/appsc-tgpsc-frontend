@@ -1,17 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Sparkles, Loader2, CheckCircle, XCircle, RefreshCw, Download } from 'lucide-react'
 import TopicAutocomplete from '../components/TopicAutocomplete'
 import MCQCard from '../components/MCQCard'
 import LoadingDots from '../components/LoadingDots'
+import PricingModal from '../components/PricingModal'
 import { generatePrelims } from '../api/prelims'
+import { getUserBalance } from '../api/payment'
 import { exportPrelimsToPdf } from '../lib/exportPdf'
 import useAuthStore from '../store/authStore'
+import { useLanguage } from '../context/LanguageContext'
 
 const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 
 const PrelimsPage = () => {
   const user = useAuthStore((s) => s.user)
   const defaultExam = user?.targetExam || EXAMS[0]
+  const { language, t } = useLanguage()
 
   const [topic, setTopic] = useState('')
   const [exam, setExam] = useState(defaultExam)
@@ -21,17 +25,39 @@ const PrelimsPage = () => {
   const [fromCache, setFromCache] = useState(false)
   const [answeredCount, setAnsweredCount] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
+  const setAuthCredits = useAuthStore((s) => s.setCredits)
+  const credits = user?.credits !== undefined ? user.credits : 100
+  const [isPricingOpen, setIsPricingOpen] = useState(false)
+
+  useEffect(() => {
+    if (user?.id || user?.userId) {
+      getUserBalance()
+        .then((data) => {
+          if (data.credits !== undefined && setAuthCredits) setAuthCredits(data.credits)
+        })
+        .catch(() => {})
+    }
+  }, [user?.id, user?.userId, setAuthCredits])
 
   const handleGenerate = async () => {
-    if (!topic.trim()) { setError('Please enter or select a topic.'); return }
+    if (credits < 10) {
+      setError(t('common.insufficientCredits', 'Insufficient credits (10 required). Please recharge or upgrade.'))
+      setIsPricingOpen(true)
+      return
+    }
+
+    if (!topic.trim()) { setError(t('common.topicPlaceholder', 'Please enter or select a topic.')); return }
     setLoading(true); setError(''); setQuestions([])
     setAnsweredCount(0); setCorrectCount(0); setFromCache(false)
     try {
-      const data = await generatePrelims({ topic, exam })
+      const data = await generatePrelims({ topic, exam, language })
       setQuestions(data)
       setFromCache(!!data._fromCache)
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to generate questions.')
+      if (err.response?.status === 402) {
+        setIsPricingOpen(true)
+      }
+      setError(err.response?.data?.message || err.response?.data?.error || err.message || t('common.error', 'Failed to generate questions.'))
     } finally { setLoading(false) }
   }
 
@@ -45,11 +71,11 @@ const PrelimsPage = () => {
             <Sparkles size={20} />
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
-            MCQ Prelims
+            {t('prelims.title', 'MCQ Prelims')}
           </h1>
         </div>
         <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px', lineHeight: 1.5 }}>
-          Generate 10 exam-pattern multiple choice questions from any APPSC topic
+          {t('prelims.subtitle', 'Generate 10 exam-pattern multiple choice questions from any APPSC topic')}
         </p>
       </div>
 
@@ -59,13 +85,13 @@ const PrelimsPage = () => {
           {/* Topic */}
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-              Topic / Syllabus Area
+              {t('common.topicOrSyllabus', 'Topic / Syllabus Area')}
             </label>
             <TopicAutocomplete
               value={topic}
               onChange={setTopic}
               exam={exam}
-              placeholder="e.g. Fundamental Rights, Andhra Pradesh History, Economy & Planning…"
+              placeholder={t('common.topicPlaceholder', 'e.g. Fundamental Rights, Andhra Pradesh History, Economy & Planning…')}
             />
           </div>
 
@@ -73,7 +99,7 @@ const PrelimsPage = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-                Target Exam
+                {t('common.targetExam', 'Target Exam')}
               </label>
               <select value={exam} onChange={(e) => setExam(e.target.value)} className="input" style={{ height: 46 }}>
                 {EXAMS.map((e) => <option key={e} value={e}>{e}</option>)}
@@ -83,8 +109,8 @@ const PrelimsPage = () => {
             <div style={{ display: 'flex', alignItems: 'flex-end' }}>
               <button onClick={handleGenerate} disabled={loading} className="btn-primary" style={{ width: '100%', height: 46, fontSize: 14.5 }}>
                 {loading
-                  ? <><Loader2 size={17} className="animate-spin" /> Preparing…</>
-                  : <><Sparkles size={17} /> Generate Questions</>
+                  ? <><Loader2 size={17} className="animate-spin" /> {t('prelims.generating', 'Preparing…')}</>
+                  : <><Sparkles size={17} /> {t('prelims.generateBtn', 'Generate Questions (10 Credits)')}</>
                 }
               </button>
             </div>
@@ -101,15 +127,26 @@ const PrelimsPage = () => {
         {/* Cache badge */}
         {fromCache && (
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '4px 12px', borderRadius: 20, marginTop: 14, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)' }}>
-            <CheckCircle size={13} /> Loaded from cache
+            <CheckCircle size={13} /> {t('common.loadedFromCache', 'Loaded from cache')}
           </div>
         )}
       </div>
 
+      {/* ── Pricing & Recharge Modal ── */}
+      <PricingModal
+        isOpen={isPricingOpen}
+        onClose={() => setIsPricingOpen(false)}
+        onPaymentSuccess={(updatedUser) => {
+          if (updatedUser?.credits !== undefined) setCredits(updatedUser.credits)
+          setIsPricingOpen(false)
+        }}
+        reason="Generating MCQ practice sets requires 10 credits."
+      />
+
       {/* ── Loading ── */}
       {loading && (
         <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-          <LoadingDots message="Generating high-quality APPSC prelims questions…" />
+          <LoadingDots message={t('prelims.loadingMessage', 'Generating high-quality APPSC prelims questions…')} />
         </div>
       )}
 
@@ -120,9 +157,9 @@ const PrelimsPage = () => {
           <div className="card" style={{ padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
               {[
-                { label: 'Questions', value: questions.length, color: 'var(--text-1)' },
-                { label: 'Answered', value: `${answeredCount} / ${questions.length}`, color: 'var(--indigo)' },
-                { label: 'Correct', value: `${correctCount} / ${answeredCount || '—'}`, color: 'var(--emerald)' },
+                { label: t('prelims.questionNum', 'Questions'), value: questions.length, color: 'var(--text-1)' },
+                { label: t('prelims.answered', 'Answered'), value: `${answeredCount} / ${questions.length}`, color: 'var(--indigo)' },
+                { label: t('prelims.correct', 'Correct'), value: `${correctCount} / ${answeredCount || '—'}`, color: 'var(--emerald)' },
               ].map(({ label, value, color }, i, arr) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                   <div>
@@ -139,10 +176,10 @@ const PrelimsPage = () => {
                 onClick={() => exportPrelimsToPdf({ topic, exam, questions })}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 9, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
               >
-                <Download size={14} /> Download PDF
+                <Download size={14} /> {t('common.downloadPdf', 'Download PDF')}
               </button>
               <button onClick={handleGenerate} className="btn-ghost" style={{ fontSize: 13, padding: '8px 16px' }}>
-                <RefreshCw size={13} /> Regenerate
+                <RefreshCw size={13} /> {t('common.tryAgain', 'Regenerate')}
               </button>
             </div>
           </div>

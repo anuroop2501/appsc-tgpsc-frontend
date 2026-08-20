@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, Lightbulb } from 'lucide-react'
 import FormattedQuestionText from './FormattedQuestionText'
+import { useLanguage } from '../context/LanguageContext'
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D']
 
 const MCQCard = ({ question, options, correctAnswer, explanation, index, onAnswer }) => {
+  const { t } = useLanguage()
   const [selectedOption, setSelectedOption] = useState(null)
   const [answered, setAnswered] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
@@ -122,7 +124,9 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index, onAnswe
               <Lightbulb size={13} style={{ color: 'var(--gold-hi)' }} />
             </div>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-hi)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Explanation</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-hi)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                {t('prelims.explanation', 'Explanation')}
+              </p>
               <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-1)', margin: 0 }}>{explanation}</p>
             </div>
           </div>
@@ -132,7 +136,7 @@ const MCQCard = ({ question, options, correctAnswer, explanation, index, onAnswe
       {/* Toggle explanation */}
       {answered && explanation && !showExplanation && (
         <button onClick={() => setShowExplanation(true)} style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-hi)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-          <Lightbulb size={13} /> Show Explanation
+          <Lightbulb size={13} /> {t('prelims.showExplanation', 'Show Explanation')}
         </button>
       )}
     </div>

@@ -77,6 +77,8 @@ const Layout = () => {
             padding: '36px 40px 60px',
             maxWidth: 1220,
             width: '100%',
+            margin: '0 auto',
+            boxSizing: 'border-box',
           }}
         >
           <Outlet />

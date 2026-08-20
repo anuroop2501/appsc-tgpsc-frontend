@@ -1,23 +1,24 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { Menu, ChevronLeft, Bell, ChevronRight, CheckCircle, Info, Calendar, Sun, Moon } from 'lucide-react'
+import { Menu, ChevronLeft, Bell, ChevronRight, CheckCircle, Info, Calendar, Sun, Moon, Languages } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import useBreadcrumbStore from '../store/breadcrumbStore'
 import { useTheme } from '../context/ThemeContext'
+import { useLanguage } from '../context/LanguageContext'
 import PricingModal from './PricingModal'
 import { getUserBalance } from '../api/payment'
 
-const getRouteLabels = (targetExam = '') => {
+const getRouteLabels = (targetExam = '', t = (k) => k) => {
   const isGroup2 = (targetExam || '').toLowerCase().includes('group 2')
   return {
-    '/dashboard':  ['Dashboard'],
-    '/prelims':    ['Modules', 'MCQ Prelims'],
-    '/test':       ['Modules', 'Mock Test'],
-    '/notes':      ['Modules', isGroup2 ? 'Group 2 Notes' : 'Mains Notes'],
-    '/evaluator':  ['Modules', 'Answer Evaluator'],
-    '/planner':    ['Modules', 'Study Planner'],
-    '/history':    ['Account', 'Study History'],
-    '/pricing':    ['Account', 'Plans & Pricing'],
+    '/dashboard':  [t('nav.dashboard', 'Dashboard')],
+    '/prelims':    [t('nav.modules', 'Modules'), t('nav.prelims', 'MCQ Prelims')],
+    '/test':       [t('nav.modules', 'Modules'), t('nav.mockTest', 'Mock Test')],
+    '/notes':      [t('nav.modules', 'Modules'), isGroup2 ? t('nav.group2Notes', 'Notes') : t('nav.mainsNotes', 'Notes')],
+    '/evaluator':  [t('nav.modules', 'Modules'), t('nav.evaluator', 'Answer Evaluator')],
+    '/planner':    [t('nav.modules', 'Modules'), t('nav.planner', 'Study Planner')],
+    '/history':    [t('nav.account', 'Account'), t('nav.history', 'Study History')],
+    '/pricing':    [t('nav.account', 'Account'), t('nav.pricing', 'Plans & Pricing')],
   }
 }
 
@@ -32,7 +33,7 @@ const INITIAL_NOTIFICATIONS = [
   {
     id: 1,
     title: 'Knowledge Base Ready',
-    desc: '36,526 study chunks loaded. Dynamic RAG search active.',
+    desc: '36,526 study chunks loaded. Knowledge search active.',
     time: 'Just now',
     icon: CheckCircle,
     color: 'var(--emerald)',
@@ -59,8 +60,10 @@ const Topbar = ({ onMenuClick, sidebarOpen = true }) => {
   const { pathname } = useLocation()
   const user = useAuthStore((s) => s.user)
   const updateUser = useAuthStore((s) => s.updateUser)
+  const setCredits = useAuthStore((s) => s.setCredits)
   const { theme, toggleTheme } = useTheme()
-  const [credits, setCredits] = useState(user?.credits || 0)
+  const { language, toggleLanguage, t } = useLanguage()
+  const credits = user?.credits ?? 0
   const [isPricingOpen, setIsPricingOpen] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [unread, setUnread] = useState(true)
@@ -70,10 +73,12 @@ const Topbar = ({ onMenuClick, sidebarOpen = true }) => {
   useEffect(() => {
     if (user?.id || user?.userId) {
       getUserBalance()
-        .then((data) => { if (data.credits !== undefined) setCredits(data.credits) })
+        .then((data) => {
+          if (data.credits !== undefined && setCredits) setCredits(data.credits)
+        })
         .catch(() => {})
     }
-  }, [user])
+  }, [user?.id, user?.userId, setCredits])
 
   const override = useBreadcrumbStore((s) => s.override)
   const clearOverride = useBreadcrumbStore((s) => s.clearOverride)
@@ -82,7 +87,7 @@ const Topbar = ({ onMenuClick, sidebarOpen = true }) => {
     clearOverride()
   }, [pathname, clearOverride])
 
-  const ROUTE_LABELS = getRouteLabels(user?.targetExam)
+  const ROUTE_LABELS = getRouteLabels(user?.targetExam, t)
   const crumbs = override || ROUTE_LABELS[pathname] || [pathname.slice(1)]
 
   const initials = user?.name
@@ -161,7 +166,7 @@ const Topbar = ({ onMenuClick, sidebarOpen = true }) => {
         </nav>
       </div>
 
-      {/* ── Right: credits + theme toggle + bell + avatar ── */}
+      {/* ── Right: credits + language toggle + theme toggle + bell + avatar ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', flexShrink: 0 }} ref={dropdownRef}>
 
         {/* Credits Pill */}
@@ -178,7 +183,7 @@ const Topbar = ({ onMenuClick, sidebarOpen = true }) => {
               {credits.toLocaleString()}
             </div>
             <div style={{ fontSize: 9.5, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Credits
+              {t('nav.credits', 'Credits')}
             </div>
           </div>
           <button
@@ -190,9 +195,62 @@ const Topbar = ({ onMenuClick, sidebarOpen = true }) => {
               borderRadius: 7, cursor: 'pointer',
             }}
           >
-            Top up
+            {t('nav.topUp', 'Top up')}
           </button>
         </div>
+
+        {/* ── Telugu / English Language Toggle ── */}
+        <button
+          onClick={toggleLanguage}
+          style={{
+            height: 36,
+            padding: '0 10px',
+            borderRadius: 10,
+            border: language === 'te' ? '1px solid var(--gold-border)' : '1px solid var(--border)',
+            background: language === 'te' ? 'var(--gold-dim)' : 'var(--surface)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            cursor: 'pointer',
+            color: language === 'te' ? 'var(--gold-hi)' : 'var(--text-2)',
+            transition: 'all 0.18s ease',
+            fontSize: 13,
+            fontWeight: 650,
+            userSelect: 'none',
+          }}
+          title={language === 'te' ? 'Switch to English' : 'తెలుగులోకి మార్చండి (Switch to Telugu)'}
+          onMouseEnter={(e) => {
+            if (language !== 'te') {
+              e.currentTarget.style.borderColor = 'var(--indigo)'
+              e.currentTarget.style.color = 'var(--text-1)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (language !== 'te') {
+              e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.color = 'var(--text-2)'
+            }
+          }}
+        >
+          <Languages size={15} style={{ opacity: 0.9 }} />
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: language === 'te' ? 12.5 : 12 }}>
+            {language === 'te' ? 'తెలుగు' : 'English'}
+          </span>
+          <span
+            style={{
+              fontSize: 9.5,
+              padding: '1px 5px',
+              borderRadius: 5,
+              background: language === 'te' ? 'var(--gold)' : 'var(--surface-elevated)',
+              color: language === 'te' ? '#0A0D16' : 'var(--text-3)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            {language === 'te' ? 'TE' : 'EN'}
+          </span>
+        </button>
 
         {/* Theme Toggle Button */}
         <button

@@ -207,7 +207,7 @@ export default function PricingModal({ isOpen, onClose, onPaymentSuccess, reason
                 Choose Your Exam Preparation Pass
               </h2>
               <p style={{ fontSize: 13, color: 'var(--text-3)', maxWidth: 500, margin: '0 auto', lineHeight: 1.5 }}>
-                Full APPSC & TGPSC syllabus coverage, AI mock test generation, Bloom's L3-5 statement questions, and instant explanations.
+                Full APPSC syllabus coverage, AI mock test generation, Bloom's L3-5 statement questions, and instant explanations.
               </p>
               {reason && (
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, padding: '6px 12px', borderRadius: 8, background: 'var(--gold-dim)', border: '1px solid var(--gold-border)', color: 'var(--gold-hi)', fontSize: 12 }}>
@@ -327,7 +327,7 @@ export default function PricingModal({ isOpen, onClose, onPaymentSuccess, reason
 
                         <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, color: 'var(--text-2)' }}>
                           <li style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <Check size={13} style={{ color: 'var(--emerald)' }} /> APPSC & TGPSC Subjects
+                            <Check size={13} style={{ color: 'var(--emerald)' }} /> All APPSC Subjects
                           </li>
                           <li style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <Check size={13} style={{ color: 'var(--emerald)' }} /> Bloom's L3-5 Questions

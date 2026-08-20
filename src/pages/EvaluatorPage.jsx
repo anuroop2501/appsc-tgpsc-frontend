@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import {
   Star,
   Loader2,
@@ -14,14 +14,18 @@ import {
   RefreshCw,
   Eye,
   X,
+  Lock,
 } from 'lucide-react'
 import TopicAutocomplete from '../components/TopicAutocomplete'
 import ScoreRing from '../components/ScoreRing'
 import RubricBar from '../components/RubricBar'
 import MarkdownRenderer from '../components/MarkdownRenderer'
 import LoadingDots from '../components/LoadingDots'
+import PricingModal from '../components/PricingModal'
 import { evaluateAnswer, extractAnswerFromFile } from '../api/evaluator'
+import { getUserBalance } from '../api/payment'
 import useAuthStore from '../store/authStore'
+import { useLanguage } from '../context/LanguageContext'
 
 const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
@@ -45,6 +49,24 @@ function methodLabel(method) {
 
 const EvaluatorPage = () => {
   const user = useAuthStore((s) => s.user)
+  const { language, t } = useLanguage()
+
+  const userPlan = (user?.planTier || user?.plan_tier || 'free').toLowerCase()
+  const isEvalLocked = !['pro_999', 'officer_1999', 'admin'].includes(userPlan)
+
+  const setAuthCredits = useAuthStore((s) => s.setCredits)
+  const credits = user?.credits !== undefined ? user.credits : 100
+  const [isPricingOpen, setIsPricingOpen] = useState(false)
+
+  useEffect(() => {
+    if (user?.id || user?.userId) {
+      getUserBalance()
+        .then((data) => {
+          if (data.credits !== undefined && setAuthCredits) setAuthCredits(data.credits)
+        })
+        .catch(() => {})
+    }
+  }, [user?.id, user?.userId, setAuthCredits])
 
   const [form, setForm] = useState({
     question: '',
@@ -106,6 +128,9 @@ const EvaluatorPage = () => {
       handle('answer', data.text)
       setExtractMeta({ method: data.method, chars: data.chars })
     } catch (err) {
+      if (err.response?.status === 403) {
+        setIsPricingOpen(true)
+      }
       setExtractError(
         err?.response?.data?.error ||
         err.message ||
@@ -153,10 +178,21 @@ const EvaluatorPage = () => {
   }
 
   const handleSubmit = async () => {
-    if (!form.question.trim()) { setError('Please enter the question.'); return }
-    if (!form.answer.trim())   { setError('Please provide your answer.'); return }
+    if (isEvalLocked) {
+      setIsPricingOpen(true)
+      return
+    }
+
+    if (credits < 20) {
+      setError(t('common.insufficientCredits', 'Insufficient credits (20 required). Please recharge or upgrade.'))
+      setIsPricingOpen(true)
+      return
+    }
+
+    if (!form.question.trim()) { setError(t('evaluator.questionPlaceholder', 'Please enter the question.')); return }
+    if (!form.answer.trim())   { setError(t('evaluator.answerPlaceholder', 'Please provide your answer.')); return }
     if (form.answer.trim().length < 30) {
-      setError('Answer seems too short. Write at least a few sentences.')
+      setError(t('evaluator.answerPlaceholder', 'Answer seems too short. Write at least a few sentences.'))
       return
     }
 
@@ -165,10 +201,14 @@ const EvaluatorPage = () => {
     setResult(null)
 
     try {
-      const data = await evaluateAnswer(form)
+      const data = await evaluateAnswer({ ...form, language })
       setResult(data.evaluation || data)
+      setCredits((prev) => Math.max(0, prev - 20))
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data?.message || err.message || 'Evaluation failed.')
+      if (err.response?.status === 402 || err.response?.status === 403) {
+        setIsPricingOpen(true)
+      }
+      setError(err.response?.data?.error || err.response?.data?.message || err.message || t('common.error', 'Evaluation failed.'))
     } finally {
       setLoading(false)
     }
@@ -183,13 +223,75 @@ const EvaluatorPage = () => {
             <Star size={20} />
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 28, margin: 0, color: 'var(--text-1)' }}>
-            Answer Evaluator
+            {t('evaluator.title', 'Answer Evaluator')}
           </h1>
         </div>
         <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 0 56px', lineHeight: 1.5 }}>
-          Get expert evaluation with scores, rubric breakdown, and benchmark model answers.
+          {t('evaluator.subtitle', 'Get expert evaluation with scores, rubric breakdown, and benchmark model answers.')}
         </p>
       </div>
+
+      {/* ── Plan Lock Banner ── */}
+      {isEvalLocked && (
+        <div
+          className="card"
+          style={{
+            padding: 32,
+            marginBottom: 24,
+            border: '1px solid var(--gold-border)',
+            background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.08), rgba(0, 0, 0, 0.2))',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 14,
+              background: 'var(--gold-dim)',
+              color: 'var(--gold-hi)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid var(--gold-border)',
+            }}
+          >
+            <Lock size={26} />
+          </div>
+          <div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 650, color: 'var(--text-1)', margin: '0 0 8px' }}>
+              {t('evaluator.lockedTitle', 'PRO & Officer Plan Exclusive')}
+            </h2>
+            <p style={{ fontSize: 14, color: 'var(--text-2)', maxWidth: 580, margin: '0 auto', lineHeight: 1.6 }}>
+              {t('evaluator.lockedDesc', 'Mains Answer Evaluation with AI OCR handwriting analysis & rubric scoring is exclusive to Group 1 Ranker PRO (₹999) and Officer Super Pass (₹1999) plans.')}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsPricingOpen(true)}
+            style={{
+              padding: '12px 28px',
+              borderRadius: 12,
+              background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)',
+              color: '#0A0F1C',
+              fontSize: 14.5,
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(217, 119, 6, 0.25)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Lock size={15} /> {t('evaluator.upgradeBtn', 'Upgrade Plan to Unlock')}
+          </button>
+        </div>
+      )}
 
       {/* ── Input Card ── */}
       <div className="card" style={{ padding: 28, marginBottom: 24 }}>
@@ -198,13 +300,13 @@ const EvaluatorPage = () => {
           {/* Question */}
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-              Question
+              {t('evaluator.questionLabel', 'Question')}
             </label>
             <textarea
               value={form.question}
               onChange={(e) => handle('question', e.target.value)}
               rows={3}
-              placeholder="Paste the Mains question you want to evaluate…"
+              placeholder={t('evaluator.questionPlaceholder', 'Paste the Mains question you want to evaluate…')}
               className="input"
               style={{ minHeight: 88, lineHeight: 1.6 }}
             />
@@ -214,18 +316,18 @@ const EvaluatorPage = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-                Topic / Subject (optional)
+                {t('common.topicOrSyllabus', 'Topic / Subject (optional)')}
               </label>
               <TopicAutocomplete
                 value={form.topic}
                 onChange={(v) => handle('topic', v)}
                 exam={form.exam}
-                placeholder="Search or enter syllabus topic…"
+                placeholder={t('common.topicPlaceholder', 'Search or enter syllabus topic…')}
               />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-                Target Exam
+                {t('common.targetExam', 'Target Exam')}
               </label>
               <select
                 value={form.exam}
@@ -243,7 +345,7 @@ const EvaluatorPage = () => {
           {/* Marks */}
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-              Marks Weightage
+              {t('evaluator.maxMarksLabel', 'Marks Weightage')}
             </label>
             <div style={{ display: 'flex', gap: 10 }}>
               {[10, 15].map((m) => {
@@ -277,7 +379,7 @@ const EvaluatorPage = () => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>
-                Your Answer
+                {t('evaluator.answerLabel', 'Your Answer')}
               </label>
               <div style={{ display: 'flex', borderRadius: 8, background: 'var(--surface-elevated)', border: '1px solid var(--border)', overflow: 'hidden' }}>
                 <button
@@ -296,7 +398,7 @@ const EvaluatorPage = () => {
                     cursor: 'pointer',
                   }}
                 >
-                  <PenLine size={13} /> Type
+                  <PenLine size={13} /> {t('evaluator.answerModeType', 'Type')}
                 </button>
                 <button
                   type="button"
@@ -314,7 +416,7 @@ const EvaluatorPage = () => {
                     cursor: 'pointer',
                   }}
                 >
-                  <Upload size={13} /> Upload (OCR)
+                  <Upload size={13} /> {t('evaluator.answerModeUpload', 'Upload (OCR)')}
                 </button>
               </div>
             </div>
@@ -326,7 +428,7 @@ const EvaluatorPage = () => {
                   value={form.answer}
                   onChange={(e) => handle('answer', e.target.value.slice(0, charLimit))}
                   rows={9}
-                  placeholder="Type or paste your complete written answer here…"
+                  placeholder={t('evaluator.answerPlaceholder', 'Type or paste your complete written answer here…')}
                   className="input"
                   style={{ minHeight: 200, lineHeight: 1.6, paddingBottom: 28 }}
                 />
@@ -373,10 +475,10 @@ const EvaluatorPage = () => {
                     </div>
                     <div style={{ textAlign: 'center' }}>
                       <p style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--text-1)', margin: '0 0 4px' }}>
-                        {isDragging ? 'Drop your file here' : 'Drag & drop or click to upload answer sheet'}
+                        {isDragging ? t('evaluator.uploadDropzone', 'Drop your file here') : t('evaluator.uploadDropzone', 'Drag & drop or click to upload answer sheet')}
                       </p>
                       <p style={{ fontSize: 12.5, color: 'var(--text-3)', margin: 0 }}>
-                        JPG, PNG, WEBP or PDF up to {MAX_SIZE_MB} MB · Handwriting recognized with AI vision
+                        {t('evaluator.uploadFormats', 'Supports JPG, PNG, WEBP, and PDF up to 10 MB')}
                       </p>
                     </div>
                     <input
@@ -498,34 +600,56 @@ const EvaluatorPage = () => {
             justifyContent: 'center',
             gap: 8,
             borderRadius: 11,
-            background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)',
-            color: '#0A0F1C',
+            background: isEvalLocked
+              ? 'var(--surface-elevated)'
+              : 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)',
+            color: isEvalLocked ? 'var(--text-2)' : '#0A0F1C',
             fontSize: 15,
             fontWeight: 650,
-            border: 'none',
+            border: isEvalLocked ? '1px solid var(--gold-border)' : 'none',
             cursor: loading || extracting ? 'not-allowed' : 'pointer',
             opacity: loading || extracting ? 0.6 : 1,
-            transition: 'opacity 0.15s ease',
+            transition: 'all 0.15s ease',
           }}
         >
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              Evaluating Answer…
+              {t('evaluator.evaluating', 'Evaluating Answer…')}
+            </>
+          ) : isEvalLocked ? (
+            <>
+              <Lock size={17} style={{ color: 'var(--gold-hi)' }} />
+              <span>{t('evaluator.upgradeBtn', 'Upgrade Plan to Unlock Evaluator')}</span>
             </>
           ) : (
             <>
               <Star size={18} />
-              Evaluate Answer
+              {t('evaluator.evaluateBtn', 'Evaluate Answer (20 Credits)')}
             </>
           )}
         </button>
       </div>
 
+      {/* ── Pricing & Upgrade Modal ── */}
+      <PricingModal
+        isOpen={isPricingOpen}
+        onClose={() => setIsPricingOpen(false)}
+        onPaymentSuccess={(updatedUser) => {
+          if (updatedUser?.credits !== undefined) setCredits(updatedUser.credits)
+          setIsPricingOpen(false)
+        }}
+        reason={
+          isEvalLocked
+            ? 'Mains Answer Evaluation requires Group 1 Ranker PRO (₹999) or Officer Super Pass (₹1999) plan.'
+            : 'Mains Answer Evaluation requires 20 credits.'
+        }
+      />
+
       {/* ── Loading ── */}
       {loading && (
         <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-          <LoadingDots message="Evaluating your answer against APPSC topper benchmarks…" />
+          <LoadingDots message={t('evaluator.loadingMessage', 'Evaluating your answer against APPSC topper benchmarks…')} />
         </div>
       )}
 
@@ -543,7 +667,7 @@ const EvaluatorPage = () => {
                   <MessageSquare size={15} />
                 </div>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
-                  Examiner's Feedback
+                  {t('evaluator.examinerComment', "Examiner's Feedback")}
                 </h3>
               </div>
               <p style={{ fontSize: 14, fontStyle: 'italic', lineHeight: 1.65, color: 'var(--text-2)', borderLeft: '3px solid var(--gold)', paddingLeft: 16, margin: 0 }}>
@@ -556,7 +680,7 @@ const EvaluatorPage = () => {
           {result.criteria?.length > 0 && (
             <div className="card" style={{ padding: 24 }}>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 560, margin: '0 0 18px', color: 'var(--text-1)' }}>
-                Rubric Breakdown
+                {t('evaluator.rubricBreakdown', 'Rubric Breakdown')}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {result.criteria.map((c, i) => (
@@ -580,7 +704,9 @@ const EvaluatorPage = () => {
               <div className="card" style={{ padding: 24 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
                   <CheckCircle size={16} style={{ color: 'var(--emerald)' }} />
-                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>Strengths</h3>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
+                    {t('evaluator.strengths', 'Strengths')}
+                  </h3>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {result.strengths.map((s, i) => (
@@ -596,7 +722,9 @@ const EvaluatorPage = () => {
               <div className="card" style={{ padding: 24 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
                   <AlertTriangle size={16} style={{ color: 'var(--gold-hi)' }} />
-                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>Areas to Improve</h3>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
+                    {t('evaluator.improvements', 'Areas to Improve')}
+                  </h3>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {result.improvements.map((s, i) => (
@@ -617,7 +745,7 @@ const EvaluatorPage = () => {
                   <BookMarked size={15} />
                 </div>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
-                  Model Answer Reference
+                  {t('evaluator.modelAnswer', 'Model Answer Reference')}
                 </h3>
               </div>
               <div style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)', borderRadius: 12, padding: '22px 26px' }} className="prose-dark">

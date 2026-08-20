@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, AlertCircle, User, GraduationCap, Loader2 } from 'lucide-react'
 import { signup } from '../api/auth'
 import useAuthStore from '../store/authStore'
+import BrandLogo from '../components/BrandLogo'
 
 const EXAMS = [
   { value: 'APPSC Group 1', label: 'APPSC Group 1' },
@@ -69,14 +70,24 @@ const SignupPage = () => {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 20, padding: '40px 36px', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
           {/* Brand */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 }}>
-            <div style={{ width: 48, height: 48, borderRadius: 13, marginBottom: 14, background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 20, color: '#0A0F1C' }}>
-              A
+            <div style={{ marginBottom: 14 }}>
+              <BrandLogo size={52} showText={false} />
             </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 22, margin: 0 }}>
-              APPSC <span style={{ color: 'var(--gold-hi)' }}>AI</span>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 24, margin: 0, letterSpacing: 0.2 }}>
+              APPSC{' '}
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #FF7A00 0%, #FF5500 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 700,
+                }}
+              >
+                AI
+              </span>
             </h1>
             <p style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 4, letterSpacing: '0.04em' }}>
-              AI-powered APPSC preparation by Ace with Ease IAS
+              AI-Powered Preparation Platform for APPSC
             </p>
           </div>
 

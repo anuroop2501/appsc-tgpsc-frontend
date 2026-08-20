@@ -11,43 +11,53 @@ import {
   FileText,
   Calendar,
   ChevronLeft,
+  Lock,
 } from 'lucide-react'
 import useAuthStore from '../store/authStore'
+import { useLanguage } from '../context/LanguageContext'
+import BrandLogo from './BrandLogo'
 
-// ─── Helper: derive nav from exam ────────────────────────────────────────────
-function getNavItems(targetExam = '') {
+// ─── Helper: derive nav from exam & plan ────────────────────────────────────
+function getNavItems(targetExam = '', planTier = 'free', t = (k) => k) {
   const exam = (targetExam || '').toLowerCase()
   const isGroup2 = exam.includes('group 2')
+  const plan = (planTier || 'free').toLowerCase()
+  const isEvalLocked = !['pro_999', 'officer_1999', 'admin'].includes(plan)
 
   const moduleItems = [
-    { to: '/prelims', icon: Sparkles, label: 'MCQ Prelims' },
+    { to: '/prelims', icon: Sparkles, label: t('nav.prelims', 'MCQ Prelims') },
   ]
 
   if (isGroup2) {
-    moduleItems.push({ to: '/notes', icon: FileText, label: 'Group 2 Notes' })
+    moduleItems.push({ to: '/notes', icon: FileText, label: t('nav.group2Notes', 'Notes') })
   } else {
-    moduleItems.push({ to: '/notes',     icon: BookOpen, label: 'Mains Notes' })
-    moduleItems.push({ to: '/evaluator', icon: Star,     label: 'Answer Evaluator' })
+    moduleItems.push({ to: '/notes',     icon: BookOpen, label: t('nav.mainsNotes', 'Notes') })
+    moduleItems.push({
+      to: '/evaluator',
+      icon: Star,
+      label: t('nav.evaluator', 'Answer Evaluator'),
+      locked: isEvalLocked,
+    })
   }
 
-  moduleItems.push({ to: '/planner', icon: Calendar, label: 'Study Planner' })
+  moduleItems.push({ to: '/planner', icon: Calendar, label: t('nav.planner', 'Study Planner') })
 
   return [
     {
-      section: 'Overview',
+      section: t('nav.overview', 'Overview'),
       items: [
-        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+        { to: '/dashboard', icon: LayoutDashboard, label: t('nav.dashboard', 'Dashboard') },
       ],
     },
     {
-      section: 'Modules',
+      section: t('nav.modules', 'Modules'),
       items: moduleItems,
     },
     {
-      section: 'Account',
+      section: t('nav.account', 'Account'),
       items: [
-        { to: '/history', icon: Clock,      label: 'Study History' },
-        { to: '/pricing', icon: CreditCard, label: 'Plans & Pricing' },
+        { to: '/history', icon: Clock,      label: t('nav.history', 'Study History') },
+        { to: '/pricing', icon: CreditCard, label: t('nav.pricing', 'Plans & Pricing') },
       ],
     },
   ]
@@ -55,6 +65,7 @@ function getNavItems(targetExam = '') {
 
 const Sidebar = ({ open, onClose, isMobile }) => {
   const { user, logout } = useAuthStore()
+  const { t } = useLanguage()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -66,7 +77,7 @@ const Sidebar = ({ open, onClose, isMobile }) => {
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U'
 
-  const NAV_ITEMS = getNavItems(user?.targetExam)
+  const NAV_ITEMS = getNavItems(user?.targetExam, user?.planTier || user?.plan_tier || 'free', t)
 
   if (!open) return null
 
@@ -83,23 +94,7 @@ const Sidebar = ({ open, onClose, isMobile }) => {
     >
       {/* ── Brand & Collapse Button ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 22 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div
-            style={{
-              width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-              background: 'linear-gradient(155deg, var(--gold-hi), var(--gold) 60%, #8a6e1c)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 18,
-              color: '#0A0F1C',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            }}
-          >
-            A
-          </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 650, fontSize: 20, letterSpacing: 0.2, color: 'var(--text-1)' }}>
-            APPSC <span style={{ color: 'var(--gold-hi)' }}>AI</span>
-          </div>
-        </div>
+        <BrandLogo size={38} showText={true} textSize={20} />
 
         {/* Back / Collapse Button inside Sidebar */}
         <button
@@ -119,35 +114,6 @@ const Sidebar = ({ open, onClose, isMobile }) => {
         </button>
       </div>
 
-      {/* ── Exam Pill ── */}
-      {user?.targetExam && (
-        <div
-          style={{
-            display: 'flex', alignItems: 'center', gap: 9,
-            border: '1px solid var(--border)', borderRadius: 10,
-            padding: '10px 12px', marginBottom: 20,
-            background: 'var(--surface)',
-          }}
-        >
-          <div
-            style={{
-              width: 7, height: 7, borderRadius: '50%',
-              background: 'var(--indigo)',
-              boxShadow: '0 0 0 3px var(--indigo-dim)',
-              flexShrink: 0,
-            }}
-          />
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>
-              {user.targetExam}
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 1 }}>
-              Prelims + Mains track
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Nav ── */}
       <nav style={{ flex: 1, overflowY: 'auto' }}>
         {NAV_ITEMS.map(({ section, items }) => (
@@ -161,7 +127,7 @@ const Sidebar = ({ open, onClose, isMobile }) => {
             >
               {section}
             </p>
-            {items.map(({ to, icon: Icon, label }) => (
+            {items.map(({ to, icon: Icon, label, locked }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -184,6 +150,25 @@ const Sidebar = ({ open, onClose, isMobile }) => {
               >
                 <Icon size={16} style={{ flexShrink: 0, opacity: 0.9 }} />
                 <span>{label}</span>
+                {locked && (
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      fontSize: 9.5,
+                      fontWeight: 700,
+                      padding: '1px 5px',
+                      borderRadius: 5,
+                      background: 'var(--gold-dim)',
+                      color: 'var(--gold-hi)',
+                      border: '1px solid var(--gold-border)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 3,
+                    }}
+                  >
+                    <Lock size={9} /> PRO
+                  </span>
+                )}
               </NavLink>
             ))}
           </div>
@@ -234,7 +219,7 @@ const Sidebar = ({ open, onClose, isMobile }) => {
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-3)' }}
         >
           <LogOut size={14} />
-          <span>Sign Out</span>
+          <span>{t('nav.signOut', 'Sign Out')}</span>
         </button>
       </div>
     </aside>

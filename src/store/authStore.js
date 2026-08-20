@@ -29,6 +29,26 @@ const useAuthStore = create((set, get) => ({
     set({ user })
   },
 
+  setCredits: (credits) => {
+    const user = get().user
+    if (user && typeof credits === 'number' && !isNaN(credits)) {
+      const updated = { ...user, credits }
+      localStorage.setItem(USER_KEY, JSON.stringify(updated))
+      set({ user: updated })
+    }
+  },
+
+  deductCredits: (amount) => {
+    const user = get().user
+    if (user && typeof amount === 'number' && !isNaN(amount)) {
+      const current = user.credits ?? 0
+      const remaining = Math.max(0, current - amount)
+      const updated = { ...user, credits: remaining }
+      localStorage.setItem(USER_KEY, JSON.stringify(updated))
+      set({ user: updated })
+    }
+  },
+
   logout: () => {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(REFRESH_KEY)
