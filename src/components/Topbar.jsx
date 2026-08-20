@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { Menu, Bell, ChevronRight, CheckCircle, Info, Calendar, Sun, Moon } from 'lucide-react'
+import { Menu, ChevronLeft, Bell, ChevronRight, CheckCircle, Info, Calendar, Sun, Moon } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import useBreadcrumbStore from '../store/breadcrumbStore'
 import { useTheme } from '../context/ThemeContext'
@@ -55,7 +55,7 @@ const INITIAL_NOTIFICATIONS = [
   },
 ]
 
-const Topbar = ({ onMenuClick }) => {
+const Topbar = ({ onMenuClick, sidebarOpen = true }) => {
   const { pathname } = useLocation()
   const user = useAuthStore((s) => s.user)
   const updateUser = useAuthStore((s) => s.updateUser)
@@ -116,19 +116,21 @@ const Topbar = ({ onMenuClick }) => {
         transition: 'background 0.2s ease, border-color 0.2s ease',
       }}
     >
-      {/* ── Left: hamburger + breadcrumb ── */}
+      {/* ── Left: toggle icon (Back / Hamburger) + breadcrumb ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
         <button
           onClick={onMenuClick}
           style={{
-            padding: '6px', borderRadius: 8, border: 'none',
-            background: 'transparent', cursor: 'pointer', color: 'var(--text-3)',
-            display: 'flex', alignItems: 'center', flexShrink: 0,
+            padding: '7px', borderRadius: 8, border: '1px solid var(--border)',
+            background: 'var(--surface)', cursor: 'pointer', color: 'var(--text-2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            transition: 'all 0.15s ease',
           }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
+          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-1)'; e.currentTarget.style.borderColor = 'var(--indigo)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--border)' }}
         >
-          <Menu size={20} />
+          {sidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
         </button>
 
         {/* Breadcrumb */}

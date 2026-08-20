@@ -66,7 +66,10 @@ const Layout = () => {
           transition: 'margin-left 0.3s ease',
         }}
       >
-        <Topbar onMenuClick={() => setSidebarOpen((o) => !o)} />
+        <Topbar
+          sidebarOpen={sidebarOpen}
+          onMenuClick={() => setSidebarOpen((o) => !o)}
+        />
 
         <main
           style={{
