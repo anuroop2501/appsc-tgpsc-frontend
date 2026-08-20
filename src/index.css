@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────
-   CSS Custom Properties — Premium Design System
+   CSS Custom Properties — Premium Design System (Dark & Light)
 ───────────────────────────────────────── */
-:root {
+:root, [data-theme="dark"] {
   --bg:               #0A0F1C;
   --bg-soft:          #0D1322;
   --surface:          #131A2B;
@@ -22,18 +22,18 @@
   --gold-dim:    rgba(201, 164, 48, 0.13);
   --gold-border: rgba(201, 164, 48, 0.35);
 
-  --indigo:      #6482E8;
-  --indigo-dim:  rgba(100, 130, 232, 0.13);
+  --indigo:        #6482E8;
+  --indigo-dim:    rgba(100, 130, 232, 0.13);
   --indigo-border: rgba(100, 130, 232, 0.35);
 
-  --emerald:     #33A583;
-  --emerald-dim: rgba(51, 165, 131, 0.13);
+  --emerald:        #33A583;
+  --emerald-dim:    rgba(51, 165, 131, 0.13);
   --emerald-border: rgba(51, 165, 131, 0.35);
 
   --red:         #EF4444;
   --red-dim:     rgba(239, 68, 68, 0.13);
 
-  /* Legacy aliases for backward compat */
+  /* Legacy variables mapped to new design tokens */
   --color-bg:      var(--bg);
   --color-surface: var(--surface);
   --color-card:    var(--surface-elevated);
@@ -57,7 +57,52 @@
   --radius-lg: 16px;
   --radius-xl: 22px;
 
-  --transition: all 0.15s ease;
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="light"], [data-theme="light"] {
+  --bg:               #F4F6FB;
+  --bg-soft:          #FFFFFF;
+  --surface:          #FFFFFF;
+  --surface-elevated: #F8FAFC;
+  --border:           #E2E8F0;
+  --border-soft:      #EDF2F7;
+
+  --text-1: #0F172A;
+  --text-2: #475569;
+  --text-3: #94A3B8;
+
+  --gold:        #B48608;
+  --gold-hi:     #926402;
+  --gold-dim:    rgba(180, 134, 8, 0.12);
+  --gold-border: rgba(180, 134, 8, 0.3);
+
+  --indigo:        #4F6BD6;
+  --indigo-dim:    rgba(79, 107, 214, 0.12);
+  --indigo-border: rgba(79, 107, 214, 0.3);
+
+  --emerald:        #258C6D;
+  --emerald-dim:    rgba(37, 140, 109, 0.12);
+  --emerald-border: rgba(37, 140, 109, 0.3);
+
+  --red:         #DC2626;
+  --red-dim:     rgba(220, 38, 38, 0.12);
+
+  /* Legacy variables mapped to new design tokens */
+  --color-bg:      var(--bg);
+  --color-surface: var(--surface);
+  --color-card:    var(--surface);
+  --color-border:  var(--border);
+  --color-accent:  var(--indigo);
+  --color-blue:    var(--indigo);
+  --color-gold:    var(--gold-hi);
+  --color-amber:   var(--gold-hi);
+  --color-green:   var(--emerald);
+  --color-red:     var(--red);
+  --color-text:    var(--text-1);
+  --color-muted:   var(--text-2);
+
+  --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
 }
 
 /* ─────────────────────────────────────────
@@ -80,6 +125,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ─────────────────────────────────────────
@@ -116,6 +162,7 @@ h1, h2, h3, h4 {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
 }
 
 .card-elevated {
@@ -128,6 +175,7 @@ h1, h2, h3, h4 {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
 }
 
 .glass-card-sm {
@@ -137,23 +185,40 @@ h1, h2, h3, h4 {
 }
 
 /* ─────────────────────────────────────────
-   Icon Badge Utilities
+   Inputs & Form Controls (Consistent Styling)
 ───────────────────────────────────────── */
-.icon-indigo {
-  background: var(--indigo-dim);
-  color: var(--indigo);
+.input, .input-field {
+  width: 100%;
+  background: var(--surface-elevated) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--text-1) !important;
+  font-family: var(--font-body) !important;
+  font-size: 14px !important;
+  padding: 11px 14px !important;
+  outline: none !important;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  box-sizing: border-box;
 }
-.icon-emerald {
-  background: var(--emerald-dim);
-  color: var(--emerald);
+.input::placeholder, .input-field::placeholder {
+  color: var(--text-3) !important;
 }
-.icon-gold {
-  background: var(--gold-dim);
-  color: var(--gold-hi);
+.input:focus, .input-field:focus {
+  border-color: var(--indigo) !important;
 }
-.icon-red {
-  background: var(--red-dim);
-  color: var(--red);
+
+textarea.input, textarea.input-field {
+  resize: vertical;
+  min-height: 100px;
+}
+
+select.input, select.input-field {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239BA4B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px !important;
 }
 
 /* ─────────────────────────────────────────
@@ -162,20 +227,21 @@ h1, h2, h3, h4 {
 .tag {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
   padding: 3px 8px;
   border-radius: 6px;
   text-transform: uppercase;
+  font-family: var(--font-mono);
 }
-.tag-indigo { background: var(--indigo-dim); color: var(--indigo); }
+.tag-indigo  { background: var(--indigo-dim);  color: var(--indigo); }
 .tag-emerald { background: var(--emerald-dim); color: var(--emerald); }
 .tag-gold    { background: var(--gold-dim);    color: var(--gold-hi); }
 .tag-red     { background: var(--red-dim);     color: var(--red); }
 
 /* ─────────────────────────────────────────
-   Button Utilities
+   Buttons
 ───────────────────────────────────────── */
 .btn-primary {
   display: inline-flex;
@@ -185,7 +251,7 @@ h1, h2, h3, h4 {
   padding: 10px 20px;
   border-radius: var(--radius-md);
   background: var(--indigo);
-  color: #ffffff;
+  color: #ffffff !important;
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
@@ -194,7 +260,7 @@ h1, h2, h3, h4 {
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .btn-primary:hover {
-  opacity: 0.88;
+  opacity: 0.9;
   transform: translateY(-1px);
 }
 .btn-primary:disabled {
@@ -205,7 +271,7 @@ h1, h2, h3, h4 {
 
 .btn-gold {
   background: var(--gold-dim);
-  color: var(--gold-hi);
+  color: var(--gold-hi) !important;
   border: 1px solid var(--gold-border);
   display: inline-flex;
   align-items: center;
@@ -219,11 +285,11 @@ h1, h2, h3, h4 {
   cursor: pointer;
   transition: opacity 0.15s ease;
 }
-.btn-gold:hover { opacity: 0.82; }
+.btn-gold:hover { opacity: 0.85; }
 
 .btn-ghost {
   background: transparent;
-  color: var(--text-2);
+  color: var(--text-2) !important;
   border: 1px solid var(--border);
   display: inline-flex;
   align-items: center;
@@ -238,60 +304,8 @@ h1, h2, h3, h4 {
 }
 .btn-ghost:hover {
   background: var(--surface-elevated);
-  color: var(--text-1);
+  color: var(--text-1) !important;
   border-color: var(--border);
-}
-
-/* ─────────────────────────────────────────
-   Input Utilities
-───────────────────────────────────────── */
-.input {
-  width: 100%;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text-1);
-  font-family: var(--font-body);
-  font-size: 14px;
-  padding: 10px 14px;
-  outline: none;
-  transition: border-color 0.15s ease;
-}
-.input::placeholder {
-  color: var(--text-3);
-}
-.input:focus {
-  border-color: var(--indigo);
-}
-
-textarea.input {
-  resize: vertical;
-  min-height: 120px;
-}
-
-select.input {
-  appearance: none;
-  cursor: pointer;
-}
-
-/* ─────────────────────────────────────────
-   Section Header
-───────────────────────────────────────── */
-.section-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-.section-head h2 {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 560;
-  color: var(--text-1);
-}
-.section-head span {
-  font-size: 12.5px;
-  color: var(--text-3);
 }
 
 /* ─────────────────────────────────────────
@@ -317,11 +331,8 @@ select.input {
   40% { transform: scale(1); opacity: 1; }
 }
 
-/* ─────────────────────────────────────────
-   Animations
-───────────────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-in {
@@ -334,13 +345,6 @@ select.input {
 }
 .animate-slide-down {
   animation: slideDown 0.2s ease forwards;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-.animate-spin-slow {
-  animation: spin 2s linear infinite;
 }
 
 /* ─────────────────────────────────────────
@@ -377,22 +381,4 @@ select.input {
   color: var(--text-2);
   margin: 1em 0;
   font-style: italic;
-}
-
-/* ─────────────────────────────────────────
-   Nav active state (used in Sidebar)
-───────────────────────────────────────── */
-.nav-active {
-  background: var(--surface-elevated);
-  color: var(--text-1) !important;
-  border-left: 2px solid var(--gold) !important;
-}
-
-/* Stroke utility for inline SVGs */
-.stroke {
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }

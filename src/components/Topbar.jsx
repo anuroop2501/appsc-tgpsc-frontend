@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { Menu, Bell, ChevronRight, CheckCircle, Info, Calendar } from 'lucide-react'
+import { Menu, Bell, ChevronRight, CheckCircle, Info, Calendar, Sun, Moon } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import useBreadcrumbStore from '../store/breadcrumbStore'
+import { useTheme } from '../context/ThemeContext'
 import PricingModal from './PricingModal'
 import { getUserBalance } from '../api/payment'
 
@@ -16,6 +17,7 @@ const getRouteLabels = (targetExam = '') => {
     '/evaluator':  ['AI Tools', 'Answer Evaluator'],
     '/planner':    ['AI Tools', 'Study Planner'],
     '/history':    ['Account', 'Study History'],
+    '/pricing':    ['Account', 'Plans & Pricing'],
   }
 }
 
@@ -23,6 +25,7 @@ const CRUMB_PATHS = {
   'Dashboard': '/dashboard',
   'AI Tools':  '/dashboard',
   'Account':   '/dashboard',
+  'Study History': '/history',
 }
 
 const INITIAL_NOTIFICATIONS = [
@@ -56,6 +59,7 @@ const Topbar = ({ onMenuClick }) => {
   const { pathname } = useLocation()
   const user = useAuthStore((s) => s.user)
   const updateUser = useAuthStore((s) => s.updateUser)
+  const { theme, toggleTheme } = useTheme()
   const [credits, setCredits] = useState(user?.credits || 0)
   const [isPricingOpen, setIsPricingOpen] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
@@ -63,7 +67,6 @@ const Topbar = ({ onMenuClick }) => {
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS)
   const dropdownRef = useRef(null)
 
-  // Fetch live credits on mount
   useEffect(() => {
     if (user?.id || user?.userId) {
       getUserBalance()
@@ -73,6 +76,13 @@ const Topbar = ({ onMenuClick }) => {
   }, [user])
 
   const override = useBreadcrumbStore((s) => s.override)
+  const clearOverride = useBreadcrumbStore((s) => s.clearOverride)
+
+  // Clear breadcrumb override automatically whenever the route changes!
+  useEffect(() => {
+    clearOverride()
+  }, [pathname, clearOverride])
+
   const ROUTE_LABELS = getRouteLabels(user?.targetExam)
   const crumbs = override || ROUTE_LABELS[pathname] || [pathname.slice(1)]
 
@@ -80,7 +90,6 @@ const Topbar = ({ onMenuClick }) => {
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U'
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -101,20 +110,21 @@ const Topbar = ({ onMenuClick }) => {
       style={{
         position: 'sticky', top: 0, zIndex: 20,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 40px',
+        padding: '0 32px',
         background: 'var(--bg-soft)',
         borderBottom: '1px solid var(--border-soft)',
         height: 64,
+        transition: 'background 0.2s ease, border-color 0.2s ease',
       }}
     >
       {/* ── Left: hamburger + breadcrumb ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
         <button
           onClick={onMenuClick}
           style={{
             padding: '6px', borderRadius: 8, border: 'none',
             background: 'transparent', cursor: 'pointer', color: 'var(--text-3)',
-            display: 'flex', alignItems: 'center',
+            display: 'flex', alignItems: 'center', flexShrink: 0,
           }}
           onMouseEnter={e => e.currentTarget.style.color = 'var(--text-1)'}
           onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
@@ -123,21 +133,21 @@ const Topbar = ({ onMenuClick }) => {
         </button>
 
         {/* Breadcrumb */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
           {crumbs.map((crumb, i) => {
             const isLast = i === crumbs.length - 1
             const path = CRUMB_PATHS[crumb]
             return (
-              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                {i > 0 && <ChevronRight size={12} style={{ color: 'var(--text-3)' }} />}
+              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                {i > 0 && <ChevronRight size={12} style={{ color: 'var(--text-3)', flexShrink: 0 }} />}
                 {isLast || !path ? (
-                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)', fontFamily: 'var(--font-display)' }}>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 380 }}>
                     {crumb}
                   </span>
                 ) : (
                   <Link
                     to={path}
-                    style={{ fontSize: 13.5, color: 'var(--text-3)', textDecoration: 'none', fontWeight: 500 }}
+                    style={{ fontSize: 13.5, color: 'var(--text-3)', textDecoration: 'none', fontWeight: 500, whiteSpace: 'nowrap' }}
                   >
                     {crumb}
                   </Link>
@@ -148,8 +158,8 @@ const Topbar = ({ onMenuClick }) => {
         </nav>
       </div>
 
-      {/* ── Right: credits + bell + avatar ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }} ref={dropdownRef}>
+      {/* ── Right: credits + theme toggle + bell + avatar ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', flexShrink: 0 }} ref={dropdownRef}>
 
         {/* Credits Pill */}
         <div
@@ -157,14 +167,14 @@ const Topbar = ({ onMenuClick }) => {
             display: 'flex', alignItems: 'center', gap: 10,
             border: '1px solid var(--border)',
             background: 'var(--surface)', borderRadius: 10,
-            padding: '7px 8px 7px 14px',
+            padding: '6px 8px 6px 12px',
           }}
         >
           <div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13.5, fontWeight: 600, color: 'var(--gold-hi)' }}>
               {credits.toLocaleString()}
             </div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <div style={{ fontSize: 9.5, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Credits
             </div>
           </div>
@@ -173,7 +183,7 @@ const Topbar = ({ onMenuClick }) => {
             style={{
               background: 'var(--gold-dim)', color: 'var(--gold-hi)',
               border: '1px solid var(--gold-border)',
-              fontSize: 11.5, fontWeight: 600, padding: '5px 10px',
+              fontSize: 11.5, fontWeight: 600, padding: '4px 9px',
               borderRadius: 7, cursor: 'pointer',
             }}
           >
@@ -181,11 +191,30 @@ const Topbar = ({ onMenuClick }) => {
           </button>
         </div>
 
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          style={{
+            width: 36, height: 36, borderRadius: 10,
+            border: '1px solid var(--border)', background: 'var(--surface)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: 'var(--text-2)',
+            transition: 'all 0.15s ease',
+          }}
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {theme === 'dark' ? (
+            <Sun size={16} style={{ color: 'var(--gold-hi)' }} />
+          ) : (
+            <Moon size={16} style={{ color: 'var(--indigo)' }} />
+          )}
+        </button>
+
         {/* Bell */}
         <button
           onClick={handleBellClick}
           style={{
-            width: 38, height: 38, borderRadius: 10,
+            width: 36, height: 36, borderRadius: 10,
             border: '1px solid var(--border)', background: 'var(--surface)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             position: 'relative', cursor: 'pointer', color: 'var(--text-2)',
@@ -208,11 +237,11 @@ const Topbar = ({ onMenuClick }) => {
           <div
             className="animate-slide-down"
             style={{
-              position: 'absolute', right: 0, top: 50,
+              position: 'absolute', right: 0, top: 48,
               width: 320, borderRadius: 12, overflow: 'hidden', zIndex: 50,
               background: 'var(--surface)',
               border: '1px solid var(--border)',
-              boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.4)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--border-soft)' }}>
@@ -261,7 +290,7 @@ const Topbar = ({ onMenuClick }) => {
             background: 'linear-gradient(160deg, #3A4A78, #232C4A)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600,
-            color: 'var(--text-1)', border: '1px solid var(--border)', cursor: 'pointer',
+            color: '#ffffff', border: '1px solid var(--border)', cursor: 'pointer',
           }}
         >
           {initials}

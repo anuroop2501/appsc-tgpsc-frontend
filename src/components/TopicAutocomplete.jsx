@@ -6,7 +6,7 @@ const TopicAutocomplete = ({
   value,
   onChange,
   exam,
-  placeholder = 'Search for a topic…',
+  placeholder = 'e.g. Fundamental Rights, Andhra Pradesh Economy…',
 }) => {
   const [query, setQuery] = useState(value || '')
   const [showDropdown, setShowDropdown] = useState(false)
@@ -18,7 +18,6 @@ const TopicAutocomplete = ({
 
   const getFlatTopics = useSyllabusStore((s) => s.getFlatTopics)
 
-  /* ── Filter topics ── */
   const filterTopics = useCallback(
     (q) => {
       if (!q || q.length < 2) {
@@ -35,12 +34,10 @@ const TopicAutocomplete = ({
     [exam, getFlatTopics]
   )
 
-  /* ── Debounced input handler ── */
   const handleInput = (e) => {
     const val = e.target.value
     setQuery(val)
     setHighlighted(-1)
-    // Always propagate typed value to parent — allows free-form topic entry
     onChange && onChange(val)
 
     clearTimeout(debounceRef.current)
@@ -50,7 +47,6 @@ const TopicAutocomplete = ({
     }, 200)
   }
 
-  /* ── Close on outside click ── */
   useEffect(() => {
     const handler = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -61,14 +57,12 @@ const TopicAutocomplete = ({
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  /* ── Sync if value prop changes externally ── */
   useEffect(() => {
     if (value !== undefined && value !== query) {
       setQuery(value)
     }
   }, [value])
 
-  /* ── Keyboard navigation ── */
   const handleKeyDown = (e) => {
     if (!showDropdown || filtered.length === 0) return
 
@@ -101,7 +95,6 @@ const TopicAutocomplete = ({
     inputRef.current?.focus()
   }
 
-  /* ── Highlight matching part ── */
   const highlightMatch = (text, q) => {
     if (!q) return text
     const idx = text.toLowerCase().indexOf(q.toLowerCase())
@@ -111,10 +104,11 @@ const TopicAutocomplete = ({
         {text.slice(0, idx)}
         <mark
           style={{
-            background: 'rgba(79, 142, 247, 0.3)',
-            color: '#4F8EF7',
+            background: 'var(--indigo-dim)',
+            color: 'var(--indigo)',
             borderRadius: '2px',
-            padding: '0 1px',
+            padding: '0 2px',
+            fontWeight: 600,
           }}
         >
           {text.slice(idx, idx + q.length)}
@@ -125,12 +119,20 @@ const TopicAutocomplete = ({
   }
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
       {/* ── Input ── */}
-      <div className="relative">
+      <div style={{ position: 'relative', width: '100%' }}>
         <div
-          className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: query ? 'var(--color-accent)' : 'var(--color-muted)' }}
+          style={{
+            position: 'absolute',
+            left: 14,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            color: query ? 'var(--indigo)' : 'var(--text-3)',
+            display: 'flex',
+            alignItems: 'center',
+          }}
         >
           <Search size={16} />
         </div>
@@ -144,14 +146,34 @@ const TopicAutocomplete = ({
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="input-field"
-          style={{ paddingLeft: '2.5rem', paddingRight: query ? '2.5rem' : '1rem' }}
+          className="input"
+          style={{
+            width: '100%',
+            height: 46,
+            paddingLeft: 42,
+            paddingRight: query ? 40 : 14,
+            fontSize: 14,
+            fontWeight: 500,
+          }}
         />
         {query && (
           <button
+            type="button"
             onClick={clear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-white/10 transition-colors"
-            style={{ color: 'var(--color-muted)' }}
+            style={{
+              position: 'absolute',
+              right: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              padding: 4,
+              borderRadius: '50%',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--text-3)',
+              display: 'flex',
+              alignItems: 'center',
+            }}
           >
             <X size={14} />
           </button>
@@ -161,15 +183,19 @@ const TopicAutocomplete = ({
       {/* ── Dropdown ── */}
       {showDropdown && filtered.length > 0 && (
         <div
-          className="absolute left-0 right-0 mt-1.5 rounded-xl overflow-hidden z-50 animate-slide-down"
+          className="animate-slide-down"
           style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            boxShadow: '0 16px 40px rgba(0,0,0,0.15)',
-            maxHeight: '280px',
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 52,
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 12,
+            boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
+            maxHeight: 280,
             overflowY: 'auto',
+            zIndex: 50,
           }}
         >
           {filtered.map((topic, i) => {
@@ -180,52 +206,49 @@ const TopicAutocomplete = ({
             return (
               <button
                 key={topic}
+                type="button"
                 onClick={() => selectTopic(topic)}
-                className="w-full px-4 py-3 text-left flex items-center gap-3 group transition-all duration-150"
                 style={{
-                  background:
-                    highlighted === i
-                      ? 'rgba(79, 142, 247, 0.12)'
-                      : 'transparent',
-                  borderBottom:
-                    i < filtered.length - 1
-                      ? '1px solid var(--color-border)'
-                      : 'none',
+                  width: '100%',
+                  padding: '12px 16px',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  background: highlighted === i ? 'var(--surface-elevated)' : 'transparent',
+                  border: 'none',
+                  borderBottom: i < filtered.length - 1 ? '1px solid var(--border-soft)' : 'none',
+                  cursor: 'pointer',
+                  transition: 'background 0.12s ease',
                 }}
                 onMouseEnter={() => setHighlighted(i)}
               >
                 <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{
-                    background:
-                      highlighted === i
-                        ? 'rgba(79, 142, 247, 0.2)'
-                        : 'var(--color-card)',
+                    width: 28,
+                    height: 28,
+                    borderRadius: 7,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    background: 'var(--indigo-dim)',
+                    color: 'var(--indigo)',
                   }}
                 >
-                  <Search size={12} style={{ color: highlighted === i ? 'var(--color-accent)' : 'var(--color-muted)' }} />
+                  <Search size={13} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-sm font-medium truncate"
-                    style={{ color: highlighted === i ? 'var(--color-text)' : 'var(--color-text)' }}
-                  >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--text-1)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {highlightMatch(topicName, query)}
                   </p>
                   {subject && (
-                    <p
-                      className="text-xs truncate mt-0.5"
-                      style={{ color: 'var(--color-muted)' }}
-                    >
+                    <p style={{ fontSize: 11, color: 'var(--text-3)', margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {subject}
                     </p>
                   )}
                 </div>
-                <ChevronRight
-                  size={14}
-                  className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ color: 'var(--color-accent)' }}
-                />
+                <ChevronRight size={14} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
               </button>
             )
           })}
@@ -235,29 +258,48 @@ const TopicAutocomplete = ({
       {/* ── No results ── */}
       {showDropdown && query.length >= 2 && filtered.length === 0 && (
         <div
-          className="absolute left-0 right-0 mt-1.5 rounded-xl overflow-hidden z-50"
           style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 52,
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 12,
+            zIndex: 50,
+            overflow: 'hidden',
+            boxShadow: '0 16px 40px rgba(0,0,0,0.3)',
           }}
         >
-          <div className="px-4 py-3">
-            <p className="text-xs text-center" style={{ color: 'var(--color-muted)' }}>
-              No saved topics match — using your text directly
+          <div style={{ padding: '12px 16px', textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0 }}>
+              No syllabus matches — custom topic will be used
             </p>
           </div>
           <button
-            onClick={() => { setShowDropdown(false) }}
-            className="w-full px-4 py-3 text-left flex items-center gap-3 transition-all duration-150 hover:bg-white/5"
-            style={{ borderTop: '1px solid var(--color-border)' }}
+            type="button"
+            onClick={() => setShowDropdown(false)}
+            style={{
+              width: '100%',
+              padding: '10px 16px',
+              textAlign: 'left',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              borderTop: '1px solid var(--border)',
+              background: 'var(--surface-elevated)',
+              borderLeft: 'none',
+              borderRight: 'none',
+              borderBottom: 'none',
+              cursor: 'pointer',
+            }}
           >
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(79,142,247,0.15)' }}>
-              <Search size={12} style={{ color: 'var(--color-accent)' }} />
+            <div style={{ width: 26, height: 26, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--indigo-dim)', color: 'var(--indigo)' }}>
+              <Search size={12} />
             </div>
-            <div>
-              <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>Use <em style={{ color: 'var(--color-accent)', fontStyle: 'normal', fontWeight: 600 }}>"{query}"</em></p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--color-muted)' }}>Generate questions on this custom topic</p>
-            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-1)', margin: 0 }}>
+              Use custom topic: <strong style={{ color: 'var(--indigo)' }}>"{query}"</strong>
+            </p>
           </button>
         </div>
       )}

@@ -36,7 +36,7 @@ const PrelimsPage = () => {
   }
 
   return (
-    <div style={{ maxWidth: 1000, animation: 'fadeIn 0.4s ease forwards' }}>
+    <div style={{ maxWidth: 1060, margin: '0 auto', animation: 'fadeIn 0.4s ease forwards' }}>
 
       {/* ── Header ── */}
       <div style={{ marginBottom: 28 }}>
@@ -54,61 +54,62 @@ const PrelimsPage = () => {
       </div>
 
       {/* ── Input Card ── */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 20 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div className="card" style={{ padding: 28, marginBottom: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {/* Topic */}
-          <div style={{ gridColumn: '1 / -1' }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
-              Topic
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
+              Topic / Syllabus Area
             </label>
             <TopicAutocomplete
               value={topic}
               onChange={setTopic}
               exam={exam}
-              placeholder="e.g. Fundamental Rights, Andhra Pradesh History…"
+              placeholder="e.g. Fundamental Rights, Andhra Pradesh History, Economy & Planning…"
             />
           </div>
 
-          {/* Exam */}
-          <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
-              Exam
-            </label>
-            <select value={exam} onChange={(e) => setExam(e.target.value)} className="input select">
-              {EXAMS.map((e) => <option key={e} value={e}>{e}</option>)}
-            </select>
-          </div>
+          {/* Exam & Button Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
+                Target Exam
+              </label>
+              <select value={exam} onChange={(e) => setExam(e.target.value)} className="input" style={{ height: 46 }}>
+                {EXAMS.map((e) => <option key={e} value={e}>{e}</option>)}
+              </select>
+            </div>
 
-          {/* Generate */}
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button onClick={handleGenerate} disabled={loading} className="btn-primary" style={{ width: '100%', height: 44 }}>
-              {loading
-                ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Preparing…</>
-                : <><Sparkles size={16} /> Generate Questions</>
-              }
-            </button>
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button onClick={handleGenerate} disabled={loading} className="btn-primary" style={{ width: '100%', height: 46, fontSize: 14.5 }}>
+                {loading
+                  ? <><Loader2 size={17} className="animate-spin" /> Preparing…</>
+                  : <><Sparkles size={17} /> Generate Questions</>
+                }
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Error */}
         {error && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13.5 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', borderRadius: 10, marginTop: 16, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13.5 }}>
             <XCircle size={15} /> {error}
           </div>
         )}
 
         {/* Cache badge */}
         {fromCache && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11.5, padding: '4px 12px', borderRadius: 20, marginTop: 12, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)' }}>
-            <CheckCircle size={12} /> Loaded from cache
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '4px 12px', borderRadius: 20, marginTop: 14, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)' }}>
+            <CheckCircle size={13} /> Loaded from cache
           </div>
         )}
       </div>
 
       {/* ── Loading ── */}
       {loading && (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14 }}>
-          <LoadingDots message="High-quality questions are on the way…" />
+        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+          <LoadingDots message="Generating high-quality APPSC prelims questions…" />
         </div>
       )}
 
@@ -116,38 +117,38 @@ const PrelimsPage = () => {
       {!loading && questions.length > 0 && (
         <>
           {/* Score tracker */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div className="card" style={{ padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
               {[
                 { label: 'Questions', value: questions.length, color: 'var(--text-1)' },
                 { label: 'Answered', value: `${answeredCount} / ${questions.length}`, color: 'var(--indigo)' },
                 { label: 'Correct', value: `${correctCount} / ${answeredCount || '—'}`, color: 'var(--emerald)' },
               ].map(({ label, value, color }, i, arr) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                   <div>
-                    <p style={{ fontSize: 11, color: 'var(--text-3)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: 17, fontWeight: 600, color, margin: 0 }}>{value}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-3)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{label}</p>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 600, color, margin: 0 }}>{value}</p>
                   </div>
                   {i < arr.length - 1 && <div style={{ width: 1, height: 32, background: 'var(--border)' }} />}
                 </div>
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <button
                 onClick={() => exportPrelimsToPdf({ topic, exam, questions })}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, padding: '8px 14px', borderRadius: 9, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 9, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
               >
                 <Download size={14} /> Download PDF
               </button>
-              <button onClick={handleGenerate} className="btn-ghost" style={{ fontSize: 13, padding: '8px 14px' }}>
+              <button onClick={handleGenerate} className="btn-ghost" style={{ fontSize: 13, padding: '8px 16px' }}>
                 <RefreshCw size={13} /> Regenerate
               </button>
             </div>
           </div>
 
           {/* MCQ Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18 }}>
             {questions.map((q, i) => {
               const rawOptions = q.opts || q.options || {}
               const optionsArray = Array.isArray(rawOptions)

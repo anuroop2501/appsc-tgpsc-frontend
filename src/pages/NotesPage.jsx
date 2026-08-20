@@ -99,7 +99,7 @@ const NotesPage = () => {
   const isGroup2 = (user?.targetExam || '').toLowerCase().includes('group 2')
 
   return (
-    <div style={{ maxWidth: 1000, animation: 'fadeIn 0.4s ease forwards' }}>
+    <div style={{ maxWidth: 1060, margin: '0 auto', animation: 'fadeIn 0.4s ease forwards' }}>
       {/* ── Header ── */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
@@ -116,27 +116,27 @@ const NotesPage = () => {
       </div>
 
       {/* ── Input Card ── */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 20 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
+      <div className="card" style={{ padding: 28, marginBottom: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 22 }}>
           {/* Topic */}
           <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
-              Topic
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
+              Topic / Syllabus Area
             </label>
             <TopicAutocomplete
               value={topic}
               onChange={setTopic}
               exam={exam}
-              placeholder="e.g. Panchayati Raj System, Rivers of Andhra Pradesh…"
+              placeholder="e.g. Panchayati Raj System, Rivers of Andhra Pradesh, Judicial Review…"
             />
           </div>
 
           {/* Exam */}
           <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
-              Exam
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
+              Target Exam
             </label>
-            <select value={exam} onChange={(e) => setExam(e.target.value)} className="input select">
+            <select value={exam} onChange={(e) => setExam(e.target.value)} className="input" style={{ height: 46 }}>
               {EXAMS.map((e) => (
                 <option key={e} value={e}>{e}</option>
               ))}
@@ -145,8 +145,8 @@ const NotesPage = () => {
 
           {/* Note Type */}
           <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>
-              Note Type
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
+              Note Format &amp; Style
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {NOTE_TYPES.map(({ value, label, icon }) => {
@@ -160,7 +160,7 @@ const NotesPage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 8,
-                      padding: '9px 15px',
+                      padding: '10px 16px',
                       borderRadius: 10,
                       fontSize: 13.5,
                       fontWeight: isSel ? 600 : 500,
@@ -181,13 +181,13 @@ const NotesPage = () => {
         </div>
 
         {/* Action buttons */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 12 }}>
           <button
             onClick={handleGenerate}
             disabled={isStreaming}
             style={{
               flex: 1,
-              height: 44,
+              height: 46,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -195,7 +195,7 @@ const NotesPage = () => {
               borderRadius: 11,
               background: 'var(--emerald)',
               color: '#ffffff',
-              fontSize: 14,
+              fontSize: 14.5,
               fontWeight: 600,
               border: 'none',
               cursor: isStreaming ? 'not-allowed' : 'pointer',
@@ -205,8 +205,8 @@ const NotesPage = () => {
           >
             {isStreaming ? (
               <>
-                <Loader2 size={17} className="animate-spin-slow" />
-                Generating…
+                <Loader2 size={17} className="animate-spin" />
+                Generating Notes…
               </>
             ) : (
               <>
@@ -220,7 +220,7 @@ const NotesPage = () => {
             <button
               onClick={handleStop}
               className="btn-ghost"
-              style={{ padding: '0 20px', height: 44 }}
+              style={{ padding: '0 24px', height: 46 }}
             >
               Stop
             </button>
@@ -229,7 +229,7 @@ const NotesPage = () => {
 
         {/* Error */}
         {error && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, marginTop: 14, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13.5 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', borderRadius: 10, marginTop: 16, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13.5 }}>
             <XCircle size={15} /> {error}
           </div>
         )}
@@ -237,19 +237,17 @@ const NotesPage = () => {
 
       {/* ── Loading ── */}
       {isStreaming && !content && (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14 }}>
-          <LoadingDots message="Preparing comprehensive study notes tailored to syllabus…" />
+        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+          <LoadingDots message="Preparing comprehensive study notes tailored to APPSC syllabus…" />
         </div>
       )}
 
       {/* ── Output Card ── */}
       {content && (
         <div
+          className="card"
           style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
             borderLeft: '3px solid var(--emerald)',
-            borderRadius: 14,
             overflow: 'hidden',
             animation: 'fadeIn 0.3s ease forwards',
           }}
@@ -260,12 +258,12 @@ const NotesPage = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '16px 24px',
+              padding: '18px 24px',
               borderBottom: '1px solid var(--border-soft)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
                 {topic}
               </h3>
               {isStreaming && (
@@ -326,7 +324,7 @@ const NotesPage = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 10,
-                padding: '12px 24px',
+                padding: '14px 24px',
                 borderTop: '1px solid var(--border-soft)',
                 background: 'var(--bg-soft)',
                 fontSize: 12,

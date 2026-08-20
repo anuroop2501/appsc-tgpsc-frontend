@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Star, Sparkles, ArrowRight, Clock, Activity } from 'lucide-react'
+import { BookOpen, Star, Sparkles, ArrowRight, Clock, Activity, Flame } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import { getStats, getHistory } from '../api/history'
 
@@ -40,14 +40,50 @@ const timeAgo = (dateStr) => {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
+/* ── Calculate Day Streak from session dates ── */
+const calculateStreak = (sessions = []) => {
+  if (!sessions || sessions.length === 0) return 0
+  const uniqueDays = new Set(
+    sessions
+      .map(s => (s.created_at || s.createdAt || s.timestamp))
+      .filter(Boolean)
+      .map(d => new Date(d).toISOString().slice(0, 10))
+  )
+  
+  let streak = 0
+  let checkDate = new Date()
+  
+  // Check today or yesterday
+  const todayStr = checkDate.toISOString().slice(0, 10)
+  checkDate.setDate(checkDate.getDate() - 1)
+  const yesterdayStr = checkDate.toISOString().slice(0, 10)
+
+  if (!uniqueDays.has(todayStr) && !uniqueDays.has(yesterdayStr)) {
+    return uniqueDays.size > 0 ? 1 : 0
+  }
+
+  // Count consecutive days
+  let currentCheck = uniqueDays.has(todayStr) ? new Date() : checkDate
+  while (true) {
+    const dStr = currentCheck.toISOString().slice(0, 10)
+    if (uniqueDays.has(dStr)) {
+      streak++
+      currentCheck.setDate(currentCheck.getDate() - 1)
+    } else {
+      break
+    }
+  }
+  return Math.max(streak, 1)
+}
+
 const TYPE_META = {
   prelims:    { label: 'MCQ',   colorVar: 'var(--indigo)',  dimVar: 'var(--indigo-dim)' },
   notes:      { label: 'NOTES', colorVar: 'var(--emerald)', dimVar: 'var(--emerald-dim)' },
   evaluation: { label: 'EVAL',  colorVar: 'var(--gold-hi)', dimVar: 'var(--gold-dim)' },
 }
 
-const STAT_CARDS = (stats, isGroup2) => [
-  { label: 'All Activity',       value: stats.sessionsCount, icon: Activity, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'all' },
+const STAT_CARDS = (stats) => [
+  { label: 'Total Activity',     value: stats.sessionsCount, icon: Activity, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'all' },
   { label: 'MCQ Practice',       value: stats.prelimsCount,  icon: Sparkles, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'prelims' },
   { label: 'Study Notes',        value: stats.notesCount,    icon: BookOpen, accent: 'var(--emerald)', dim: 'var(--emerald-dim)', tab: 'notes' },
   { label: 'Answers Evaluated',  value: stats.evalsCount,    icon: Star,     accent: 'var(--gold-hi)', dim: 'var(--gold-dim)', tab: 'evaluation' },
@@ -60,6 +96,7 @@ const DashboardPage = () => {
   const [stats, setStats] = useState({ sessionsCount: 0, prelimsCount: 0, notesCount: 0, evalsCount: 0 })
   const [recentActivity, setRecentActivity] = useState([])
   const [loading, setLoading] = useState(true)
+  const [streak, setStreak] = useState(1)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +111,7 @@ const DashboardPage = () => {
         if (historyData.status === 'fulfilled') {
           const items = historyData.value?.sessions || historyData.value?.items || historyData.value || []
           setRecentActivity(Array.isArray(items) ? items.slice(0, 5) : [])
+          setStreak(calculateStreak(items))
         }
       } catch { /* silent */ } finally { setLoading(false) }
     }
@@ -96,76 +134,63 @@ const DashboardPage = () => {
   }
 
   return (
-    <div style={{ maxWidth: 1100, animation: 'fadeIn 0.4s ease forwards' }}>
+    <div style={{ maxWidth: 1060, margin: '0 auto', animation: 'fadeIn 0.4s ease forwards' }}>
 
       {/* ── HERO ── */}
       <section
         style={{
-          display: 'grid', gridTemplateColumns: '1fr 224px', gap: 32, alignItems: 'center',
+          display: 'grid', gridTemplateColumns: '1fr 240px', gap: 32, alignItems: 'center',
           paddingBottom: 32, marginBottom: 32, borderBottom: '1px solid var(--border-soft)',
         }}
       >
         <div>
-          <div style={{ fontSize: 11.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--gold-hi)', fontWeight: 600, marginBottom: 10 }}>
-            Your preparation overview
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <span className="tag tag-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Flame size={12} /> {streak} Day Practice Streak
+            </span>
+            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>• Daily AI prep loop</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 36, letterSpacing: '-0.3px', lineHeight: 1.1, margin: '0 0 10px' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 34, letterSpacing: '-0.3px', lineHeight: 1.15, margin: '0 0 10px', color: 'var(--text-1)' }}>
             Welcome back, <em style={{ fontStyle: 'normal', color: 'var(--gold-hi)' }}>{firstName}.</em>
           </h1>
-          <p style={{ color: 'var(--text-2)', fontSize: 14.5, maxWidth: 480, margin: 0, lineHeight: 1.6 }}>
+          <p style={{ color: 'var(--text-2)', fontSize: 14.5, maxWidth: 500, margin: 0, lineHeight: 1.6 }}>
             {loading
               ? 'Loading your stats…'
-              : `You've completed ${stats.sessionsCount || 0} sessions — ${stats.prelimsCount || 0} MCQ sets and ${stats.notesCount || 0} notes. Keep the Answer Evaluator in rotation this week to close the gap on Mains scoring.`
+              : `You've completed ${stats.sessionsCount || 0} practice sessions across Prelims & Mains. Practice consistently every day to maintain your study momentum.`
             }
           </p>
         </div>
 
-        {/* Readiness Gauge */}
+        {/* Practice Streak Card */}
         <div
+          className="card"
           style={{
-            background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
-            padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+            padding: '22px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center',
           }}
         >
-          <div style={{ fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', fontWeight: 600 }}>
-            Exam Readiness
+          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--gold-dim)', color: 'var(--gold-hi)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Flame size={26} />
           </div>
-          <svg width="130" height="130" viewBox="0 0 140 140">
-            <circle cx="70" cy="70" r="58" stroke="var(--border)" strokeWidth="10" fill="none" />
-            <circle cx="70" cy="70" r="58"
-              stroke="url(#dashGauge)" strokeWidth="10" fill="none"
-              strokeLinecap="round"
-              strokeDasharray="364.4"
-              strokeDashoffset={loading ? 364 : Math.max(364 - (stats.sessionsCount || 0) * 2, 80)}
-              transform="rotate(-90 70 70)"
-              style={{ transition: 'stroke-dashoffset 1.2s ease' }}
-            />
-            <defs>
-              <linearGradient id="dashGauge" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="var(--indigo)" />
-                <stop offset="55%" stopColor="var(--emerald)" />
-                <stop offset="100%" stopColor="var(--gold-hi)" />
-              </linearGradient>
-            </defs>
-            <text x="70" y="66" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="18" fontWeight="600" fill="var(--text-1)">
-              {loading ? '…' : `${Math.min(Math.round((stats.sessionsCount || 0) * 0.5), 99)}%`}
-            </text>
-            <text x="70" y="82" textAnchor="middle" fontSize="10" fill="var(--text-3)" fontFamily="Inter">on track</text>
-          </svg>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2, textAlign: 'center' }}>
-            Based on MCQ, Notes & Evaluations
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 32, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1 }}>
+            {streak} <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-3)' }}>Days</span>
+          </div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gold-hi)' }}>
+            Active Daily Streak
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.4 }}>
+            Generate MCQs, notes or evaluations daily to keep this alive!
           </div>
         </div>
       </section>
 
       {/* ── STATS ── */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 40 }}>
-        {STAT_CARDS(stats, isGroup2).map(({ label, value, icon: Icon, accent, dim, tab }) => (
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 36 }}>
+        {STAT_CARDS(stats).map(({ label, value, icon: Icon, accent, dim, tab }) => (
           <button
             key={label}
             onClick={() => navigate('/history', { state: { activeTab: tab } })}
+            className="card"
             style={{
-              background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
               padding: 20, textAlign: 'left', cursor: 'pointer',
               transition: 'transform 0.15s ease, border-color 0.15s ease',
             }}
@@ -173,7 +198,7 @@ const DashboardPage = () => {
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-              <span style={{ fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', fontWeight: 600 }}>
+              <span style={{ fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', fontWeight: 600 }}>
                 {label}
               </span>
               <div style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: dim, color: accent, flexShrink: 0 }}>
@@ -188,10 +213,10 @@ const DashboardPage = () => {
       </section>
 
       {/* ── AI TOOLS ── */}
-      <section style={{ marginBottom: 40 }}>
-        <div className="section-head">
-          <h2>AI Tools</h2>
-          <span>Three tools, one preparation loop</span>
+      <section style={{ marginBottom: 36 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, color: 'var(--text-1)', margin: 0 }}>AI Study Modules</h2>
+          <span style={{ fontSize: 13, color: 'var(--text-3)' }}>Everything you need for APPSC &amp; TGPSC</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${featureCards.length}, 1fr)`, gap: 18 }}>
           {featureCards.map(({ title, desc, icon: Icon, color, path, cta }) => {
@@ -200,8 +225,8 @@ const DashboardPage = () => {
               <button
                 key={title}
                 onClick={() => navigate(path)}
+                className="card"
                 style={{
-                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
                   padding: 24, textAlign: 'left', cursor: 'pointer', position: 'relative', overflow: 'hidden',
                   transition: 'transform 0.15s ease, border-color 0.15s ease',
                   borderLeft: `3px solid ${c.border}`,
@@ -229,17 +254,17 @@ const DashboardPage = () => {
 
       {/* ── RECENT ACTIVITY ── */}
       <section>
-        <div className="section-head">
-          <h2>Recent Activity</h2>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 560, color: 'var(--text-1)', margin: 0 }}>Recent Activity</h2>
           <button
             onClick={() => navigate('/history')}
-            style={{ fontSize: 12.5, color: 'var(--text-3)', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ fontSize: 12.5, color: 'var(--indigo)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
           >
-            View all →
+            View all history →
           </button>
         </div>
 
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+        <div className="card" style={{ overflow: 'hidden' }}>
           {loading ? (
             <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {[1, 2, 3].map((i) => (
@@ -255,8 +280,8 @@ const DashboardPage = () => {
           ) : recentActivity.length === 0 ? (
             <div style={{ padding: '40px 20px', textAlign: 'center' }}>
               <Clock size={28} style={{ color: 'var(--text-3)', margin: '0 auto 12px' }} />
-              <p style={{ fontSize: 13.5, color: 'var(--text-2)', fontWeight: 500, margin: '0 0 4px' }}>No activity yet</p>
-              <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0 }}>Start with an MCQ session or generate study notes</p>
+              <p style={{ fontSize: 14, color: 'var(--text-2)', fontWeight: 500, margin: '0 0 4px' }}>No activity yet</p>
+              <p style={{ fontSize: 12.5, color: 'var(--text-3)', margin: 0 }}>Start with an MCQ session or generate study notes</p>
             </div>
           ) : (
             recentActivity.map((item, i) => {
@@ -267,7 +292,7 @@ const DashboardPage = () => {
                   onClick={() => navigate('/history', { state: { viewSessionId: item.id } })}
                   style={{
                     display: 'flex', alignItems: 'flex-start', gap: 14,
-                    padding: '15px 20px', cursor: 'pointer',
+                    padding: '16px 20px', cursor: 'pointer',
                     borderBottom: i < recentActivity.length - 1 ? '1px solid var(--border-soft)' : 'none',
                     transition: 'background 0.12s ease',
                   }}
@@ -278,15 +303,15 @@ const DashboardPage = () => {
                     {meta.label}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.5 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-1)', lineHeight: 1.5 }}>
                       {item.topic || 'Unknown topic'}
                     </div>
-                    <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 3 }}>
+                    <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 3 }}>
                       {item.exam || ''}
                       {item.score !== undefined && ` · Score: ${item.score}/${item.maxScore || 10}`}
                     </div>
                   </div>
-                  <span style={{ fontSize: 11.5, color: 'var(--text-3)', whiteSpace: 'nowrap', paddingTop: 2 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap', paddingTop: 2 }}>
                     {timeAgo(item.created_at || item.createdAt || item.timestamp)}
                   </span>
                 </div>

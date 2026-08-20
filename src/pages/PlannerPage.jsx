@@ -166,7 +166,7 @@ const PlannerPage = () => {
   const quickTopics = extractQuickTopics()
 
   return (
-    <div style={{ maxWidth: 1000, animation: 'fadeIn 0.4s ease forwards', paddingBottom: 40 }}>
+    <div style={{ maxWidth: 1060, margin: '0 auto', animation: 'fadeIn 0.4s ease forwards', paddingBottom: 40 }}>
       {/* ── Header ── */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
@@ -183,9 +183,9 @@ const PlannerPage = () => {
       </div>
 
       {/* ── Configuration Form ── */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 24 }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 560, display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 20px', color: 'var(--text-1)' }}>
-          <Target size={16} style={{ color: 'var(--indigo)' }} />
+      <div className="card" style={{ padding: 28, marginBottom: 24 }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 560, display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 22px', color: 'var(--text-1)' }}>
+          <Target size={18} style={{ color: 'var(--indigo)' }} />
           Configure Your Study Plan
         </h2>
 
@@ -195,13 +195,13 @@ const PlannerPage = () => {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 22 }}>
           {/* Target Exam */}
           <div>
-            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 8 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
               Target Exam
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {EXAMS.map((e) => {
                 const isSel = exam === e
                 return (
@@ -210,9 +210,9 @@ const PlannerPage = () => {
                     type="button"
                     onClick={() => setExam(e)}
                     style={{
-                      padding: '10px 12px',
+                      height: 46,
                       borderRadius: 10,
-                      fontSize: 13,
+                      fontSize: 13.5,
                       fontWeight: isSel ? 600 : 500,
                       background: isSel ? 'var(--indigo-dim)' : 'var(--surface-elevated)',
                       color: isSel ? 'var(--indigo)' : 'var(--text-2)',
@@ -230,7 +230,7 @@ const PlannerPage = () => {
 
           {/* Daily Study Hours */}
           <div>
-            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 8 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
               Daily Study Time
             </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -238,14 +238,14 @@ const PlannerPage = () => {
                 type="button"
                 onClick={() => setDailyHours((h) => Math.max(4, h - 1))}
                 className="btn-ghost"
-                style={{ width: 42, height: 42, padding: 0, fontSize: 18, fontWeight: 700 }}
+                style={{ width: 46, height: 46, padding: 0, fontSize: 18, fontWeight: 700 }}
               >
                 -
               </button>
               <div
                 style={{
                   flex: 1,
-                  height: 42,
+                  height: 46,
                   borderRadius: 10,
                   display: 'flex',
                   alignItems: 'center',
@@ -266,7 +266,7 @@ const PlannerPage = () => {
                 type="button"
                 onClick={() => setDailyHours((h) => Math.min(14, h + 1))}
                 className="btn-ghost"
-                style={{ width: 42, height: 42, padding: 0, fontSize: 18, fontWeight: 700 }}
+                style={{ width: 46, height: 46, padding: 0, fontSize: 18, fontWeight: 700 }}
               >
                 +
               </button>
@@ -275,19 +275,19 @@ const PlannerPage = () => {
         </div>
 
         {/* Plan Duration Selection */}
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 22 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <label style={{ fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Sliders size={13} style={{ color: 'var(--indigo)' }} />
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Sliders size={14} style={{ color: 'var(--indigo)' }} />
               Plan Duration (Days)
             </label>
             <span style={{ fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', fontFamily: 'var(--font-mono)' }}>
-              {targetDays} Days ({Math.round((targetDays / 30) * 10) / 10} Mo)
+              {targetDays} Days ({Math.round((targetDays / 30) * 10) / 10} Months)
             </span>
           </div>
 
           {/* Preset Chips */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
             {DURATION_PRESETS.map((p) => {
               const isSelected = !isCustomDays && targetDays === p.days
               return (
@@ -299,9 +299,9 @@ const PlannerPage = () => {
                     setIsCustomDays(false)
                   }}
                   style={{
-                    padding: '7px 14px',
+                    padding: '8px 16px',
                     borderRadius: 9,
-                    fontSize: 12.5,
+                    fontSize: 13,
                     fontWeight: isSelected ? 600 : 500,
                     background: isSelected ? 'var(--indigo)' : 'var(--surface-elevated)',
                     color: isSelected ? '#ffffff' : 'var(--text-2)',
@@ -318,9 +318,9 @@ const PlannerPage = () => {
               type="button"
               onClick={() => setIsCustomDays(true)}
               style={{
-                padding: '7px 14px',
+                padding: '8px 16px',
                 borderRadius: 9,
-                fontSize: 12.5,
+                fontSize: 13,
                 fontWeight: isCustomDays ? 600 : 500,
                 background: isCustomDays ? 'var(--indigo)' : 'var(--surface-elevated)',
                 color: isCustomDays ? '#ffffff' : 'var(--text-2)',
@@ -333,8 +333,8 @@ const PlannerPage = () => {
           </div>
 
           {isCustomDays && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderRadius: 10, background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 13, color: 'var(--text-1)' }}>Days:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 10, background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>Days:</span>
               <input
                 type="number"
                 min="7"
@@ -342,40 +342,42 @@ const PlannerPage = () => {
                 value={targetDays}
                 onChange={(e) => setTargetDays(Math.max(7, Math.min(180, parseInt(e.target.value, 10) || 7)))}
                 className="input"
-                style={{ width: 100, height: 36, padding: '4px 10px' }}
+                style={{ width: 110, height: 38, padding: '4px 10px' }}
               />
-              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Min 7, Max 180 days</span>
+              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Min 7, Max 180 days (6 months)</span>
             </div>
           )}
         </div>
 
         {/* Preparation Level & Weak Subjects */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 26 }}>
           <div>
-            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 8 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
               Preparation Level
             </label>
             <select
               value={prepLevel}
               onChange={(e) => setPrepLevel(e.target.value)}
-              className="input select"
+              className="input"
+              style={{ height: 46 }}
             >
               <option value="Beginner">Beginner (Foundation &amp; Concept Building)</option>
-              <option value="Intermediate">Intermediate (Comprehensive Coverage)</option>
+              <option value="Intermediate">Intermediate (Comprehensive Syllabus Coverage)</option>
               <option value="Revision Sprint">Revision Sprint (Rapid Mock Drills)</option>
             </select>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 8 }}>
-              Focus Subjects (Optional)
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
+              Focus / Weak Subjects (Optional)
             </label>
             <input
               type="text"
-              placeholder="e.g. AP Economy, Indian History, S&amp;T"
+              placeholder="e.g. AP Economy, Indian History, Science & Tech"
               value={focusTopics}
               onChange={(e) => setFocusTopics(e.target.value)}
               className="input"
+              style={{ height: 46 }}
             />
           </div>
         </div>
@@ -385,17 +387,17 @@ const PlannerPage = () => {
           onClick={handleGenerate}
           disabled={loading}
           className="btn-primary"
-          style={{ width: '100%', height: 46, fontSize: 14 }}
+          style={{ width: '100%', height: 48, fontSize: 15 }}
         >
           {loading ? (
             <>
-              <Loader2 size={17} className="animate-spin-slow" />
+              <Loader2 size={18} className="animate-spin" />
               Generating Custom {targetDays}-Day Study Plan...
             </>
           ) : (
             <>
-              <Sparkles size={16} />
-              Generate {targetDays}-Day Study Plan • 50 Credits ({dailyHours}h Daily)
+              <Sparkles size={17} />
+              Generate {targetDays}-Day Study Plan • 50 Credits ({dailyHours}h Daily Schedule)
             </>
           )}
         </button>
@@ -403,16 +405,16 @@ const PlannerPage = () => {
 
       {/* ── Generated Plan Output View ── */}
       {content && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeIn 0.3s ease forwards' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, animation: 'fadeIn 0.3s ease forwards' }}>
           {/* Action Bar */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div className="card" style={{ padding: '18px 24px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <span className="tag" style={{ background: 'var(--indigo-dim)', color: 'var(--indigo)' }}>
                   {exam}
                 </span>
                 <span style={{ fontSize: 12, color: 'var(--text-3)', fontFamily: 'var(--font-mono)' }}>
-                  {targetDays} Days • {dailyHours}h/Day
+                  {targetDays} Days • {dailyHours}h/Day Schedule
                 </span>
               </div>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 560, margin: 0, color: 'var(--text-1)' }}>
@@ -420,13 +422,13 @@ const PlannerPage = () => {
               </h3>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <button
                 onClick={handleCopy}
                 className="btn-ghost"
-                style={{ padding: '7px 14px', fontSize: 12 }}
+                style={{ padding: '8px 16px', fontSize: 12.5 }}
               >
-                {copied ? <CheckCheck size={13} style={{ color: 'var(--emerald)' }} /> : <Copy size={13} />}
+                {copied ? <CheckCheck size={14} style={{ color: 'var(--emerald)' }} /> : <Copy size={14} />}
                 {copied ? 'Copied' : 'Copy Plan'}
               </button>
 
@@ -438,9 +440,9 @@ const PlannerPage = () => {
                     content,
                   })
                 }
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 8, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, padding: '8px 16px', borderRadius: 8, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)', cursor: 'pointer' }}
               >
-                <FileSpreadsheet size={13} />
+                <FileSpreadsheet size={14} />
                 Export CSV
               </button>
 
@@ -453,9 +455,9 @@ const PlannerPage = () => {
                     date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
                   })
                 }
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 8, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, padding: '8px 16px', borderRadius: 8, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
               >
-                <Download size={13} />
+                <Download size={14} />
                 Download PDF
               </button>
             </div>
@@ -463,12 +465,12 @@ const PlannerPage = () => {
 
           {/* Quick Module Launchers */}
           {quickTopics.length > 0 && (
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 10 }}>
-                <Flame size={13} style={{ color: 'var(--gold-hi)' }} />
+            <div className="card" style={{ padding: '18px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', marginBottom: 12 }}>
+                <Flame size={14} style={{ color: 'var(--gold-hi)' }} />
                 Quick Action Shortcuts
               </div>
-              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6 }}>
                 {quickTopics.map((top, idx) => (
                   <div
                     key={idx}
@@ -477,25 +479,25 @@ const PlannerPage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 8,
-                      padding: '6px 10px',
+                      padding: '7px 12px',
                       borderRadius: 8,
                       background: 'var(--surface-elevated)',
                       border: '1px solid var(--border)',
-                      fontSize: 12,
+                      fontSize: 12.5,
                     }}
                   >
-                    <span style={{ fontWeight: 500, color: 'var(--text-1)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontWeight: 500, color: 'var(--text-1)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {top}
                     </span>
                     <button
                       onClick={() => navigate(`/notes?topic=${encodeURIComponent(top)}&exam=${encodeURIComponent(exam)}`)}
-                      style={{ padding: '2px 6px', borderRadius: 5, fontSize: 10.5, fontWeight: 600, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: 'none', cursor: 'pointer' }}
+                      style={{ padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: 'none', cursor: 'pointer' }}
                     >
                       Notes
                     </button>
                     <button
                       onClick={() => navigate(`/prelims?topic=${encodeURIComponent(top)}&exam=${encodeURIComponent(exam)}`)}
-                      style={{ padding: '2px 6px', borderRadius: 5, fontSize: 10.5, fontWeight: 600, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: 'none', cursor: 'pointer' }}
+                      style={{ padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: 'none', cursor: 'pointer' }}
                     >
                       MCQs
                     </button>
@@ -506,8 +508,10 @@ const PlannerPage = () => {
           )}
 
           {/* Timetable Markdown */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px 32px' }} className="prose-dark">
-            <MarkdownRenderer content={content} />
+          <div className="card" style={{ padding: '28px 34px' }}>
+            <div className="prose-dark">
+              <MarkdownRenderer content={content} />
+            </div>
           </div>
         </div>
       )}
