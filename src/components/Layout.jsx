@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
+import Footer from './Footer'
 import useAuthStore from '../store/authStore'
 import useSyllabusStore from '../store/syllabusStore'
 import { getSyllabus } from '../api/syllabus'
@@ -74,14 +75,19 @@ const Layout = () => {
         <main
           style={{
             flex: 1,
-            padding: '36px 40px 60px',
+            padding: '36px 40px 40px',
             maxWidth: 1220,
             width: '100%',
             margin: '0 auto',
             boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          <Outlet />
+          <div style={{ flex: 1 }}>
+            <Outlet />
+          </div>
+          <Footer />
         </main>
       </div>
     </div>

@@ -163,7 +163,7 @@ const HistoryPage = () => {
     setLoading(true)
     setError('')
     try {
-      const data = await getHistory({ page: p, type: tab })
+      const data = await getHistory({ page: p, limit: 10, type: tab })
       const list = data?.items || data?.sessions || (Array.isArray(data) ? data : [])
       setItems(list)
       setTotalPages(data?.totalPages || data?.pages || 1)
@@ -631,7 +631,7 @@ const HistoryPage = () => {
                       <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>
                         {item.exam || ''}
                       </span>
-                      {item.score !== undefined && (
+                      {typeof item.score === 'number' && item.score !== null && (item.type === 'eval' || item.type === 'test') && (
                         <span style={{ fontSize: 12.5, fontWeight: 600, color: cfg.color }}>
                           Score: {item.score}/{item.maxScore || 10}
                         </span>
@@ -662,7 +662,7 @@ const HistoryPage = () => {
 
       {/* ── Pagination ── */}
       {!loading && totalPages > 1 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 24, flexWrap: 'wrap' }}>
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page <= 1}
@@ -673,29 +673,67 @@ const HistoryPage = () => {
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              const p = i + 1
-              const isSel = page === p
-              return (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    background: isSel ? 'var(--indigo)' : 'var(--surface)',
-                    border: isSel ? 'none' : '1px solid var(--border)',
-                    color: isSel ? '#ffffff' : 'var(--text-2)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {p}
-                </button>
-              )
-            })}
+            {(() => {
+              if (totalPages <= 7) {
+                return Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      background: page === p ? 'var(--indigo)' : 'var(--surface)',
+                      border: page === p ? 'none' : '1px solid var(--border)',
+                      color: page === p ? '#ffffff' : 'var(--text-2)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {p}
+                  </button>
+                ))
+              }
+              const pageItems = []
+              pageItems.push(1)
+              if (page > 3) pageItems.push('…')
+              const start = Math.max(2, page - 1)
+              const end = Math.min(totalPages - 1, page + 1)
+              for (let i = start; i <= end; i++) pageItems.push(i)
+              if (page < totalPages - 2) pageItems.push('…')
+              pageItems.push(totalPages)
+
+              return pageItems.map((item, idx) => {
+                if (item === '…') {
+                  return (
+                    <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', color: 'var(--text-3)', fontSize: 14 }}>
+                      …
+                    </span>
+                  )
+                }
+                const isSel = page === item
+                return (
+                  <button
+                    key={item}
+                    onClick={() => setPage(item)}
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      background: isSel ? 'var(--indigo)' : 'var(--surface)',
+                      border: isSel ? 'none' : '1px solid var(--border)',
+                      color: isSel ? '#ffffff' : 'var(--text-2)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {item}
+                  </button>
+                )
+              })
+            })()}
           </div>
 
           <button

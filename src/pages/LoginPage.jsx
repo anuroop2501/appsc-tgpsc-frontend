@@ -214,9 +214,37 @@ const LoginPage = () => {
           </Link>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--text-3)', marginTop: 16 }}>
-          APPSC AI — Precision Preparation Platform
-        </p>
+        <div style={{ textAlign: 'center', marginTop: 18, fontSize: 12, color: 'var(--text-3)' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+            <Link
+              to="/privacy-policy"
+              style={{ color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--indigo)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
+            >
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link
+              to="/terms-and-conditions"
+              style={{ color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--indigo)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
+            >
+              Terms &amp; Conditions
+            </Link>
+            <span>•</span>
+            <Link
+              to="/refund-policy"
+              style={{ color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--indigo)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
+            >
+              Refund Policy
+            </Link>
+          </div>
+          <div>APPSC AI — Precision Preparation Platform</div>
+        </div>
       </div>
     </div>
   )

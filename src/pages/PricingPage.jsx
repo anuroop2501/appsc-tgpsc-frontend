@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Zap, Check, Smartphone, Lock, AlertCircle, Loader2 } from 'lucide-react'
 import { getPaymentPlans, createPaymentOrder, verifyPayment } from '../api/payment'
 import useAuthStore from '../store/authStore'
@@ -400,11 +401,21 @@ export default function PricingPage() {
         </>
       )}
 
-      {/* Footer Security Badges */}
-      <div style={{ paddingTop: 32, marginTop: 44, borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}>
-        <p style={{ fontSize: 12.5, color: 'var(--text-3)', margin: 0 }}>
+      {/* Footer Security Badges & Refund Notice */}
+      <div style={{ paddingTop: 28, marginTop: 40, borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}>
+        <p style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 8 }}>
+          <strong style={{ color: 'var(--text-1)' }}>Note:</strong> All purchases of AI credits, booster packs, and subscription passes are final and strictly non-refundable once allocated.
+        </p>
+        <p style={{ fontSize: 12.5, color: 'var(--text-3)', margin: '0 0 10px' }}>
           <Lock size={13} style={{ display: 'inline', marginRight: 5, color: 'var(--emerald)' }} /> Safe &amp; Secure PhonePe Gateway Checkout · 256-bit SSL Encrypted
         </p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 14, fontSize: 12, color: 'var(--text-3)' }}>
+          <Link to="/refund-policy" style={{ color: 'var(--indigo)', textDecoration: 'underline' }}>Refund &amp; Cancellation Policy</Link>
+          <span>•</span>
+          <Link to="/terms-and-conditions" style={{ color: 'var(--indigo)', textDecoration: 'underline' }}>Terms of Service</Link>
+          <span>•</span>
+          <Link to="/privacy-policy" style={{ color: 'var(--indigo)', textDecoration: 'underline' }}>Privacy Policy</Link>
+        </div>
       </div>
     </div>
   )

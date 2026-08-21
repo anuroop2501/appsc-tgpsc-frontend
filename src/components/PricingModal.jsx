@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { Zap, Check, X, AlertCircle, Loader2, Smartphone, Lock } from 'lucide-react'
 import { getPaymentPlans, createPaymentOrder, verifyPayment } from '../api/payment'
@@ -400,6 +401,19 @@ export default function PricingModal({ isOpen, onClose, onPaymentSuccess, reason
                 ))}
               </div>
             )}
+
+            <div style={{ marginTop: 22, paddingTop: 14, borderTop: '1px solid var(--border-soft)', textAlign: 'center', fontSize: 11.5, color: 'var(--text-3)' }}>
+              <div style={{ marginBottom: 4 }}>
+                <strong style={{ color: 'var(--text-2)' }}>Notice:</strong> All AI credit purchases are final and strictly non-refundable once provisioned.
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+                <Link to="/refund-policy" onClick={onClose} style={{ color: 'var(--indigo)', textDecoration: 'underline' }}>Refund Policy</Link>
+                <span>•</span>
+                <Link to="/terms-and-conditions" onClick={onClose} style={{ color: 'var(--indigo)', textDecoration: 'underline' }}>Terms of Service</Link>
+                <span>•</span>
+                <Link to="/privacy-policy" onClick={onClose} style={{ color: 'var(--indigo)', textDecoration: 'underline' }}>Privacy Policy</Link>
+              </div>
+            </div>
           </>
         )}
       </div>

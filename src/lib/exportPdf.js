@@ -1,508 +1,305 @@
 /**
  * exportPdf.js
  * ─────────────────────────────────────────────────────────────
- * Generates publication-quality, multi-page branded PDFs for study notes.
- * Includes running headers & footers across ALL pages, styled headings,
- * indented bullet lists, bold emphasis, and consistent typography.
+ * Generates publication-quality, multi-page branded PDFs for study notes,
+ * MCQ practice tests, and study plans.
+ * Supports Telugu (Unicode Indic script) and English with zero gibberish
+ * using high-DPI browser rendering and multi-page A4 canvas slicing.
  */
 import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
 
 /**
- * Renders running header bar on pages 2+.
+ * Detect whether string contains Telugu characters (\u0C00 - \u0C7F)
  */
-function drawPageHeader(doc, topic, exam, pageW, margin) {
-  doc.setFillColor(14, 22, 40) // Royal Navy
-  doc.rect(0, 0, pageW, 14, 'F')
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(9)
-  doc.setTextColor(255, 255, 255)
-  doc.text('APPSC AI', margin, 9)
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8)
-  doc.setTextColor(180, 205, 255)
-  doc.text('Civil Services Preparation', margin + 22, 9)
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(8)
-  doc.setTextColor(247, 181, 0) // Ace Gold
-  doc.text(topic ? topic.slice(0, 45) : (exam || 'Study Notes'), pageW - margin, 9, { align: 'right' })
-
-  doc.setDrawColor(32, 47, 78)
-  doc.setLineWidth(0.3)
-  doc.line(0, 14, pageW, 14)
-}
+export const containsTelugu = (str) => /[\u0C00-\u0C7F]/.test(str || '')
 
 /**
- * Renders running footer on all pages.
+ * Convert Markdown text to clean, styled HTML for PDF printing.
  */
-function drawPageFooter(doc, pageW, pageH, margin, pageNum, totalPages) {
-  doc.setDrawColor(220, 225, 235)
-  doc.setLineWidth(0.3)
-  doc.line(margin, pageH - 12, pageW - margin, pageH - 12)
+function markdownToHtml(md = '') {
+  if (!md) return ''
+  const lines = md.split(/\r?\n/)
+  let html = ''
+  let inList = false
+  let inTable = false
+  let tableRows = []
 
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8)
-  doc.setTextColor(130, 140, 160)
-  doc.text('APPSC AI Exam Preparation Platform', margin, pageH - 6)
-  if (totalPages) {
-    doc.text(`Page ${pageNum} of ${totalPages}`, pageW - margin, pageH - 6, { align: 'right' })
-  } else {
-    doc.text(`Page ${pageNum}`, pageW - margin, pageH - 6, { align: 'right' })
-  }
-}
-
-function sanitizeTextForPdf(text) {
-  if (typeof text !== 'string') return ''
-  return text
-    .replace(/📖\s*/g, '[Notes] ')
-    .replace(/⚡\s*/g, '[MCQ] ')
-    .replace(/🌅\s*/g, 'Morning: ')
-    .replace(/☀️\s*/g, 'Afternoon: ')
-    .replace(/🌙\s*/g, 'Evening: ')
-    .replace(/📌\s*/g, '* ')
-    .replace(/🔥\s*/g, '* ')
-    .replace(/✅\s*/g, '[Done] ')
-    .replace(/⚠️\s*/g, '[Note] ')
-    .replace(/[^\x00-\x7F]/g, '')
-}
-
-/**
- * Main export function for Study Notes.
- */
-export function exportNotesToPdf({ topic, exam, content = '', date }) {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
-
-  const pageW = doc.internal.pageSize.getWidth()
-  const pageH = doc.internal.pageSize.getHeight()
-  const margin = 16
-  const contentW = pageW - margin * 2
-  const footerReserved = 16
-  let y = margin
-
-  // ── Cover Banner / Header Block (Page 1) ──────────────────────────────────
-  doc.setFillColor(241, 245, 249) // Light surface
-  doc.roundedRect(margin, y, contentW, 28, 3, 3, 'F')
-
-  doc.setDrawColor(37, 99, 235) // Accent blue border
-  doc.setLineWidth(0.8)
-  doc.line(margin, y, margin, y + 28)
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(8.5)
-  doc.setTextColor(37, 99, 235)
-  doc.text((exam || 'APPSC').toUpperCase() + ' — CIVIL SERVICES PREPARATION', margin + 5, y + 6)
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(14)
-  doc.setTextColor(15, 23, 42)
-  const titleText = (topic || 'Study Notes').slice(0, 60)
-  doc.text(titleText, margin + 5, y + 14)
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8)
-  doc.setTextColor(100, 116, 139)
-  doc.text(`Generated on: ${date || new Date().toLocaleDateString('en-IN')}`, margin + 5, y + 21)
-
-  y += 34
-
-  // ── Parse & Render Content Blocks ──────────────────────────────────────────
-  const cleanContent = sanitizeTextForPdf(content || '')
-  const rawLines = cleanContent.split(/\r?\n/)
-
-  const checkPageBreak = (neededHeight) => {
-    if (y + neededHeight > pageH - footerReserved) {
-      doc.addPage()
-      drawPageHeader(doc, topic, exam, pageW, margin)
-      y = 22 // start below header bar
-      return true
+  const closeList = () => {
+    if (inList) {
+      html += '</ul>'
+      inList = false
     }
-    return false
   }
 
-  for (let i = 0; i < rawLines.length; i++) {
-    const line = rawLines[i].trim()
-
-    // Blank lines → small gap
-    if (!line) {
-      y += 2.5
-      continue
-    }
-
-    // ── H1 Heading (# Heading) ────────────────────────────────────────────────
-    if (line.startsWith('# ')) {
-      const hText = line.replace(/^#\s+/, '').replace(/\*\*/g, '').trim()
-      checkPageBreak(12)
-      y += 3
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(13)
-      doc.setTextColor(21, 121, 230) // Royal Blue
-      const wrapped = doc.splitTextToSize(hText, contentW)
-      doc.text(wrapped, margin, y)
-      y += wrapped.length * 5.5 + 2
-      continue
-    }
-
-    // ── H2 Heading (## Heading) ───────────────────────────────────────────────
-    if (line.startsWith('## ')) {
-      const hText = line.replace(/^##\s+/, '').replace(/\*\*/g, '').trim()
-      checkPageBreak(10)
-      y += 2.5
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(11.5)
-      doc.setTextColor(15, 23, 42)
-      const wrapped = doc.splitTextToSize(hText, contentW)
-      doc.text(wrapped, margin, y)
-      y += wrapped.length * 5 + 1.5
-
-      // Underline for H2
-      doc.setDrawColor(226, 232, 240)
-      doc.setLineWidth(0.3)
-      doc.line(margin, y, pageW - margin, y)
-      y += 3
-      continue
-    }
-
-    // ── H3 Heading (### Heading) ──────────────────────────────────────────────
-    if (line.startsWith('### ')) {
-      const hText = line.replace(/^###\s+/, '').replace(/\*\*/g, '').trim()
-      checkPageBreak(8)
-      y += 2
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(10.5)
-      doc.setTextColor(30, 41, 59)
-      const wrapped = doc.splitTextToSize(hText, contentW)
-      doc.text(wrapped, margin, y)
-      y += wrapped.length * 4.8 + 1.5
-      continue
-    }
-
-    // ── Bullet Point (- item, * item, • item, 1. item) ────────────────────────
-    const isBullet = /^[-*•]\s+/.test(line) || /^\d+\.\s+/.test(line)
-    if (isBullet) {
-      const bulletPrefix = /^[-*•]\s+/.test(line) ? '•' : line.match(/^\d+\./)[0]
-      const bodyText = line.replace(/^([-*•]|\d+\.)\s+/, '').trim()
-      const cleanBody = bodyText.replace(/\*\*(.*?)\*\*/g, '$1') // plain text for wrapping measurement
-
-      const indent = 6
-      const itemW = contentW - indent
-
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(9.5)
-      const wrapped = doc.splitTextToSize(cleanBody, itemW)
-
-      checkPageBreak(wrapped.length * 4.6 + 2)
-
-      // Draw bullet / number
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(9.5)
-      doc.setTextColor(21, 121, 230) // Royal Blue bullet
-      doc.text(bulletPrefix, margin + 1, y)
-
-      // Draw item text (support bold prefix if **bold**: rest)
-      doc.setFont('helvetica', 'normal')
-      doc.setTextColor(30, 41, 59)
-
-      // If line starts with bold key like **Key Concept**:
-      const boldKeyMatch = bodyText.match(/^\*\*(.*?)\*\*\s*(.*)/)
-      if (boldKeyMatch) {
-        const key = boldKeyMatch[1]
-        const rest = boldKeyMatch[2]
-
-        // Measure key width
-        doc.setFont('helvetica', 'bold')
-        doc.text(key, margin + indent, y)
-        const keyWidth = doc.getTextWidth(key + ' ')
-
-        doc.setFont('helvetica', 'normal')
-        if (rest) {
-          const restWrapped = doc.splitTextToSize(rest, itemW - keyWidth)
-          if (restWrapped.length > 0) {
-            doc.text(restWrapped[0], margin + indent + keyWidth, y)
-            for (let r = 1; r < restWrapped.length; r++) {
-              y += 4.6
-              doc.text(restWrapped[r], margin + indent, y)
-            }
+  const flushTable = () => {
+    if (inTable && tableRows.length > 0) {
+      html += '<table style="width:100%; border-collapse:collapse; margin:14px 0; font-size:12px;">'
+      tableRows.forEach((row, rIdx) => {
+        const isHeader = rIdx === 0
+        html += '<tr>'
+        row.forEach((cell) => {
+          if (isHeader) {
+            html += `<th style="background:#2563eb; color:#ffffff; padding:8px 10px; border:1px solid #cbd5e1; text-align:left; font-weight:600;">${cell}</th>`
+          } else {
+            html += `<td style="background:${rIdx % 2 === 0 ? '#f8fafc' : '#ffffff'}; padding:7px 10px; border:1px solid #e2e8f0; color:#1e293b;">${cell}</td>`
           }
-        }
-      } else {
-        doc.text(wrapped, margin + indent, y)
-      }
+        })
+        html += '</tr>'
+      })
+      html += '</table>'
+      inTable = false
+      tableRows = []
+    }
+  }
 
-      y += (wrapped.length > 1 && boldKeyMatch ? (wrapped.length - 1) * 4.6 : 0) + 4.8
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i]
+    const trimmed = rawLine.trim()
+
+    if (!trimmed) {
+      closeList()
+      flushTable()
       continue
     }
 
-    // ── Table Row (| col1 | col2 | ...) ──────────────────────────────────────────
-    if (line.startsWith('|') && line.endsWith('|')) {
-      const cells = line.split('|').map((c) => c.trim()).slice(1, -1)
-
-      // Skip header divider lines like |---|---|
-      if (cells.length >= 2 && cells[0].includes('---')) {
-        continue
+    // Markdown Table Row
+    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+      closeList()
+      const cells = trimmed.split('|').map((c) => c.trim()).slice(1, -1)
+      if (cells.length > 0 && cells[0].includes('---')) {
+        continue // skip separator row
       }
-
-      // Check if it's the table header row (| Day | Morning Block ... |)
-      const isHeaderRow = cells[0].toLowerCase().includes('day') && cells.some(c => c.toLowerCase().includes('block') || c.toLowerCase().includes('morning'))
-
-      if (isHeaderRow) {
-        checkPageBreak(8)
-        y += 2
-        doc.setFillColor(37, 99, 235) // Primary Accent Blue
-        doc.rect(margin, y, contentW, 6, 'F')
-        doc.setFont('helvetica', 'bold')
-        doc.setFontSize(8.5)
-        doc.setTextColor(255, 255, 255)
-        doc.text('DAY-BY-DAY MASTER STUDY TIMETABLE', margin + 3, y + 4.2)
-        y += 8
-        continue
-      }
-
-      // Regular Day Table Row
-      if (cells.length >= 2) {
-        const dayLabel = cells[0]
-        const morning = cells[1] || ''
-        const afternoon = cells[2] || ''
-        const evening = cells[3] || ''
-
-        const fullText = `${dayLabel}: ${morning}${afternoon ? ' | ' + afternoon : ''}${evening ? ' | ' + evening : ''}`
-        const wrapped = doc.splitTextToSize(fullText, contentW - 4)
-
-        checkPageBreak(wrapped.length * 4.5 + 4)
-
-        doc.setFillColor(241, 245, 249)
-        doc.roundedRect(margin, y - 1, contentW, wrapped.length * 4.5 + 3, 1.5, 1.5, 'F')
-
-        doc.setFont('helvetica', 'bold')
-        doc.setFontSize(9)
-        doc.setTextColor(37, 99, 235)
-        doc.text(dayLabel, margin + 2, y + 3.2)
-
-        const dayWidth = doc.getTextWidth(dayLabel + ': ')
-
-        doc.setFont('helvetica', 'normal')
-        doc.setFontSize(8.5)
-        doc.setTextColor(15, 23, 42)
-
-        const detailsText = `${morning}${afternoon ? ' | Afternoon: ' + afternoon : ''}${evening ? ' | Evening: ' + evening : ''}`
-        const detailsWrapped = doc.splitTextToSize(detailsText, contentW - dayWidth - 6)
-
-        if (detailsWrapped.length > 0) {
-          doc.text(detailsWrapped[0], margin + 2 + dayWidth, y + 3.2)
-          for (let r = 1; r < detailsWrapped.length; r++) {
-            y += 4.2
-            doc.text(detailsWrapped[r], margin + 4, y + 3.2)
-          }
-        }
-
-        y += 6.5
-        continue
-      }
-    }
-
-    // ── Blockquote (> quote) ─────────────────────────────────────────────────
-    if (line.startsWith('>')) {
-      const qText = line.replace(/^>\s*/, '').replace(/\*\*(.*?)\*\*/g, '$1').trim()
-      doc.setFont('helvetica', 'italic')
-      doc.setFontSize(9)
-      const wrapped = doc.splitTextToSize(qText, contentW - 8)
-
-      checkPageBreak(wrapped.length * 4.5 + 4)
-
-      // Quote bar
-      doc.setFillColor(247, 181, 0) // Ace Gold bar
-      doc.rect(margin, y - 2, 2, wrapped.length * 4.5 + 2, 'F')
-
-      doc.setTextColor(71, 85, 105)
-      doc.text(wrapped, margin + 5, y)
-      y += wrapped.length * 4.5 + 3.5
+      inTable = true
+      tableRows.push(cells)
       continue
-    }
-
-    // ── Normal Paragraph Line ────────────────────────────────────────────────
-    const cleanLine = line.replace(/\*\*(.*?)\*\*/g, '$1')
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(9.5)
-    doc.setTextColor(30, 41, 59)
-    const wrapped = doc.splitTextToSize(cleanLine, contentW)
-
-    checkPageBreak(wrapped.length * 4.6 + 2)
-
-    // Check for bold lead-in like **Important Note**: text
-    const boldLeadMatch = line.match(/^\*\*(.*?)\*\*\s*(.*)/)
-    if (boldLeadMatch) {
-      const leadKey = boldLeadMatch[1]
-      const leadRest = boldLeadMatch[2]
-
-      doc.setFont('helvetica', 'bold')
-      doc.text(leadKey, margin, y)
-      const leadWidth = doc.getTextWidth(leadKey + ' ')
-
-      doc.setFont('helvetica', 'normal')
-      if (leadRest) {
-        const restWrapped = doc.splitTextToSize(leadRest, contentW - leadWidth)
-        if (restWrapped.length > 0) {
-          doc.text(restWrapped[0], margin + leadWidth, y)
-          for (let r = 1; r < restWrapped.length; r++) {
-            y += 4.6
-            doc.text(restWrapped[r], margin, y)
-          }
-        }
-      }
-      y += 4.8
     } else {
-      doc.text(wrapped, margin, y)
-      y += wrapped.length * 4.6 + 1.5
+      flushTable()
     }
+
+    // H1 Heading (# Heading)
+    if (trimmed.startsWith('# ')) {
+      closeList()
+      const text = formatInlineMarkdown(trimmed.replace(/^#\s+/, ''))
+      html += `<h1 style="font-size:20px; font-weight:700; color:#1d4ed8; margin:18px 0 8px; border-bottom:2px solid #93c5fd; padding-bottom:4px;">${text}</h1>`
+      continue
+    }
+
+    // H2 Heading (## Heading)
+    if (trimmed.startsWith('## ')) {
+      closeList()
+      const text = formatInlineMarkdown(trimmed.replace(/^##\s+/, ''))
+      html += `<h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:16px 0 6px; border-bottom:1px solid #e2e8f0; padding-bottom:3px;">${text}</h2>`
+      continue
+    }
+
+    // H3 Heading (### Heading)
+    if (trimmed.startsWith('### ')) {
+      closeList()
+      const text = formatInlineMarkdown(trimmed.replace(/^###\s+/, ''))
+      html += `<h3 style="font-size:14px; font-weight:600; color:#1e293b; margin:12px 0 4px;">${text}</h3>`
+      continue
+    }
+
+    // Bullet Points
+    if (/^[-*•]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
+      if (!inList) {
+        html += '<ul style="margin:6px 0 10px; padding-left:22px; list-style-type:disc;">'
+        inList = true
+      }
+      const itemText = formatInlineMarkdown(trimmed.replace(/^([-*•]|\d+\.)\s+/, ''))
+      html += `<li style="font-size:13px; line-height:1.6; color:#334155; margin-bottom:4px;">${itemText}</li>`
+      continue
+    } else {
+      closeList()
+    }
+
+    // Blockquote (> Quote)
+    if (trimmed.startsWith('>')) {
+      const qText = formatInlineMarkdown(trimmed.replace(/^>\s*/, ''))
+      html += `<blockquote style="border-left:4px solid #f59e0b; background:#fef3c7; padding:8px 14px; margin:10px 0; border-radius:4px; font-size:12.5px; font-style:italic; color:#78350f;">${qText}</blockquote>`
+      continue
+    }
+
+    // Paragraph
+    const paraText = formatInlineMarkdown(trimmed)
+    html += `<p style="font-size:13px; line-height:1.65; color:#1e293b; margin:6px 0 10px;">${paraText}</p>`
   }
 
-  // ── Render Footers on All Pages ────────────────────────────────────────────
-  const totalPages = doc.internal.getNumberOfPages()
-  for (let p = 1; p <= totalPages; p++) {
-    doc.setPage(p)
-    drawPageFooter(doc, pageW, pageH, margin, p, totalPages)
-  }
+  closeList()
+  flushTable()
+  return html
+}
 
-  // ── Save ───────────────────────────────────────────────────────────────────
-  const filename = `APPSC_AI_${(topic || 'Notes').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40)}.pdf`
-  doc.save(filename)
+function formatInlineMarkdown(text) {
+  if (!text) return ''
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code style="background:#f1f5f9; padding:2px 4px; border-radius:4px; font-family:monospace; font-size:12px;">$1</code>')
 }
 
 /**
- * Export Prelims MCQs with Questions, Options, Answer Key & Detailed Solutions.
+ * Render an HTML element into a multi-page A4 PDF.
  */
-export function exportPrelimsToPdf({ topic, exam, questions = [], date }) {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+async function renderHtmlToPdf(htmlContent, filename) {
+  const container = document.createElement('div')
+  container.style.position = 'absolute'
+  container.style.left = '-9999px'
+  container.style.top = '0'
+  container.style.width = '800px'
+  container.style.background = '#ffffff'
+  container.style.color = '#0f172a'
+  container.style.fontFamily = "'Noto Sans Telugu', 'Gautami', 'Mandali', 'TenaliRamakrishna', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  container.style.padding = '32px 36px'
+  container.style.boxSizing = 'border-box'
+  container.innerHTML = htmlContent
 
-  const pageW = doc.internal.pageSize.getWidth()
-  const pageH = doc.internal.pageSize.getHeight()
-  const margin = 16
-  const contentW = pageW - margin * 2
-  const footerReserved = 16
-  let y = margin
+  document.body.appendChild(container)
 
-  const checkPageBreak = (neededHeight) => {
-    if (y + neededHeight > pageH - footerReserved) {
-      doc.addPage()
-      drawPageHeader(doc, topic, exam, pageW, margin)
-      y = 22
-      return true
-    }
-    return false
-  }
-
-  // ── Page 1 Banner ─────────────────────────────────────────────────────────
-  doc.setFillColor(14, 22, 40)
-  doc.rect(0, 0, pageW, 26, 'F')
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(14)
-  doc.setTextColor(255, 255, 255)
-  doc.text('APPSC AI', margin, 11)
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8.5)
-  doc.setTextColor(180, 205, 255)
-  doc.text('Prelims Practice Test with Detailed Solutions', margin, 18)
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(8.5)
-  doc.setTextColor(247, 181, 0)
-  doc.text(exam || 'APPSC Prelims', pageW - margin, 11, { align: 'right' })
-
-  y = 34
-
-  // ── Topic Title ────────────────────────────────────────────────────────────
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(14)
-  doc.setTextColor(15, 23, 42)
-  const titleLines = doc.splitTextToSize(topic ? `Topic: ${topic}` : 'Prelims Practice Questions', contentW)
-  doc.text(titleLines, margin, y)
-  y += titleLines.length * 6 + 1
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8.5)
-  doc.setTextColor(100, 116, 139)
-  doc.text(`Total Questions: ${questions.length} | Date: ${date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`, margin, y)
-  y += 6
-
-  doc.setDrawColor(21, 121, 230)
-  doc.setLineWidth(0.6)
-  doc.line(margin, y, pageW - margin, y)
-  y += 8
-
-  // ── SECTION 1: QUESTIONS & OPTIONS ─────────────────────────────────────────
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(11)
-  doc.setTextColor(21, 121, 230)
-  doc.text('SECTION 1: QUESTIONS & OPTIONS', margin, y)
-  y += 7
-
-  questions.forEach((q, i) => {
-    const qNum = `Q${i + 1}. `
-    const qText = q.question || q.q || `Question ${i + 1}`
-    
-    // Normalize options array
-    const rawOptions = q.opts || q.options || {}
-    const optionsArray = Array.isArray(rawOptions)
-      ? rawOptions
-      : ['A', 'B', 'C', 'D'].map((k) => rawOptions[k] || '')
-
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9.5)
-    doc.setTextColor(15, 23, 42)
-
-    const qWrapped = doc.splitTextToSize(`${qNum}${qText}`, contentW)
-    checkPageBreak(qWrapped.length * 5 + 20)
-
-    doc.text(qWrapped, margin, y)
-    y += qWrapped.length * 4.8 + 2
-
-    // Options (A, B, C, D)
-    const optLabels = ['(A)', '(B)', '(C)', '(D)']
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(9)
-    doc.setTextColor(30, 41, 59)
-
-    optionsArray.forEach((optText, optIdx) => {
-      if (optIdx > 3) return
-      const label = optLabels[optIdx]
-      const optLine = `${label} ${optText}`
-      const optWrapped = doc.splitTextToSize(optLine, contentW - 6)
-      checkPageBreak(optWrapped.length * 4.5 + 2)
-
-      doc.text(optWrapped, margin + 4, y)
-      y += optWrapped.length * 4.3 + 1
+  try {
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
     })
 
-    y += 4 // Spacing between questions
-  })
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+    const pdfPageWidth = 210
+    const pdfPageHeight = 297
+    const margin = 10
+    const contentWidth = pdfPageWidth - margin * 2
 
-  // ── SECTION 2: ANSWER KEY & DETAILED SOLUTIONS ─────────────────────────────
-  y += 4
-  checkPageBreak(25)
+    const pageCanvasHeight = (canvas.width * (pdfPageHeight - margin * 2)) / contentWidth
+    let renderedHeight = 0
+    let pageIndex = 0
 
-  doc.setDrawColor(21, 121, 230)
-  doc.setLineWidth(0.6)
-  doc.line(margin, y, pageW - margin, y)
-  y += 8
+    while (renderedHeight < canvas.height) {
+      if (pageIndex > 0) {
+        doc.addPage()
+      }
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(11)
-  doc.setTextColor(21, 121, 230)
-  doc.text('SECTION 2: ANSWER KEY & DETAILED SOLUTIONS', margin, y)
-  y += 8
+      const sourceHeight = Math.min(canvas.height - renderedHeight, pageCanvasHeight)
+      const pageCanvas = document.createElement('canvas')
+      pageCanvas.width = canvas.width
+      pageCanvas.height = pageCanvasHeight
+      const ctx = pageCanvas.getContext('2d')
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height)
+      ctx.drawImage(
+        canvas,
+        0, renderedHeight, canvas.width, sourceHeight,
+        0, 0, canvas.width, sourceHeight
+      )
+
+      const imgData = pageCanvas.toDataURL('image/jpeg', 0.95)
+      doc.addImage(imgData, 'JPEG', margin, margin, contentWidth, pdfPageHeight - margin * 2)
+
+      // Add footer
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.setTextColor(140, 150, 165)
+      doc.text('APPSC AI Exam Preparation Platform', margin, pdfPageHeight - 4)
+
+      renderedHeight += pageCanvasHeight
+      pageIndex++
+    }
+
+    // Add page numbers on each page
+    const totalPages = doc.internal.getNumberOfPages()
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.setTextColor(140, 150, 165)
+      doc.text(`Page ${p} of ${totalPages}`, pdfPageWidth - margin, pdfPageHeight - 4, { align: 'right' })
+    }
+
+    doc.save(filename)
+  } finally {
+    if (container.parentNode) {
+      document.body.removeChild(container)
+    }
+  }
+}
+
+/**
+ * Main export function for Study Notes (Telugu & English).
+ */
+export async function exportNotesToPdf({ topic, exam, content = '', date }) {
+  const displayTopic = topic || 'Study Notes'
+  const displayExam = exam || 'APPSC'
+  const displayDate = date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  const cleanBodyHtml = markdownToHtml(content)
+
+  const fullHtml = `
+    <div style="font-family:'Noto Sans Telugu', 'Gautami', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color:#0f172a; line-height:1.6;">
+      <!-- Header Banner -->
+      <div style="background:linear-gradient(135deg, #0f172a, #1e293b); padding:20px 24px; border-radius:10px; color:#ffffff; margin-bottom:24px; border-left:6px solid #2563eb;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#93c5fd; margin-bottom:4px;">
+          ${displayExam.toUpperCase()} — CIVIL SERVICES PREPARATION
+        </div>
+        <h1 style="font-size:22px; font-weight:700; margin:0 0 8px; color:#ffffff; line-height:1.3;">
+          ${displayTopic}
+        </h1>
+        <div style="font-size:11px; color:#cbd5e1;">
+          Generated on: ${displayDate} · Official APPSC AI Prep Module
+        </div>
+      </div>
+
+      <!-- Main Notes Body -->
+      <div style="padding:0 4px;">
+        ${cleanBodyHtml}
+      </div>
+    </div>
+  `
+
+  const safeFilename = `appscai_notes_${displayTopic.replace(/[^a-zA-Z0-9\u0C00-\u0C7F]/g, '_').slice(0, 40)}.pdf`
+  await renderHtmlToPdf(fullHtml, safeFilename)
+}
+
+/**
+ * Export Prelims MCQs with Questions, Options, Answer Key & Detailed Solutions (Telugu & English).
+ */
+export async function exportPrelimsToPdf({ topic, exam, questions = [], date }) {
+  const displayTopic = topic || 'Prelims Practice Questions'
+  const displayExam = exam || 'APPSC Prelims'
+  const displayDate = date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+
+  let questionsHtml = ''
+  let solutionsHtml = ''
 
   questions.forEach((q, i) => {
-    const qNum = `Q${i + 1}. `
-    const qText = q.question || q.q || `Question ${i + 1}`
-
+    const qNum = i + 1
+    const qText = q.question || q.q || `Question ${qNum}`
     const rawOptions = q.opts || q.options || {}
     const optionsArray = Array.isArray(rawOptions)
       ? rawOptions
       : ['A', 'B', 'C', 'D'].map((k) => rawOptions[k] || '')
 
+    const optLabels = ['(A)', '(B)', '(C)', '(D)']
+
+    // Section 1: Questions & Options
+    questionsHtml += `
+      <div style="margin-bottom:18px; padding:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+        <div style="font-weight:700; font-size:13.5px; color:#0f172a; margin-bottom:10px; line-height:1.5;">
+          <span style="color:#2563eb; margin-right:4px;">Q${qNum}.</span> ${qText}
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          ${optionsArray.map((opt, idx) => `
+            <div style="font-size:12.5px; color:#334155; padding:6px 10px; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; line-height:1.4;">
+              <strong style="color:#2563eb; margin-right:4px;">${optLabels[idx] || ''}</strong> ${opt}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `
+
+    // Section 2: Solutions
     const correctRaw = q.correct ?? q.ans ?? q.answer ?? q.correctAnswer ?? 'A'
     let correctLetter = 'A'
     let correctOptText = ''
@@ -523,59 +320,90 @@ export function exportPrelimsToPdf({ topic, exam, questions = [], date }) {
 
     const explanationText = q.explanation || q.exp || 'Correct based on syllabus provisions and historical facts.'
 
-    const qWrapped = doc.splitTextToSize(`${qNum}${qText}`, contentW)
-    const expWrapped = doc.splitTextToSize(`Explanation: ${explanationText}`, contentW - 4)
-    const needed = qWrapped.length * 4.8 + expWrapped.length * 4.2 + 16
-
-    checkPageBreak(needed)
-
-    // Question statement
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9.5)
-    doc.setTextColor(15, 23, 42)
-    doc.text(qWrapped, margin, y)
-    y += qWrapped.length * 4.8 + 2
-
-    // Correct Answer Line
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
-    doc.setTextColor(5, 150, 105) // Green
-    const ansText = `Correct Answer: [${correctLetter}] ${correctOptText}`
-    const ansWrapped = doc.splitTextToSize(ansText, contentW - 4)
-    doc.text(ansWrapped, margin + 2, y)
-    y += ansWrapped.length * 4.5 + 2
-
-    // Explanation Box
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8.5)
-    doc.setTextColor(51, 65, 85) // Slate-700
-    doc.text(expWrapped, margin + 4, y)
-    y += expWrapped.length * 4.2 + 5
+    solutionsHtml += `
+      <div style="margin-bottom:18px; padding:14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; border-left:4px solid #10b981;">
+        <div style="font-weight:700; font-size:13.5px; color:#0f172a; margin-bottom:8px; line-height:1.5;">
+          <span style="color:#10b981; margin-right:4px;">Q${qNum}.</span> ${qText}
+        </div>
+        <div style="background:#ecfdf5; border:1px solid #a7f3d0; padding:6px 12px; border-radius:6px; font-weight:700; font-size:12.5px; color:#065f46; margin-bottom:8px;">
+          Correct Answer: [${correctLetter}] ${correctOptText}
+        </div>
+        <div style="font-size:12px; color:#475569; line-height:1.55; background:#f8fafc; padding:8px 12px; border-radius:6px;">
+          <strong style="color:#334155;">Explanation:</strong> ${explanationText}
+        </div>
+      </div>
+    `
   })
 
-  // ── Render Footers on All Pages ────────────────────────────────────────────
-  const totalPages = doc.internal.getNumberOfPages()
-  for (let p = 1; p <= totalPages; p++) {
-    doc.setPage(p)
-    drawPageFooter(doc, pageW, pageH, margin, p, totalPages)
-  }
+  const fullHtml = `
+    <div style="font-family:'Noto Sans Telugu', 'Gautami', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color:#0f172a;">
+      <!-- Header Banner -->
+      <div style="background:linear-gradient(135deg, #0f172a, #1e293b); padding:20px 24px; border-radius:10px; color:#ffffff; margin-bottom:24px; border-left:6px solid #2563eb;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#93c5fd; margin-bottom:4px;">
+          ${displayExam.toUpperCase()} — PRELIMS PRACTICE TEST
+        </div>
+        <h1 style="font-size:22px; font-weight:700; margin:0 0 8px; color:#ffffff; line-height:1.3;">
+          ${displayTopic}
+        </h1>
+        <div style="font-size:11px; color:#cbd5e1;">
+          Total Questions: ${questions.length} · Date: ${displayDate}
+        </div>
+      </div>
 
-  // ── Save PDF ───────────────────────────────────────────────────────────────
-  const safeFilename = `APPSC_MCQ_${(topic || 'Prelims').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40)}.pdf`
-  doc.save(safeFilename)
+      <!-- Section 1 -->
+      <h2 style="font-size:15px; font-weight:700; color:#2563eb; margin:20px 0 12px; border-bottom:2px solid #bfdbfe; padding-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;">
+        Section 1: Questions & Options
+      </h2>
+      ${questionsHtml}
+
+      <!-- Section 2 -->
+      <div style="margin-top:30px;">
+        <h2 style="font-size:15px; font-weight:700; color:#059669; margin:24px 0 12px; border-bottom:2px solid #a7f3d0; padding-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;">
+          Section 2: Answer Key & Detailed Solutions
+        </h2>
+        ${solutionsHtml}
+      </div>
+    </div>
+  `
+
+  const safeFilename = `appscai_mcq_${displayTopic.replace(/[^a-zA-Z0-9\u0C00-\u0C7F]/g, '_').slice(0, 40)}.pdf`
+  await renderHtmlToPdf(fullHtml, safeFilename)
 }
 
 /**
  * Export Study Planner schedule to publication-ready PDF.
  */
-export function exportPlannerToPdf({ exam, targetDays, content, date }) {
+export async function exportPlannerToPdf({ exam, targetDays, content, date }) {
   const planTitle = `${targetDays}-Day Study Plan — ${exam || 'Civil Services'}`
-  return exportNotesToPdf({
-    topic: planTitle,
-    exam: exam || 'APPSC',
-    content: content || '',
-    date: date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-  })
+  const displayTopic = planTitle
+  const displayExam = exam || 'APPSC'
+  const displayDate = date || new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  const cleanBodyHtml = markdownToHtml(content)
+
+  const fullHtml = `
+    <div style="font-family:'Noto Sans Telugu', 'Gautami', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color:#0f172a; line-height:1.6;">
+      <!-- Header Banner -->
+      <div style="background:linear-gradient(135deg, #0f172a, #1e293b); padding:20px 24px; border-radius:10px; color:#ffffff; margin-bottom:24px; border-left:6px solid #2563eb;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#93c5fd; margin-bottom:4px;">
+          ${displayExam.toUpperCase()} — STUDY PLAN SCHEDULE
+        </div>
+        <h1 style="font-size:22px; font-weight:700; margin:0 0 8px; color:#ffffff; line-height:1.3;">
+          ${displayTopic}
+        </h1>
+        <div style="font-size:11px; color:#cbd5e1;">
+          Generated on: ${displayDate} · Official APPSC AI Study Schedule
+        </div>
+      </div>
+
+      <!-- Main Notes Body -->
+      <div style="padding:0 4px;">
+        ${cleanBodyHtml}
+      </div>
+    </div>
+  `
+
+  const safeFilename = `appscai_study_plan_${targetDays}days.pdf`
+  await renderHtmlToPdf(fullHtml, safeFilename)
 }
 
 /**
@@ -619,7 +447,6 @@ export function exportPlannerToCsv({ exam, targetDays, content }) {
 
       if (cells.length >= 2) {
         tableFound = true
-        // Clean unicode emojis for CSV
         const cleanCells = cells.map((cell) =>
           cell
             .replace(/📖\s*/g, '[Notes] ')
@@ -663,8 +490,9 @@ export function exportPlannerToCsv({ exam, targetDays, content }) {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.setAttribute('href', url)
-  link.setAttribute('download', `APPSC_Study_Plan_${targetDays}Days.csv`)
+  link.setAttribute('download', `appscai_study_plan_${targetDays}days.csv`)
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
 }
+

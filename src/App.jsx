@@ -11,6 +11,9 @@ import PlannerPage from './pages/PlannerPage'
 import HistoryPage from './pages/HistoryPage'
 import TestPage from './pages/TestPage'
 import PricingPage from './pages/PricingPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsConditionsPage from './pages/TermsConditionsPage'
+import RefundPolicyPage from './pages/RefundPolicyPage'
 
 const App = () => {
   return (
@@ -19,6 +22,14 @@ const App = () => {
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+
+        {/* Legal & Policy routes (accessible publicly and authenticated) */}
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
+        <Route path="/terms-and-conditions" element={<TermsConditionsPage />} />
+        <Route path="/terms" element={<Navigate to="/terms-and-conditions" replace />} />
+        <Route path="/refund-policy" element={<RefundPolicyPage />} />
+        <Route path="/refund" element={<Navigate to="/refund-policy" replace />} />
 
         {/* Protected routes */}
         <Route

@@ -10,6 +10,16 @@ const EXAMS = [
   { value: 'APPSC Group 2', label: 'APPSC Group 2' },
 ]
 
+const Field = ({ label, icon: Icon, children }) => (
+  <div>
+    <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>{label}</label>
+    <div style={{ position: 'relative' }}>
+      <Icon size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', zIndex: 1 }} />
+      {children}
+    </div>
+  </div>
+)
+
 const SignupPage = () => {
   const navigate = useNavigate()
   const token = useAuthStore((s) => s.token)
@@ -47,16 +57,6 @@ const SignupPage = () => {
       setError(err.response?.data?.message || err.message || 'Signup failed. Please try again.')
     } finally { setLoading(false) }
   }
-
-  const Field = ({ label, icon: Icon, children }) => (
-    <div>
-      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>{label}</label>
-      <div style={{ position: 'relative' }}>
-        <Icon size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', zIndex: 1 }} />
-        {children}
-      </div>
-    </div>
-  )
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'var(--bg)' }}>
@@ -143,17 +143,60 @@ const SignupPage = () => {
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
 
-          <Link to="/login" style={{ display: 'block', width: '100%', textAlign: 'center', padding: '11px 0', borderRadius: 11, border: '1px solid var(--border)', color: 'var(--indigo)', fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}
+          <Link
+            to="/login"
+            style={{
+              display: 'block', width: '100%', textAlign: 'center',
+              padding: '11px 0', borderRadius: 11,
+              border: '1px solid var(--border)',
+              color: 'var(--indigo)', fontSize: 13.5, fontWeight: 600,
+              textDecoration: 'none', transition: 'all 0.15s ease',
+            }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-elevated)'; e.currentTarget.style.borderColor = 'var(--indigo-border)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
             Sign in instead
           </Link>
+
+          <div style={{ textAlign: 'center', marginTop: 16, fontSize: 11.5, color: 'var(--text-3)', lineHeight: 1.5 }}>
+            By creating an account, you agree to our{' '}
+            <Link to="/terms-and-conditions" style={{ color: 'var(--indigo)', textDecoration: 'underline' }}>Terms &amp; Conditions</Link>,{' '}
+            <Link to="/privacy-policy" style={{ color: 'var(--indigo)', textDecoration: 'underline' }}>Privacy Policy</Link>, and{' '}
+            <Link to="/refund-policy" style={{ color: 'var(--indigo)', textDecoration: 'underline' }}>Non-Refundable Credits Policy</Link>.
+          </div>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--text-3)', marginTop: 16 }}>
-          By signing up, you agree to our Terms &amp; Privacy Policy
-        </p>
+        <div style={{ textAlign: 'center', marginTop: 18, fontSize: 12, color: 'var(--text-3)' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+            <Link
+              to="/privacy-policy"
+              style={{ color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--indigo)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
+            >
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link
+              to="/terms-and-conditions"
+              style={{ color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--indigo)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
+            >
+              Terms &amp; Conditions
+            </Link>
+            <span>•</span>
+            <Link
+              to="/refund-policy"
+              style={{ color: 'var(--text-3)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--indigo)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
+            >
+              Refund Policy
+            </Link>
+          </div>
+          <div>APPSC AI — Precision Preparation Platform</div>
+        </div>
       </div>
     </div>
   )

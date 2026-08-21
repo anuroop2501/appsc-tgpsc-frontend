@@ -4,10 +4,11 @@ import api from './axiosInstance'
  * Get paginated study history.
  * @param {Object} params
  * @param {number} params.page   - page number (1-indexed)
+ * @param {number} params.limit  - items per page (default 10)
  * @param {string} params.type   - 'all' | 'prelims' | 'notes' | 'evaluation'
  */
-export const getHistory = ({ page = 1, type = 'all' } = {}) =>
-  api.get('/api/history', { params: { page, type } }).then((r) => r.data)
+export const getHistory = ({ page = 1, limit = 10, type = 'all' } = {}) =>
+  api.get('/api/history', { params: { page, limit, type } }).then((r) => r.data)
 
 /**
  * Get dashboard statistics.

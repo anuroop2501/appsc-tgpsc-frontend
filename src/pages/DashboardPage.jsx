@@ -41,33 +41,45 @@ const timeAgo = (dateStr) => {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-/* ── Calculate Day Streak from session dates ── */
+/* ── Format local date YYYY-MM-DD ── */
+const toLocalDateStr = (d) => {
+  if (!d) return ''
+  const date = new Date(d)
+  if (isNaN(date.getTime())) return ''
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/* ── Calculate Day Streak from session dates (Fallback) ── */
 const calculateStreak = (sessions = []) => {
   if (!sessions || sessions.length === 0) return 0
   const uniqueDays = new Set(
     sessions
       .map(s => (s.created_at || s.createdAt || s.timestamp))
       .filter(Boolean)
-      .map(d => new Date(d).toISOString().slice(0, 10))
+      .map(toLocalDateStr)
+      .filter(Boolean)
   )
   
-  let streak = 0
-  let checkDate = new Date()
+  const now = new Date()
+  const todayStr = toLocalDateStr(now)
   
-  const todayStr = checkDate.toISOString().slice(0, 10)
-  checkDate.setDate(checkDate.getDate() - 1)
-  const yesterdayStr = checkDate.toISOString().slice(0, 10)
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  const yesterdayStr = toLocalDateStr(yesterday)
 
   if (!uniqueDays.has(todayStr) && !uniqueDays.has(yesterdayStr)) {
     return uniqueDays.size > 0 ? 1 : 0
   }
 
-  let currentCheck = uniqueDays.has(todayStr) ? new Date() : checkDate
+  let streak = 0
+  let checkTime = uniqueDays.has(todayStr) ? now.getTime() : yesterday.getTime()
   while (true) {
-    const dStr = currentCheck.toISOString().slice(0, 10)
+    const dStr = toLocalDateStr(new Date(checkTime))
     if (uniqueDays.has(dStr)) {
       streak++
-      currentCheck.setDate(currentCheck.getDate() - 1)
+      checkTime -= 24 * 60 * 60 * 1000
     } else {
       break
     }
@@ -86,7 +98,7 @@ const DashboardPage = () => {
   const { t } = useLanguage()
   const navigate = useNavigate()
 
-  const [stats, setStats] = useState({ sessionsCount: 0, prelimsCount: 0, notesCount: 0, evalsCount: 0 })
+  const [stats, setStats] = useState({ sessionsCount: 0, prelimsCount: 0, notesCount: 0, evalsCount: 0, streak: 0 })
   const [recentActivity, setRecentActivity] = useState([])
   const [loading, setLoading] = useState(true)
   const [streak, setStreak] = useState(1)
@@ -99,12 +111,19 @@ const DashboardPage = () => {
           getHistory({ page: 1, type: 'all' }),
         ])
         if (statsData.status === 'fulfilled') {
-          setStats(statsData.value.stats || statsData.value || {})
+          const s = statsData.value.stats || statsData.value || {}
+          setStats(s)
+          if (typeof s.streak === 'number') {
+            setStreak(s.streak)
+          }
         }
         if (historyData.status === 'fulfilled') {
           const items = historyData.value?.sessions || historyData.value?.items || historyData.value || []
           setRecentActivity(Array.isArray(items) ? items.slice(0, 5) : [])
-          setStreak(calculateStreak(items))
+          // If stats didn't provide streak, calculate from sessions fallback
+          if (statsData.status !== 'fulfilled' || typeof statsData.value?.stats?.streak !== 'number') {
+            setStreak(calculateStreak(items))
+          }
         }
       } catch { /* silent */ } finally { setLoading(false) }
     }
@@ -339,7 +358,7 @@ const DashboardPage = () => {
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 3 }}>
                       {item.exam || ''}
-                      {item.score !== undefined && ` · Score: ${item.score}/${item.maxScore || 10}`}
+                      {typeof item.score === 'number' && item.score !== null && (item.type === 'eval' || item.type === 'test') && ` · Score: ${item.score}/${item.maxScore || 10}`}
                     </div>
                   </div>
                   <span style={{ fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap', paddingTop: 2 }}>

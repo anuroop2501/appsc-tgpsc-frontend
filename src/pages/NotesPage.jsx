@@ -6,6 +6,7 @@ import {
   CheckCheck,
   XCircle,
   RefreshCw,
+  Download,
 } from 'lucide-react'
 import TopicAutocomplete from '../components/TopicAutocomplete'
 import MarkdownRenderer from '../components/MarkdownRenderer'
@@ -13,6 +14,7 @@ import LoadingDots from '../components/LoadingDots'
 import PricingModal from '../components/PricingModal'
 import { streamNotes } from '../api/notes'
 import { getUserBalance } from '../api/payment'
+import { exportNotesToPdf } from '../lib/exportPdf'
 import useAuthStore from '../store/authStore'
 import { useLanguage } from '../context/LanguageContext'
 
@@ -314,6 +316,27 @@ const NotesPage = () => {
                   title={t('common.tryAgain', 'Regenerate')}
                 >
                   <RefreshCw size={13} />
+                </button>
+              )}
+              {content && (
+                <button
+                  onClick={() => exportNotesToPdf({ topic, exam, content })}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    padding: '7px 14px',
+                    borderRadius: 8,
+                    background: 'var(--emerald-dim)',
+                    border: '1px solid var(--emerald-border)',
+                    color: 'var(--emerald)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Download size={13} />
+                  {t('common.downloadPdf', 'Download PDF')}
                 </button>
               )}
               <button
