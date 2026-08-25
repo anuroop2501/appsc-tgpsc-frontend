@@ -284,8 +284,25 @@ const components = {
   ),
 }
 
+function sanitizeMarkdown(text) {
+  if (!text) return ''
+
+  let cleaned = text
+    // Strip LLM token budget notices or meta-commentary at the end
+    .replace(/^.*Token Budget.*$/gim, '')
+    .replace(/^.*Remaining:\s*[\d,]+\s*tokens.*$/gim, '')
+
+  // Normalize inline bullets like "• item • item" into clean newline markdown list items
+  cleaned = cleaned.replace(/([^\n])\s*[•●]\s+/g, '$1\n- ')
+  cleaned = cleaned.replace(/^[•●]\s+/gm, '- ')
+
+  return cleaned.trim()
+}
+
 const MarkdownRenderer = ({ content }) => {
   if (!content) return null
+
+  const formattedContent = sanitizeMarkdown(content)
 
   return (
     <div className="markdown-body" style={{ maxWidth: '100%' }}>
@@ -293,7 +310,7 @@ const MarkdownRenderer = ({ content }) => {
         remarkPlugins={[remarkGfm]}
         components={components}
       >
-        {content}
+        {formattedContent}
       </ReactMarkdown>
     </div>
   )

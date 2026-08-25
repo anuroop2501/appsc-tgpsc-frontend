@@ -7,6 +7,7 @@ import {
   XCircle,
   RefreshCw,
   Download,
+  Info,
 } from 'lucide-react'
 import TopicAutocomplete from '../components/TopicAutocomplete'
 import MarkdownRenderer from '../components/MarkdownRenderer'
@@ -39,6 +40,7 @@ const NotesPage = () => {
   const [isDone, setIsDone] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [showReferences, setShowReferences] = useState(false)
   const setAuthCredits = useAuthStore((s) => s.setCredits)
   const credits = user?.credits !== undefined ? user.credits : 100
   const [isPricingOpen, setIsPricingOpen] = useState(false)
@@ -308,6 +310,29 @@ const NotesPage = () => {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {content && (
+                <button
+                  onClick={() => setShowReferences(!showReferences)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    padding: '7px 14px',
+                    borderRadius: 8,
+                    background: showReferences ? 'var(--indigo-dim)' : 'var(--surface-elevated)',
+                    border: `1px solid ${showReferences ? 'var(--indigo-border)' : 'var(--border)'}`,
+                    color: showReferences ? 'var(--indigo)' : 'var(--text-1)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                  title={t('notes.checkReferences', 'Check Standard References')}
+                >
+                  <Info size={13} />
+                  <span>{t('notes.references', 'References')}</span>
+                </button>
+              )}
               {isDone && (
                 <button
                   onClick={handleGenerate}
@@ -361,6 +386,33 @@ const NotesPage = () => {
               </button>
             </div>
           </div>
+
+          {/* Collapsible References Banner */}
+          {showReferences && (
+            <div
+              style={{
+                padding: '12px 24px',
+                background: 'var(--surface-elevated)',
+                borderBottom: '1px solid var(--border)',
+                fontSize: 13,
+                color: 'var(--text-1)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                animation: 'fadeIn 0.2s ease forwards',
+              }}
+            >
+              <BookOpen size={16} style={{ color: 'var(--indigo)', flexShrink: 0 }} />
+              <div>
+                <span style={{ fontWeight: 700, display: 'block', fontSize: 11.5, color: 'var(--indigo)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
+                  {t('notes.standardSourcesTitle', 'Standard Syllabus References & Grounding')}
+                </span>
+                <span style={{ fontSize: 12.5, color: 'var(--text-2)', lineHeight: 1.4 }}>
+                  {t('notes.standardSourcesDesc', 'NCERT Textbooks, M. Laxmikanth (Polity), Telugu Academy State Series, Spectrum Modern India, and Official Government Gazette / Reports.')}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Content */}
           <div style={{ padding: '24px 28px' }} className="prose-dark">

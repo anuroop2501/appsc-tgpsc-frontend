@@ -62,7 +62,8 @@ function normalizeQuestion(q, index) {
     difficulty: q.difficulty || 'medium',
     topic: q.topic || '',
     subject: q.subject || '',
-    type: q.type || 'analytical',
+    type: q.type || q.q_type || 'direct',
+    pyqSource: q.pyq_source || q.pyqSource || q.source || null,
   }
 }
 
@@ -544,6 +545,27 @@ const ResultsScreen = ({ questions, answers, durationMinutes, timeTaken, onRetak
 
         {/* Review question card */}
         <div className="glass-card p-6">
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              {q.pyqSource && (
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full" style={{ background: 'rgba(245,166,35,0.15)', color: '#F5A623', border: '1px solid rgba(245,166,35,0.3)' }}>
+                  🎯 {q.pyqSource}
+                </span>
+              )}
+              {q.type && (
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider" style={{ background: 'rgba(79,142,247,0.12)', color: 'var(--color-accent)', border: '1px solid rgba(79,142,247,0.25)' }}>
+                  {q.type.replace(/_/g, ' ')}
+                </span>
+              )}
+            </div>
+
+            {q.reference && (
+              <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-md flex items-center gap-1.5" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-muted)', border: '1px solid var(--border)' }}>
+                📖 {q.reference}
+              </span>
+            )}
+          </div>
+
           <div className="flex items-start gap-3 mb-5">
             <span className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
               style={{ background: isAttempted ? isCorrect ? 'rgba(61,214,140,0.2)' : 'rgba(247,111,111,0.2)' : 'rgba(42,52,80,0.5)', color: isAttempted ? isCorrect ? '#3DD68C' : '#F76F6F' : 'var(--color-muted)' }}>
@@ -582,13 +604,17 @@ const ResultsScreen = ({ questions, answers, durationMinutes, timeTaken, onRetak
           {/* Explanation */}
           {q.explanation && (
             <div className="p-4 rounded-xl" style={{ background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)' }}>
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-2 mb-2">
                 <Lightbulb size={15} style={{ color: 'var(--color-accent)' }} />
                 <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-accent)', fontFamily: 'Sora, sans-serif' }}>
-                  Explanation
+                  Solution & Distractor Analysis
                 </span>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text)' }}>{q.explanation}</p>
+              <div className="text-xs leading-relaxed space-y-1.5" style={{ color: 'var(--color-text)' }}>
+                {q.explanation.split('\n').map((line, li) => (
+                  <p key={li} className="m-0">{line}</p>
+                ))}
+              </div>
             </div>
           )}
         </div>

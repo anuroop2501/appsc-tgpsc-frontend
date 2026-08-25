@@ -4,7 +4,7 @@ import TopicAutocomplete from '../components/TopicAutocomplete'
 import MCQCard from '../components/MCQCard'
 import LoadingDots from '../components/LoadingDots'
 import PricingModal from '../components/PricingModal'
-import { generatePrelims } from '../api/prelims'
+import { generatePrelimsStream } from '../api/prelims'
 import { getUserBalance } from '../api/payment'
 import { exportPrelimsToPdf } from '../lib/exportPdf'
 import useAuthStore from '../store/authStore'
@@ -29,15 +29,19 @@ const PrelimsPage = () => {
   const credits = user?.credits !== undefined ? user.credits : 100
   const [isPricingOpen, setIsPricingOpen] = useState(false)
 
+  // Fetch updated credits on mount
   useEffect(() => {
     if (user?.id || user?.userId) {
       getUserBalance()
-        .then((data) => {
-          if (data.credits !== undefined && setAuthCredits) setAuthCredits(data.credits)
+        .then((res) => {
+          if (res?.credits !== undefined) setAuthCredits(res.credits)
         })
-        .catch(() => {})
+        .catch((err) => console.error('[Prelims] Error fetching balance:', err.message))
     }
   }, [user?.id, user?.userId, setAuthCredits])
+
+  const [progress, setProgress] = useState(0)
+  const [statusMessage, setStatusMessage] = useState('')
 
   const handleGenerate = async () => {
     if (credits < 10) {
@@ -49,16 +53,30 @@ const PrelimsPage = () => {
     if (!topic.trim()) { setError(t('common.topicPlaceholder', 'Please enter or select a topic.')); return }
     setLoading(true); setError(''); setQuestions([])
     setAnsweredCount(0); setCorrectCount(0); setFromCache(false)
+    setProgress(10)
+    setStatusMessage(t('prelims.statusRAG', 'Retrieving syllabus & PYQ archive from Knowledge Base...'))
+
     try {
-      const data = await generatePrelims({ topic, exam, language })
+      const data = await generatePrelimsStream({
+        topic,
+        exam,
+        language,
+        onProgress: ({ progress: p, message: m }) => {
+          if (p !== undefined) setProgress(p)
+          if (m) setStatusMessage(m)
+        },
+      })
+      setProgress(100)
       setQuestions(data)
       setFromCache(!!data._fromCache)
     } catch (err) {
-      if (err.response?.status === 402) {
+      if (err.message?.includes('402') || err.response?.status === 402) {
         setIsPricingOpen(true)
       }
       setError(err.response?.data?.message || err.response?.data?.error || err.message || t('common.error', 'Failed to generate questions.'))
-    } finally { setLoading(false) }
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -132,21 +150,47 @@ const PrelimsPage = () => {
         )}
       </div>
 
-      {/* ── Pricing & Recharge Modal ── */}
       <PricingModal
         isOpen={isPricingOpen}
         onClose={() => setIsPricingOpen(false)}
-        onPaymentSuccess={(updatedUser) => {
-          if (updatedUser?.credits !== undefined) setCredits(updatedUser.credits)
+        onSuccess={(updatedUser) => {
+          if (updatedUser?.credits !== undefined) setAuthCredits(updatedUser.credits)
           setIsPricingOpen(false)
         }}
         reason="Generating MCQ practice sets requires 10 credits."
       />
 
-      {/* ── Loading ── */}
+      {/* ── Progress / Status Bar ── */}
       {loading && (
-        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-          <LoadingDots message={t('prelims.loadingMessage', 'Generating high-quality APPSC prelims questions…')} />
+        <div className="card" style={{ padding: '36px 28px', textAlign: 'center', marginBottom: 24, animation: 'fadeIn 0.3s ease forwards' }}>
+          <div style={{ maxWidth: 520, margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>
+                {statusMessage}
+              </span>
+              <span style={{ fontSize: 13.5, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--indigo)' }}>
+                {Math.round(progress)}%
+              </span>
+            </div>
+
+            {/* Modern Animated Gradient Progress Bar */}
+            <div style={{ width: '100%', height: 8, borderRadius: 999, background: 'var(--border)', overflow: 'hidden', position: 'relative' }}>
+              <div
+                style={{
+                  width: `${progress}%`,
+                  height: '100%',
+                  borderRadius: 999,
+                  background: 'linear-gradient(90deg, #4F8EF7, #3DD68C)',
+                  transition: 'width 0.4s ease',
+                  boxShadow: '0 0 12px rgba(79,142,247,0.4)',
+                }}
+              />
+            </div>
+
+            <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 12, margin: '12px 0 0' }}>
+              {t('prelims.generatingSubtitle', 'Generating standard syllabus MCQs, distractor breakdown & references...')}
+            </p>
+          </div>
         </div>
       )}
 
@@ -204,6 +248,9 @@ const PrelimsPage = () => {
                   options={optionsArray}
                   correctAnswer={correctIndex}
                   explanation={q.explanation || q.exp}
+                  type={q.type}
+                  pyqSource={q.pyq_source || q.pyqSource || q.source}
+                  reference={q.reference || q.source}
                   onAnswer={(isCorrect) => {
                     setAnsweredCount((c) => c + 1)
                     if (isCorrect) setCorrectCount((c) => c + 1)

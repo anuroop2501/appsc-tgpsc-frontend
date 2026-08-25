@@ -283,11 +283,21 @@ export async function exportPrelimsToPdf({ topic, exam, questions = [], date }) 
 
     const optLabels = ['(A)', '(B)', '(C)', '(D)']
 
+    const pyqTag = q.pyq_source || q.pyqSource || (q.source && q.source !== 'Knowledge Base' ? q.source : '')
+    const typeTag = q.type ? q.type.replace(/_/g, ' ') : ''
+
+    // Format question text with linebreaks for statements / match the following
+    const formattedQText = qText
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\r?\n/g, '<br/>')
+
     // Section 1: Questions & Options
     questionsHtml += `
       <div style="margin-bottom:18px; padding:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
         <div style="font-weight:700; font-size:13.5px; color:#0f172a; margin-bottom:10px; line-height:1.5;">
-          <span style="color:#2563eb; margin-right:4px;">Q${qNum}.</span> ${qText}
+          <span style="color:#2563eb; margin-right:4px;">Q${qNum}.</span> ${formattedQText}
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
           ${optionsArray.map((opt, idx) => `
@@ -318,18 +328,24 @@ export async function exportPrelimsToPdf({ topic, exam, questions = [], date }) 
       }
     }
 
-    const explanationText = q.explanation || q.exp || 'Correct based on syllabus provisions and historical facts.'
+    const rawExp = q.explanation || q.exp || 'Correct based on syllabus provisions and historical facts.'
+    const formattedExplanation = rawExp
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\r?\n/g, '<br/>')
 
     solutionsHtml += `
       <div style="margin-bottom:18px; padding:14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; border-left:4px solid #10b981;">
         <div style="font-weight:700; font-size:13.5px; color:#0f172a; margin-bottom:8px; line-height:1.5;">
-          <span style="color:#10b981; margin-right:4px;">Q${qNum}.</span> ${qText}
+          <span style="color:#10b981; margin-right:4px;">Q${qNum}.</span> ${formattedQText}
         </div>
         <div style="background:#ecfdf5; border:1px solid #a7f3d0; padding:6px 12px; border-radius:6px; font-weight:700; font-size:12.5px; color:#065f46; margin-bottom:8px;">
           Correct Answer: [${correctLetter}] ${correctOptText}
         </div>
-        <div style="font-size:12px; color:#475569; line-height:1.55; background:#f8fafc; padding:8px 12px; border-radius:6px;">
-          <strong style="color:#334155;">Explanation:</strong> ${explanationText}
+        <div style="font-size:12px; color:#334155; line-height:1.6; background:#f8fafc; padding:10px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+          <strong style="color:#0f172a; display:block; margin-bottom:4px;">360° Solution & Concept Analysis:</strong>
+          ${formattedExplanation}
         </div>
       </div>
     `
