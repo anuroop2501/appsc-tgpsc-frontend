@@ -11,6 +11,7 @@ export async function generatePrelimsStream({
   exam,
   language = 'en',
   onProgress,
+  onBatch,
 }) {
   const token = useAuthStore.getState().token
   const response = await fetch(`${BASE_URL}/api/ai/prelims`, {
@@ -47,6 +48,9 @@ export async function generatePrelimsStream({
           const data = JSON.parse(trimmed.slice(5).trim())
           if (data.type === 'progress') {
             onProgress?.({ progress: data.progress, message: data.message })
+          } else if (data.type === 'questions_batch') {
+            finalQuestions = data.questions
+            onBatch?.(data.questions, data.isFinal)
           } else if (data.type === 'complete') {
             finalQuestions = data.questions
             onProgress?.({ progress: 100, message: 'Done' })

@@ -23,7 +23,12 @@ const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 
 const NotesPage = () => {
   const user = useAuthStore((s) => s.user)
-  const { language, t } = useLanguage()
+  const { language, setLanguage, t } = useLanguage()
+  const [selectedLang, setSelectedLang] = useState(language || 'en')
+
+  useEffect(() => {
+    if (language) setSelectedLang(language)
+  }, [language])
 
   const NOTE_TYPES = [
     { value: 'Comprehensive', label: t('notes.comprehensive', 'Comprehensive'), icon: '📚' },
@@ -82,7 +87,7 @@ const NotesPage = () => {
     setIsStreaming(true)
 
     const abort = await streamNotes(
-      { topic, exam, noteType, language },
+      { topic, exam, noteType, language: selectedLang },
       (chunk) => {
         contentRef.current += chunk
         setContent(contentRef.current)
@@ -91,7 +96,7 @@ const NotesPage = () => {
         setIsStreaming(false)
         setIsDone(true)
         abortRef.current = null
-        setCredits((prev) => Math.max(0, prev - 10))
+        if (setAuthCredits) setAuthCredits(Math.max(0, (user?.credits ?? 100) - 10))
       },
       (err) => {
         setIsStreaming(false)
@@ -106,7 +111,7 @@ const NotesPage = () => {
     if (typeof abort === 'function') {
       abortRef.current = abort
     }
-  }, [topic, exam, noteType, language, credits, t])
+  }, [topic, exam, noteType, selectedLang, credits, t])
 
   const handleCopy = async () => {
     try {
@@ -162,16 +167,37 @@ const NotesPage = () => {
             />
           </div>
 
-          {/* Exam */}
-          <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-              {t('common.targetExam', 'Target Exam')}
-            </label>
-            <select value={exam} onChange={(e) => setExam(e.target.value)} className="input" style={{ height: 46 }}>
-              {EXAMS.map((e) => (
-                <option key={e} value={e}>{e}</option>
-              ))}
-            </select>
+          {/* Exam & Language Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
+                {t('common.targetExam', 'Target Exam')}
+              </label>
+              <select value={exam} onChange={(e) => setExam(e.target.value)} className="input" style={{ height: 46 }}>
+                {EXAMS.map((e) => (
+                  <option key={e} value={e}>{e}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
+                {t('common.language', 'Language')}
+              </label>
+              <select
+                value={selectedLang}
+                onChange={(e) => {
+                  const newLang = e.target.value
+                  setSelectedLang(newLang)
+                  if (setLanguage) setLanguage(newLang)
+                }}
+                className="input"
+                style={{ height: 46 }}
+              >
+                <option value="en">English Medium</option>
+                <option value="te">తెలుగు మాధ్యమం (Telugu Medium)</option>
+              </select>
+            </div>
           </div>
 
           {/* Note Type */}
@@ -452,7 +478,7 @@ const NotesPage = () => {
         isOpen={isPricingOpen}
         onClose={() => setIsPricingOpen(false)}
         onPaymentSuccess={(updatedUser) => {
-          if (updatedUser?.credits !== undefined) setCredits(updatedUser.credits)
+          if (updatedUser?.credits !== undefined && setAuthCredits) setAuthCredits(updatedUser.credits)
           setIsPricingOpen(false)
         }}
         reason="Generating syllabus study notes requires 10 credits."

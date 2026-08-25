@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Star, Sparkles, ArrowRight, Clock, Activity, Flame } from 'lucide-react'
+import { BookOpen, Star, Sparkles, ArrowRight, Clock, Activity, Flame, Calendar } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import { useLanguage } from '../context/LanguageContext'
 import { getStats, getHistory } from '../api/history'
@@ -140,6 +140,9 @@ const DashboardPage = () => {
     { label: t('nav.prelims', 'MCQ Practice'), value: stats.prelimsCount, icon: Sparkles, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'prelims' },
     { label: isGroup2 ? t('nav.group2Notes', 'Notes') : t('nav.mainsNotes', 'Notes'), value: stats.notesCount, icon: BookOpen, accent: 'var(--emerald)', dim: 'var(--emerald-dim)', tab: 'notes' },
     { label: t('nav.evaluator', 'Answers Evaluated'), value: stats.evalsCount, icon: Star, accent: 'var(--gold-hi)', dim: 'var(--gold-dim)', tab: 'evaluation' },
+    ...(stats.plannerCount > 0 ? [
+      { label: t('nav.planner', 'Study Plans'), value: stats.plannerCount, icon: Calendar, accent: 'var(--indigo)', dim: 'var(--indigo-dim)', tab: 'planner' }
+    ] : []),
   ]
 
   const featureCards = [
@@ -213,7 +216,7 @@ const DashboardPage = () => {
       </section>
 
       {/* ── STATS ── */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 36 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(180px, 1fr))`, gap: 16, marginBottom: 36 }}>
         {STAT_CARDS.map(({ label, value, icon: Icon, accent, dim, tab }) => (
           <button
             key={label}

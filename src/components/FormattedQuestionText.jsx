@@ -40,6 +40,7 @@ export function parseQuestionText(text = '') {
   if (!text || typeof text !== 'string') return { format: 'direct', intro: '', prompt: text || '' }
 
   const raw = text.trim()
+  const isTelugu = /[\u0C00-\u0C7F]/.test(raw)
 
   // ── 1. Match the Following Pattern (List-I vs List-II, Column-A vs Column-B, స్తంభం A vs స్తంభం B, or Row-paired) ──
   // Extract concluding prompt first
@@ -134,7 +135,8 @@ export function parseQuestionText(text = '') {
           const parts = introAndHeaders.split('|')
           list1Title = parts[0].replace(/^(?:కింది|క్రింది|Match)?\s*(?:జతలను|the)?\s*(?:సరిపోల్చండి|following)?[:\s]*/i, '').trim() || 'List-I'
           list2Title = parts[1].trim() || 'List-II'
-          intro = 'కింది జతలను సరిపోల్చండి:'
+          const isTelugu = /[\u0C00-\u0C7F]/.test(bodyText)
+          intro = isTelugu ? 'కింది జతలను సరిపోల్చండి:' : 'Match the following:'
         } else {
           intro = introAndHeaders || 'Match List-I with List-II:'
         }
@@ -188,7 +190,7 @@ export function parseQuestionText(text = '') {
 
     let intro = raw.slice(0, arMatch.index).trim()
     if (!intro || intro.length < 3) {
-      intro = 'క్రింది ప్రకటనలను చదవండి:'
+      intro = isTelugu ? 'క్రింది ప్రకటనలను చదవండి:' : 'Read the following statements:'
     }
 
     return {
@@ -196,7 +198,7 @@ export function parseQuestionText(text = '') {
       intro,
       assertion: assertionText,
       reason: reasonText,
-      prompt: prompt || 'Select the correct option:',
+      prompt: prompt || (isTelugu ? 'సరైన ఎంపికను ఎంచుకోండి:' : 'Select the correct option:'),
     }
   }
 

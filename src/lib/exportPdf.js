@@ -39,10 +39,11 @@ function markdownToHtml(md = '') {
         const isHeader = rIdx === 0
         html += '<tr>'
         row.forEach((cell) => {
+          const formattedCell = formatInlineMarkdown(cell)
           if (isHeader) {
-            html += `<th style="background:#2563eb; color:#ffffff; padding:8px 10px; border:1px solid #cbd5e1; text-align:left; font-weight:600;">${cell}</th>`
+            html += `<th style="background:#2563eb; color:#ffffff; padding:8px 10px; border:1px solid #cbd5e1; text-align:left; font-weight:600;">${formattedCell}</th>`
           } else {
-            html += `<td style="background:${rIdx % 2 === 0 ? '#f8fafc' : '#ffffff'}; padding:7px 10px; border:1px solid #e2e8f0; color:#1e293b;">${cell}</td>`
+            html += `<td style="background:${rIdx % 2 === 0 ? '#f8fafc' : '#ffffff'}; padding:7px 10px; border:1px solid #e2e8f0; color:#1e293b;">${formattedCell}</td>`
           }
         })
         html += '</tr>'
@@ -137,9 +138,13 @@ function formatInlineMarkdown(text) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.*?)__/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/_(.*?)_/g, '<em>$1</em>')
     .replace(/`(.*?)`/g, '<code style="background:#f1f5f9; padding:2px 4px; border-radius:4px; font-family:monospace; font-size:12px;">$1</code>')
+    .replace(/\*\*/g, '') // strip any unmatched double asterisks
 }
 
 /**
@@ -287,11 +292,7 @@ export async function exportPrelimsToPdf({ topic, exam, questions = [], date }) 
     const typeTag = q.type ? q.type.replace(/_/g, ' ') : ''
 
     // Format question text with linebreaks for statements / match the following
-    const formattedQText = qText
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\r?\n/g, '<br/>')
+    const formattedQText = formatInlineMarkdown(qText).replace(/\r?\n/g, '<br/>')
 
     // Section 1: Questions & Options
     questionsHtml += `
@@ -302,7 +303,7 @@ export async function exportPrelimsToPdf({ topic, exam, questions = [], date }) 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
           ${optionsArray.map((opt, idx) => `
             <div style="font-size:12.5px; color:#334155; padding:6px 10px; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; line-height:1.4;">
-              <strong style="color:#2563eb; margin-right:4px;">${optLabels[idx] || ''}</strong> ${opt}
+              <strong style="color:#2563eb; margin-right:4px;">${optLabels[idx] || ''}</strong> ${formatInlineMarkdown(opt)}
             </div>
           `).join('')}
         </div>
@@ -329,11 +330,7 @@ export async function exportPrelimsToPdf({ topic, exam, questions = [], date }) 
     }
 
     const rawExp = q.explanation || q.exp || 'Correct based on syllabus provisions and historical facts.'
-    const formattedExplanation = rawExp
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\r?\n/g, '<br/>')
+    const formattedExplanation = formatInlineMarkdown(rawExp).replace(/\r?\n/g, '<br/>')
 
     solutionsHtml += `
       <div style="margin-bottom:18px; padding:14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; border-left:4px solid #10b981;">
@@ -341,7 +338,7 @@ export async function exportPrelimsToPdf({ topic, exam, questions = [], date }) 
           <span style="color:#10b981; margin-right:4px;">Q${qNum}.</span> ${formattedQText}
         </div>
         <div style="background:#ecfdf5; border:1px solid #a7f3d0; padding:6px 12px; border-radius:6px; font-weight:700; font-size:12.5px; color:#065f46; margin-bottom:8px;">
-          Correct Answer: [${correctLetter}] ${correctOptText}
+          Correct Answer: [${correctLetter}] ${formatInlineMarkdown(correctOptText)}
         </div>
         <div style="font-size:12px; color:#334155; line-height:1.6; background:#f8fafc; padding:10px 12px; border-radius:6px; border:1px solid #e2e8f0;">
           <strong style="color:#0f172a; display:block; margin-bottom:4px;">360° Solution & Concept Analysis:</strong>

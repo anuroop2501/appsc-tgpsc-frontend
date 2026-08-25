@@ -203,7 +203,7 @@ const EvaluatorPage = () => {
     try {
       const data = await evaluateAnswer({ ...form, language })
       setResult(data.evaluation || data)
-      setCredits((prev) => Math.max(0, prev - 20))
+      if (setAuthCredits) setAuthCredits(Math.max(0, (user?.credits ?? 100) - 20))
     } catch (err) {
       if (err.response?.status === 402 || err.response?.status === 403) {
         setIsPricingOpen(true)
@@ -636,7 +636,7 @@ const EvaluatorPage = () => {
         isOpen={isPricingOpen}
         onClose={() => setIsPricingOpen(false)}
         onPaymentSuccess={(updatedUser) => {
-          if (updatedUser?.credits !== undefined) setCredits(updatedUser.credits)
+          if (updatedUser?.credits !== undefined && setAuthCredits) setAuthCredits(updatedUser.credits)
           setIsPricingOpen(false)
         }}
         reason={

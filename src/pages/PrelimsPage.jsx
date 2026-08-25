@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Sparkles, Loader2, CheckCircle, XCircle, RefreshCw, Download } from 'lucide-react'
+import { Sparkles, Loader2, CheckCircle, XCircle, RefreshCw, Download, BookOpen, AlertTriangle } from 'lucide-react'
 import TopicAutocomplete from '../components/TopicAutocomplete'
 import MCQCard from '../components/MCQCard'
 import LoadingDots from '../components/LoadingDots'
@@ -15,7 +15,12 @@ const EXAMS = ['APPSC Group 1', 'APPSC Group 2']
 const PrelimsPage = () => {
   const user = useAuthStore((s) => s.user)
   const defaultExam = user?.targetExam || EXAMS[0]
-  const { language, t } = useLanguage()
+  const { language, setLanguage, t } = useLanguage()
+  const [selectedLang, setSelectedLang] = useState(language || 'en')
+
+  useEffect(() => {
+    if (language) setSelectedLang(language)
+  }, [language])
 
   const [topic, setTopic] = useState('')
   const [exam, setExam] = useState(defaultExam)
@@ -54,16 +59,21 @@ const PrelimsPage = () => {
     setLoading(true); setError(''); setQuestions([])
     setAnsweredCount(0); setCorrectCount(0); setFromCache(false)
     setProgress(10)
-    setStatusMessage(t('prelims.statusRAG', 'Retrieving syllabus & PYQ archive from Knowledge Base...'))
+    setStatusMessage(selectedLang === 'te' ? 'నాలెడ్జ్ బేస్ నుండి సిలబస్ ఆధారాలు సేకరిస్తున్నాము...' : t('prelims.statusRAG', 'Retrieving syllabus & PYQ archive from Knowledge Base...'))
 
     try {
       const data = await generatePrelimsStream({
         topic,
         exam,
-        language,
+        language: selectedLang,
         onProgress: ({ progress: p, message: m }) => {
           if (p !== undefined) setProgress(p)
           if (m) setStatusMessage(m)
+        },
+        onBatch: (batchQ) => {
+          if (batchQ && Array.isArray(batchQ) && batchQ.length > 0) {
+            setQuestions(batchQ)
+          }
         },
       })
       setProgress(100)
@@ -113,39 +123,69 @@ const PrelimsPage = () => {
             />
           </div>
 
-          {/* Exam & Button Grid */}
+          {/* Exam & Language Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
                 {t('common.targetExam', 'Target Exam')}
               </label>
-              <select value={exam} onChange={(e) => setExam(e.target.value)} className="input" style={{ height: 46 }}>
-                {EXAMS.map((e) => <option key={e} value={e}>{e}</option>)}
+              <select
+                value={exam}
+                onChange={(e) => setExam(e.target.value)}
+                className="input"
+                style={{ height: 46 }}
+              >
+                {EXAMS.map((ex) => (
+                  <option key={ex} value={ex}>{ex}</option>
+                ))}
               </select>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <button onClick={handleGenerate} disabled={loading} className="btn-primary" style={{ width: '100%', height: 46, fontSize: 14.5 }}>
-                {loading
-                  ? <><Loader2 size={17} className="animate-spin" /> {t('prelims.generating', 'Preparing…')}</>
-                  : <><Sparkles size={17} /> {t('prelims.generateBtn', 'Generate Questions (10 Credits)')}</>
-                }
-              </button>
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
+                {t('common.language', 'Language')}
+              </label>
+              <select
+                value={selectedLang}
+                onChange={(e) => {
+                  const newLang = e.target.value
+                  setSelectedLang(newLang)
+                  if (setLanguage) setLanguage(newLang)
+                }}
+                className="input"
+                style={{ height: 46 }}
+              >
+                <option value="en">English Medium</option>
+                <option value="te">తెలుగు మాధ్యమం (Telugu Medium)</option>
+              </select>
             </div>
           </div>
+
+          {/* Generate Button */}
+          <button
+            onClick={handleGenerate}
+            disabled={loading && questions.length === 0}
+            className="btn-primary"
+            style={{ padding: '12px 24px', fontSize: 14, fontWeight: 600, width: '100%', justifyContent: 'center' }}
+          >
+            {loading && questions.length === 0 ? (
+              <>
+                <span className="spinner-border spinner-border-sm" style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+                <span>{statusMessage || t('common.generating', 'Generating Questions…')}</span>
+              </>
+            ) : (
+              <>
+                <BookOpen size={16} />
+                <span>{t('prelims.generateButton', 'Generate 10 MCQs')}</span>
+              </>
+            )}
+          </button>
         </div>
 
-        {/* Error */}
         {error && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', borderRadius: 10, marginTop: 16, background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 13.5 }}>
-            <XCircle size={15} /> {error}
-          </div>
-        )}
-
-        {/* Cache badge */}
-        {fromCache && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '4px 12px', borderRadius: 20, marginTop: 14, background: 'var(--emerald-dim)', color: 'var(--emerald)', border: '1px solid var(--emerald-border)' }}>
-            <CheckCircle size={13} /> {t('common.loadedFromCache', 'Loaded from cache')}
+          <div style={{ marginTop: 16, padding: '12px 16px', background: 'var(--red-dim)', border: '1px solid var(--red-border)', borderRadius: 9, color: 'var(--red)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertTriangle size={15} flexShrink={0} />
+            <span>{error}</span>
           </div>
         )}
       </div>
@@ -160,8 +200,8 @@ const PrelimsPage = () => {
         reason="Generating MCQ practice sets requires 10 credits."
       />
 
-      {/* ── Progress / Status Bar ── */}
-      {loading && (
+      {/* ── Initial Progress / Status Bar (When no questions yet) ── */}
+      {loading && questions.length === 0 && (
         <div className="card" style={{ padding: '36px 28px', textAlign: 'center', marginBottom: 24, animation: 'fadeIn 0.3s ease forwards' }}>
           <div style={{ maxWidth: 520, margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -173,7 +213,6 @@ const PrelimsPage = () => {
               </span>
             </div>
 
-            {/* Modern Animated Gradient Progress Bar */}
             <div style={{ width: '100%', height: 8, borderRadius: 999, background: 'var(--border)', overflow: 'hidden', position: 'relative' }}>
               <div
                 style={{
@@ -194,10 +233,24 @@ const PrelimsPage = () => {
         </div>
       )}
 
+      {/* ── Background Loading Banner (When Q1-5 are already displayed) ── */}
+      {loading && questions.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'var(--indigo-dim)', border: '1px solid var(--indigo-border)', borderRadius: 10, marginBottom: 20, animation: 'fadeIn 0.3s ease forwards' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--emerald)', animation: 'pulse 1.5s infinite' }} />
+            <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>
+              ⚡ {questions.length < 10 ? `First ${questions.length} Questions Ready! Loading remaining questions in background...` : statusMessage}
+            </span>
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--indigo)' }}>
+            {Math.round(progress)}%
+          </span>
+        </div>
+      )}
+
       {/* ── Results ── */}
-      {!loading && questions.length > 0 && (
+      {questions.length > 0 && (
         <>
-          {/* Score tracker */}
           <div className="card" style={{ padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
               {[
