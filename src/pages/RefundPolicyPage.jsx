@@ -85,7 +85,7 @@ export default function RefundPolicyPage() {
                 <li>Instant token top-up upon successful gateway payment.</li>
                 <li>Auto-refund / bank reversal for dropped or incomplete payment sessions.</li>
                 <li>Full technical support for payment reconciliation and credit disputes.</li>
-                <li>256-bit SSL encrypted secure checkout via PhonePe &amp; Razorpay.</li>
+                <li>256-bit SSL encrypted secure checkout via Cashfree Payment Gateway.</li>
               </ul>
             </div>
           </div>

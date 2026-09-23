@@ -124,7 +124,7 @@ const PrelimsPage = () => {
           </div>
 
           {/* Exam & Language Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
                 {t('common.targetExam', 'Target Exam')}
@@ -200,42 +200,45 @@ const PrelimsPage = () => {
         reason="Generating MCQ practice sets requires 10 credits."
       />
 
-      {/* ── Initial Progress / Status Bar (When no questions yet) ── */}
-      {loading && questions.length === 0 && (
-        <div className="card" style={{ padding: '36px 28px', textAlign: 'center', marginBottom: 24, animation: 'fadeIn 0.3s ease forwards' }}>
-          <div style={{ maxWidth: 520, margin: '0 auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>
-                {statusMessage}
-              </span>
-              <span style={{ fontSize: 13.5, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--indigo)' }}>
-                {Math.round(progress)}%
-              </span>
-            </div>
-
-            <div style={{ width: '100%', height: 8, borderRadius: 999, background: 'var(--border)', overflow: 'hidden', position: 'relative' }}>
-              <div
-                style={{
-                  width: `${progress}%`,
-                  height: '100%',
-                  borderRadius: 999,
-                  background: 'linear-gradient(90deg, #4F8EF7, #3DD68C)',
-                  transition: 'width 0.4s ease',
-                  boxShadow: '0 0 12px rgba(79,142,247,0.4)',
-                }}
-              />
-            </div>
-
-            <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 12, margin: '12px 0 0' }}>
-              {t('prelims.generatingSubtitle', 'Generating standard syllabus MCQs, distractor breakdown & references...')}
-            </p>
+      {/* ── Real-time Progress Bar ── */}
+      {loading && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ height: 6, width: '100%', background: 'var(--border)', borderRadius: 999, overflow: 'hidden', marginBottom: 10 }}>
+            <div
+              style={{
+                height: '100%',
+                width: `${progress}%`,
+                background: 'linear-gradient(90deg, var(--indigo), #818cf8)',
+                borderRadius: 999,
+                transition: 'width 0.4s ease-in-out',
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12.5, color: 'var(--text-3)' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--indigo)', animation: 'pulse 1.5s infinite' }} />
+              {statusMessage || t('prelims.generatingSubtitle', 'Generating standard syllabus MCQs and explanations…')}
+            </span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--indigo)' }}>{Math.round(progress)}%</span>
           </div>
         </div>
       )}
 
-      {/* ── Background Loading Banner (When Q1-5 are already displayed) ── */}
+      {/* ── Background Stream Indicator (When Batch 1 is already ready) ── */}
       {loading && questions.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'var(--indigo-dim)', border: '1px solid var(--indigo-border)', borderRadius: 10, marginBottom: 20, animation: 'fadeIn 0.3s ease forwards' }}>
+        <div
+          style={{
+            padding: '12px 18px',
+            borderRadius: 10,
+            background: 'var(--emerald-dim)',
+            border: '1px solid var(--emerald-border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 20,
+            animation: 'fadeIn 0.3s ease forwards',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--emerald)', animation: 'pulse 1.5s infinite' }} />
             <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>
@@ -251,38 +254,38 @@ const PrelimsPage = () => {
       {/* ── Results ── */}
       {questions.length > 0 && (
         <>
-          <div className="card" style={{ padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div className="card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px, 3vw, 24px)', flexWrap: 'wrap' }}>
               {[
                 { label: t('prelims.questionNum', 'Questions'), value: questions.length, color: 'var(--text-1)' },
                 { label: t('prelims.answered', 'Answered'), value: `${answeredCount} / ${questions.length}`, color: 'var(--indigo)' },
                 { label: t('prelims.correct', 'Correct'), value: `${correctCount} / ${answeredCount || '—'}`, color: 'var(--emerald)' },
               ].map(({ label, value, color }, i, arr) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px, 3vw, 24px)' }}>
                   <div>
-                    <p style={{ fontSize: 11, color: 'var(--text-3)', margin: '0 0 3px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{label}</p>
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 600, color, margin: 0 }}>{value}</p>
+                    <p style={{ fontSize: 10.5, color: 'var(--text-3)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{label}</p>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: 17, fontWeight: 600, color, margin: 0 }}>{value}</p>
                   </div>
-                  {i < arr.length - 1 && <div style={{ width: 1, height: 32, background: 'var(--border)' }} />}
+                  {i < arr.length - 1 && <div style={{ width: 1, height: 28, background: 'var(--border)' }} />}
                 </div>
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <button
                 onClick={() => exportPrelimsToPdf({ topic, exam, questions })}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 9, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, padding: '8px 14px', borderRadius: 9, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
               >
                 <Download size={14} /> {t('common.downloadPdf', 'Download PDF')}
               </button>
-              <button onClick={handleGenerate} className="btn-ghost" style={{ fontSize: 13, padding: '8px 16px' }}>
+              <button onClick={handleGenerate} className="btn-ghost" style={{ fontSize: 12.5, padding: '8px 14px' }}>
                 <RefreshCw size={13} /> {t('common.tryAgain', 'Regenerate')}
               </button>
             </div>
           </div>
 
           {/* MCQ Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
             {questions.map((q, i) => {
               const rawOptions = q.opts || q.options || {}
               const optionsArray = Array.isArray(rawOptions)
@@ -303,7 +306,6 @@ const PrelimsPage = () => {
                   explanation={q.explanation || q.exp}
                   type={q.type}
                   pyqSource={q.pyq_source || q.pyqSource || q.source}
-                  reference={q.reference || q.source}
                   onAnswer={(isCorrect) => {
                     setAnsweredCount((c) => c + 1)
                     if (isCorrect) setCorrectCount((c) => c + 1)

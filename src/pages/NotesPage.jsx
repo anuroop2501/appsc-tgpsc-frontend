@@ -168,7 +168,7 @@ const NotesPage = () => {
           </div>
 
           {/* Exam & Language Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
                 {t('common.targetExam', 'Target Exam')}
@@ -315,7 +315,9 @@ const NotesPage = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '18px 24px',
+              flexWrap: 'wrap',
+              gap: 12,
+              padding: '14px 18px',
               borderBottom: '1px solid var(--border-soft)',
             }}
           >

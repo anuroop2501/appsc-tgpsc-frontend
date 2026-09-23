@@ -137,7 +137,7 @@ export default function Footer({ compact = false }) {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-2)' }}>
                 <Lock size={14} style={{ color: 'var(--indigo)' }} />
-                <span>PhonePe / RBI PG Compliant</span>
+                <span>Cashfree / RBI PG Compliant</span>
               </div>
             </div>
           </div>
@@ -154,15 +154,12 @@ export default function Footer({ compact = false }) {
           flexWrap: 'wrap',
           gap: 12,
           fontSize: 11.5,
+          color: 'var(--text-3)',
+          lineHeight: 1.5,
         }}
       >
         <div>
           &copy; {currentYear} APPSC AI. All rights reserved. Disclaimer: APPSC AI is an independent educational platform and is not affiliated with APPSC or any government body.
-        </div>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <Link to="/privacy-policy" style={{ color: 'var(--text-3)', textDecoration: 'none' }}>Privacy</Link>
-          <Link to="/terms-and-conditions" style={{ color: 'var(--text-3)', textDecoration: 'none' }}>Terms</Link>
-          <Link to="/refund-policy" style={{ color: 'var(--text-3)', textDecoration: 'none' }}>Refunds</Link>
         </div>
       </div>
     </footer>

@@ -75,7 +75,7 @@ const Layout = () => {
         <main
           style={{
             flex: 1,
-            padding: '36px 40px 40px',
+            padding: isMobile ? '18px 14px 28px' : '32px 36px 40px',
             maxWidth: 1220,
             width: '100%',
             margin: '0 auto',

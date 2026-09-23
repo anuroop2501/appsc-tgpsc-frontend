@@ -170,10 +170,8 @@ const DashboardPage = () => {
 
       {/* ── HERO ── */}
       <section
-        style={{
-          display: 'grid', gridTemplateColumns: '1fr 240px', gap: 32, alignItems: 'center',
-          paddingBottom: 32, marginBottom: 32, borderBottom: '1px solid var(--border-soft)',
-        }}
+        className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6 md:gap-8 items-center pb-6 md:pb-8 mb-6 md:mb-8"
+        style={{ borderBottom: '1px solid var(--border-soft)' }}
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
@@ -182,7 +180,7 @@ const DashboardPage = () => {
             </span>
             <span style={{ fontSize: 12, color: 'var(--text-3)' }}>• Daily prep loop</span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 34, letterSpacing: '-0.3px', lineHeight: 1.15, margin: '0 0 10px', color: 'var(--text-1)' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 560, fontSize: 'clamp(24px, 4vw, 34px)', letterSpacing: '-0.3px', lineHeight: 1.18, margin: '0 0 10px', color: 'var(--text-1)' }}>
             Welcome back, <em style={{ fontStyle: 'normal', color: 'var(--gold-hi)' }}>{firstName}.</em>
           </h1>
           <p style={{ color: 'var(--text-2)', fontSize: 14.5, maxWidth: 500, margin: 0, lineHeight: 1.6 }}>
@@ -197,13 +195,13 @@ const DashboardPage = () => {
         <div
           className="card"
           style={{
-            padding: '22px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center',
+            padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center',
           }}
         >
-          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--gold-dim)', color: 'var(--gold-hi)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Flame size={26} />
+          <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--gold-dim)', color: 'var(--gold-hi)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Flame size={24} />
           </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 32, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1 }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 30, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1 }}>
             {streak} <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-3)' }}>Days</span>
           </div>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gold-hi)' }}>
@@ -216,28 +214,28 @@ const DashboardPage = () => {
       </section>
 
       {/* ── STATS ── */}
-      <section style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(180px, 1fr))`, gap: 16, marginBottom: 36 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: 'clamp(10px, 2vw, 16px)', marginBottom: 32 }}>
         {STAT_CARDS.map(({ label, value, icon: Icon, accent, dim, tab }) => (
           <button
             key={label}
             onClick={() => navigate('/history', { state: { activeTab: tab } })}
             className="card"
             style={{
-              padding: 20, textAlign: 'left', cursor: 'pointer',
+              padding: '16px 14px', textAlign: 'left', cursor: 'pointer',
               transition: 'transform 0.15s ease, border-color 0.15s ease',
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = accent }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-              <span style={{ fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', fontWeight: 600 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+              <span style={{ fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--text-3)', fontWeight: 600, lineHeight: 1.3 }}>
                 {label}
               </span>
-              <div style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: dim, color: accent, flexShrink: 0 }}>
-                <Icon size={15} />
+              <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: dim, color: accent, flexShrink: 0 }}>
+                <Icon size={14} />
               </div>
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 30, fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.5px' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 26, fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.5px' }}>
               {loading ? '—' : <AnimatedNumber target={value || 0} />}
             </div>
           </button>
@@ -254,7 +252,7 @@ const DashboardPage = () => {
             {t('dashboard.modulesSubtitle', 'Everything you need for APPSC')}
           </span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${featureCards.length}, 1fr)`, gap: 18 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
           {featureCards.map(({ title, desc, icon: Icon, color, path, cta, locked }) => {
             const c = cardColors[color]
             return (

@@ -234,7 +234,7 @@ const PlannerPage = () => {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 22 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
           {/* Target Exam */}
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
@@ -389,7 +389,7 @@ const PlannerPage = () => {
         </div>
 
         {/* Preparation Level & Weak Subjects */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 26 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
           <div>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
               Preparation Level
@@ -572,7 +572,7 @@ const PlannerPage = () => {
           )}
 
           {/* Timetable Markdown */}
-          <div className="card" style={{ padding: '28px 34px' }}>
+          <div className="card" style={{ padding: 'clamp(16px, 3.5vw, 32px)', overflowX: 'auto' }}>
             <div className="prose-dark">
               <MarkdownRenderer content={content} />
             </div>

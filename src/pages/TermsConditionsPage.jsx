@@ -114,7 +114,7 @@ export default function TermsConditionsPage() {
             </p>
           </div>
           <p>
-            All prices on the platform are listed in Indian Rupees (INR). Payments must be fulfilled through authorized gateways (PhonePe / Razorpay). You warrant that you are authorized to use the chosen payment method.
+            All prices on the platform are listed in Indian Rupees (INR). Payments must be fulfilled through authorized gateways (Cashfree Payments). You warrant that you are authorized to use the chosen payment method.
           </p>
         </section>
 

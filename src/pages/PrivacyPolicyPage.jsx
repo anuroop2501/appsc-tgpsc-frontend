@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
               </div>
               <ul style={{ paddingLeft: 18, margin: 0, fontSize: 13, color: 'var(--text-2)', display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <li>Payment gateway Order IDs &amp; Transaction IDs</li>
-                <li>UPI Virtual Payment Address (VPA) / PhonePe ID (for verification)</li>
+                <li>Cashfree Payment Reference IDs (for verification)</li>
                 <li>Purchased credit pack details and timestamps</li>
                 <li><em>Note: We NEVER store debit/credit card numbers or UPI MPINs.</em></li>
               </ul>
@@ -129,7 +129,7 @@ export default function PrivacyPolicyPage() {
             4. Payment Gateway &amp; Financial Security
           </h2>
           <p>
-            All financial transactions on APPSC AI are processed through RBI-authorized, PCI-DSS Level 1 compliant payment aggregators (PhonePe Payment Gateway and Razorpay):
+            All financial transactions on APPSC AI are processed through RBI-authorized, PCI-DSS Level 1 compliant payment aggregators (Cashfree Payments Gateway):
           </p>
           <ul style={{ paddingLeft: 20, margin: '10px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <li>

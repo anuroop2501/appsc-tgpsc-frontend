@@ -313,7 +313,7 @@ const EvaluatorPage = () => {
           </div>
 
           {/* Topic + Exam */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
                 {t('common.topicOrSyllabus', 'Topic / Subject (optional)')}
@@ -657,7 +657,7 @@ const EvaluatorPage = () => {
       {result && !loading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, animation: 'fadeIn 0.3s ease forwards' }}>
           {/* Score + Comment */}
-          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 18 }}>
+          <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4 md:gap-5">
             <div className="card" style={{ padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ScoreRing score={result.score || 0} maxScore={result.maxScore || form.marks} />
             </div>
@@ -699,7 +699,7 @@ const EvaluatorPage = () => {
           )}
 
           {/* Strengths + Areas to Improve */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
             {result.strengths?.length > 0 && (
               <div className="card" style={{ padding: 24 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>

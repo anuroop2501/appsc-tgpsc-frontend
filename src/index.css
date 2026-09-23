@@ -375,10 +375,17 @@ select.input, select.input-field {
   margin-bottom: 0.4em;
 }
 
+.prose-dark .table-wrapper,
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.2em 0;
+}
+
 .prose-dark table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1.5em 0;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -391,6 +398,7 @@ select.input, select.input-field {
   font-weight: 600;
   border-bottom: 1px solid var(--border);
   color: var(--text-1);
+  white-space: nowrap;
 }
 
 .prose-dark td {
@@ -414,4 +422,53 @@ select.input, select.input-field {
   border-radius: 4px;
   background: var(--surface-elevated);
   color: var(--indigo);
+}
+
+/* ─────────────────────────────────────────
+   Mobile Responsive Utilities & Media Queries
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Fluid typography scaling */
+  h1 { font-size: 22px !important; }
+  h2 { font-size: 18px !important; }
+  h3 { font-size: 16px !important; }
+
+  /* Mobile card padding */
+  .card {
+    padding: clamp(16px, 4vw, 24px) !important;
+    border-radius: 12px !important;
+  }
+
+  /* Touch targets */
+  .btn-primary, .btn-gold, .btn-ghost, select.input, input.input {
+    min-height: 44px;
+  }
+
+  /* Responsive utility classes */
+  .mobile-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .mobile-grid-1 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .mobile-hide {
+    display: none !important;
+  }
+
+  .mobile-full-width {
+    width: 100% !important;
+  }
+
+  .mobile-scroll-x {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mobile-scroll-x::-webkit-scrollbar {
+    display: none;
+  }
 }

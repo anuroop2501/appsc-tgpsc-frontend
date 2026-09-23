@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, Lightbulb, Zap, Bookmark, Link as LinkIcon, Clock, Layers, HelpCircle, Info, BookOpen } from 'lucide-react'
+import { CheckCircle, XCircle, Lightbulb, Zap, Bookmark, Link as LinkIcon, Clock, Layers, HelpCircle } from 'lucide-react'
 import FormattedQuestionText from './FormattedQuestionText'
 import { useLanguage } from '../context/LanguageContext'
 
@@ -111,12 +111,11 @@ function renderStructuredExplanation(explanationText, t) {
   )
 }
 
-const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSource, reference, index, onAnswer }) => {
+const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSource, index, onAnswer }) => {
   const { t } = useLanguage()
   const [selectedOption, setSelectedOption] = useState(null)
   const [answered, setAnswered] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
-  const [showReference, setShowReference] = useState(false)
 
   const handleSelect = (optionIndex) => {
     if (answered) return
@@ -160,65 +159,21 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
     <div
       className="card"
       style={{
-        padding: 22, animation: 'fadeIn 0.3s ease forwards',
+        padding: 'clamp(14px, 3.5vw, 20px)', animation: 'fadeIn 0.3s ease forwards',
         animationDelay: `${(index || 0) * 60}ms`, animationFillMode: 'both',
         display: 'flex', flexDirection: 'column',
+        width: '100%',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
-      {/* ── Header Toolbar (Reference Button Always Available) ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 10 }}>
-        <button
-          onClick={() => setShowReference(!showReference)}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            padding: '3px 9px',
-            borderRadius: 6,
-            fontSize: 11.5,
-            fontWeight: 600,
-            color: showReference ? 'var(--indigo)' : 'var(--text-3)',
-            background: showReference ? 'var(--indigo-dim)' : 'transparent',
-            border: `1px solid ${showReference ? 'var(--indigo-border)' : 'var(--border)'}`,
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-          title={t('prelims.checkReferences', 'Check Textbook Reference')}
-        >
-          <Info size={12.5} />
-          <span>{t('prelims.reference', 'Reference')}</span>
-        </button>
-      </div>
-
-      {/* ── Collapsible Reference Box ── */}
-      {showReference && (
-        <div
-          style={{
-            padding: '9px 12px',
-            borderRadius: 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 9,
-            fontSize: 12,
-            color: 'var(--text-1)',
-            marginBottom: 14,
-            animation: 'fadeIn 0.2s ease forwards',
-          }}
-        >
-          <BookOpen size={14} style={{ color: 'var(--indigo)', flexShrink: 0 }} />
-          <span><strong>{t('prelims.standardSource', 'Standard Source')}:</strong> {reference || 'Standard Reference (NCERT / Telugu Academy / M. Laxmikanth / Official Syllabus)'}</span>
-        </div>
-      )}
-
       {/* ── Question header ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
         <span
           style={{
-            flexShrink: 0, width: 26, height: 26, borderRadius: 7,
+            flexShrink: 0, width: 24, height: 24, borderRadius: 6,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 12, fontWeight: 700,
+            fontSize: 11.5, fontWeight: 700,
             background: answered
               ? userGotItRight ? 'var(--emerald-dim)' : 'var(--red-dim)'
               : 'var(--indigo-dim)',
@@ -228,17 +183,18 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
             border: answered
               ? userGotItRight ? '1px solid var(--emerald-border)' : '1px solid rgba(239,68,68,0.3)'
               : '1px solid var(--indigo-border)',
+            marginTop: 1,
           }}
         >
           {(index || 0) + 1}
         </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, overflowWrap: 'break-word', wordBreak: 'break-word' }}>
           <FormattedQuestionText text={question} />
         </div>
       </div>
 
       {/* ── Options ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8, width: '100%' }}>
         {options.map((opt, i) => (
           <button
             key={i}
@@ -246,9 +202,10 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
             disabled={answered}
             style={{
               ...getOptionStyle(i),
-              width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-              padding: '10px 14px', borderRadius: 10, textAlign: 'left',
+              width: '100%', display: 'flex', alignItems: 'flex-start', gap: 10,
+              padding: '10px 12px', borderRadius: 9, textAlign: 'left',
               cursor: answered ? 'default' : 'pointer', transition: 'all 0.15s ease',
+              wordBreak: 'break-word', overflowWrap: 'break-word',
             }}
             onMouseEnter={e => { if (!answered) e.currentTarget.style.borderColor = 'var(--indigo)' }}
             onMouseLeave={e => { if (!answered) e.currentTarget.style.borderColor = 'var(--border)' }}
@@ -256,7 +213,7 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
             <span style={{
               flexShrink: 0, width: 22, height: 22, borderRadius: 6,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11.5, fontWeight: 700,
+              fontSize: 11, fontWeight: 700,
               background: answered && isCorrect(i)
                 ? 'var(--emerald-dim)'
                 : answered && isSelected(i)
@@ -264,24 +221,25 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
                 : 'var(--border-soft)',
               color: 'inherit',
               border: '1px solid var(--border)',
+              marginTop: 1,
             }}>
               {OPTION_LABELS[i]}
             </span>
-            <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500 }}>{opt}</span>
-            {answered && isCorrect(i) && <CheckCircle size={15} style={{ color: 'var(--emerald)', flexShrink: 0 }} />}
-            {answered && isSelected(i) && !isCorrect(i) && <XCircle size={15} style={{ color: 'var(--red)', flexShrink: 0 }} />}
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.45, wordBreak: 'break-word' }}>{opt}</span>
+            {answered && isCorrect(i) && <CheckCircle size={15} style={{ color: 'var(--emerald)', flexShrink: 0, marginTop: 3 }} />}
+            {answered && isSelected(i) && !isCorrect(i) && <XCircle size={15} style={{ color: 'var(--red)', flexShrink: 0, marginTop: 3 }} />}
           </button>
         ))}
       </div>
 
       {/* ── 360° Explanation ── */}
       {showExplanation && explanation && (
-        <div style={{ marginTop: 14, borderRadius: 10, padding: '14px 16px', background: 'var(--surface-elevated)', border: '1px solid var(--border)', animation: 'fadeIn 0.25s ease forwards' }}>
+        <div style={{ marginTop: 14, borderRadius: 10, padding: '12px 14px', background: 'var(--surface-elevated)', border: '1px solid var(--border)', animation: 'fadeIn 0.25s ease forwards' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <div style={{ width: 24, height: 24, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'var(--gold-dim)' }}>
+            <div style={{ width: 24, height: 24, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'var(--gold-dim)', marginTop: 1 }}>
               <Lightbulb size={13} style={{ color: 'var(--gold-hi)' }} />
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-hi)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {t('prelims.explanation', '360° Solution & Concept Analysis')}
               </p>
@@ -293,7 +251,7 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
 
       {/* Toggle explanation */}
       {answered && explanation && !showExplanation && (
-        <button onClick={() => setShowExplanation(true)} style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-hi)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+        <button onClick={() => setShowExplanation(true)} style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-hi)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <Lightbulb size={13} /> {t('prelims.showExplanation', 'Show 360° Solution & Distractor Analysis')}
         </button>
       )}

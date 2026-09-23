@@ -17,18 +17,32 @@ export const getUserBalance = async () => {
 }
 
 /**
- * Create a payment order for a plan or top-up item.
+ * Create a Cashfree payment order for a plan or top-up item.
  * @param {string} itemId - e.g. 'basic_499', 'pro_999', 'officer_1999', 'topup_149'
+ * @param {string} [returnUrl] - Optional custom return URL for redirect
  */
-export const createPaymentOrder = async (itemId) => {
-  const res = await api.post('/api/payment/create-order', { itemId })
+export const createPaymentOrder = async (itemId, returnUrl) => {
+  const res = await api.post('/api/payment/create-order', { itemId, returnUrl })
   return res.data
 }
 
 /**
- * Verify Razorpay payment signature & credit account.
+ * Verify Cashfree payment with backend & credit user account.
+ * @param {string|Object} params - orderId string or { orderId } object
  */
-export const verifyPayment = async ({ orderId, paymentId, signature }) => {
-  const res = await api.post('/api/payment/verify', { orderId, paymentId, signature })
+export const verifyPayment = async (params) => {
+  const orderId = typeof params === 'string' ? params : params?.orderId
+  const res = await api.post('/api/payment/verify', { orderId })
+  return res.data
+}
+
+/**
+ * Fetch user's transaction and payment history with pagination.
+ * @param {Object} options - { page: 1, limit: 10 }
+ */
+export const getPaymentHistory = async ({ page = 1, limit = 10 } = {}) => {
+  const res = await api.get('/api/payment/history', {
+    params: { page, limit },
+  })
   return res.data
 }

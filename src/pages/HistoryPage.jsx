@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import {
   Clock,
   Sparkles,
@@ -14,8 +14,13 @@ import {
   Download,
   Calendar,
   FileSpreadsheet,
+  Receipt,
+  CheckCircle2,
+  XCircle,
+  HelpCircle,
 } from 'lucide-react'
 import { getHistory, getSessionDetail, regenerateSession } from '../api/history'
+import { getPaymentHistory } from '../api/payment'
 import { exportNotesToPdf, exportPrelimsToPdf, exportPlannerToPdf, exportPlannerToCsv } from '../lib/exportPdf'
 import MCQCard from '../components/MCQCard'
 import ScoreRing from '../components/ScoreRing'
@@ -52,6 +57,13 @@ const TYPE_CONFIG = {
     color: 'var(--indigo)',
     dim: 'var(--indigo-dim)',
     border: 'var(--indigo-border)',
+  },
+  transactions: {
+    icon: Receipt,
+    label: 'Payment',
+    color: 'var(--gold-hi)',
+    dim: 'var(--gold-dim)',
+    border: 'var(--gold-border)',
   },
 }
 
@@ -127,6 +139,7 @@ const HistoryPage = () => {
     { value: 'notes', label: t('history.studyNotes', 'Study Notes') },
     { value: 'evaluation', label: t('history.evaluations', 'Evaluations') },
     { value: 'planner', label: t('history.studyPlans', 'Study Plans') },
+    { value: 'transactions', label: 'Payments & Billing' },
   ]
 
   const [activeTab, setActiveTab] = useState(defaultTab)
@@ -163,10 +176,22 @@ const HistoryPage = () => {
     setLoading(true)
     setError('')
     try {
-      const data = await getHistory({ page: p, limit: 10, type: tab })
-      const list = data?.items || data?.sessions || (Array.isArray(data) ? data : [])
-      setItems(list)
-      setTotalPages(data?.totalPages || data?.pages || 1)
+      if (tab === 'transactions') {
+        const data = await getPaymentHistory({ page: p, limit: 10 })
+        const list = (data?.transactions || []).map((t) => ({
+          ...t,
+          type: 'transactions',
+          topic: t.itemName || 'Payment Order',
+          created_at: t.createdAt,
+        }))
+        setItems(list)
+        setTotalPages(data?.totalPages || 1)
+      } else {
+        const data = await getHistory({ page: p, limit: 10, type: tab })
+        const list = data?.items || data?.sessions || (Array.isArray(data) ? data : [])
+        setItems(list)
+        setTotalPages(data?.totalPages || data?.pages || 1)
+      }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to load history.')
     } finally {
@@ -308,10 +333,10 @@ const HistoryPage = () => {
 
           {/* ── PRELIMS RENDERING ── */}
           {viewingSession.type === 'prelims' && viewingSession.metadata?.questions && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 14, borderBottom: '1px solid var(--border)', flexWrap: 'wrap', gap: 10 }}>
-                <div>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 650, margin: '0 0 4px', color: 'var(--text-1)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 14, borderBottom: '1px solid var(--border)', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(18px, 4vw, 22px)', fontWeight: 650, margin: '0 0 4px', color: 'var(--text-1)', wordBreak: 'break-word' }}>
                     Practice Questions: {displayTitle}
                   </h2>
                   <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>
@@ -325,12 +350,12 @@ const HistoryPage = () => {
                     questions: viewingSession.metadata.questions,
                     date: viewingSession.created_at ? new Date(viewingSession.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined,
                   })}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 8, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 8, background: 'var(--indigo-dim)', color: 'var(--indigo)', border: '1px solid var(--indigo-border)', cursor: 'pointer', flexShrink: 0 }}
                 >
                   <Download size={14} /> Download PDF
                 </button>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 {viewingSession.metadata.questions.map((q, idx) => {
                   const rawOptions = q.opts || q.options || {}
                   const optionsArray = Array.isArray(rawOptions)
@@ -350,6 +375,8 @@ const HistoryPage = () => {
                       options={optionsArray}
                       correctAnswer={correctIndex}
                       explanation={q.explanation || q.exp}
+                      type={q.type}
+                      pyqSource={q.pyq_source || q.pyqSource || q.source}
                     />
                   )
                 })}
@@ -442,7 +469,7 @@ const HistoryPage = () => {
               </div>
 
               {/* Score + Comment */}
-              <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 18 }}>
+              <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4 md:gap-5">
                 <div className="card" style={{ padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <ScoreRing
                     score={viewingSession.metadata.evaluation.score || 0}
@@ -510,40 +537,42 @@ const HistoryPage = () => {
       </div>
 
       {/* ── Filter Tabs ── */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 6,
-          padding: 4,
-          borderRadius: 12,
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          width: 'fit-content',
-          marginBottom: 20,
-        }}
-      >
-        {TABS.map(({ value, label }) => {
-          const isSel = activeTab === value
-          return (
-            <button
-              key={value}
-              onClick={() => handleTabChange(value)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 9,
-                fontSize: 13,
-                fontWeight: isSel ? 600 : 500,
-                background: isSel ? 'var(--surface-elevated)' : 'transparent',
-                border: isSel ? '1px solid var(--gold-border)' : '1px solid transparent',
-                color: isSel ? 'var(--gold-hi)' : 'var(--text-2)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {label}
-            </button>
-          )
-        })}
+      <div style={{ maxWidth: '100%', overflowX: 'auto', marginBottom: 20, WebkitOverflowScrolling: 'touch', paddingBottom: 4 }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            gap: 6,
+            padding: 4,
+            borderRadius: 12,
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            minWidth: 'max-content',
+          }}
+        >
+          {TABS.map(({ value, label }) => {
+            const isSel = activeTab === value
+            return (
+              <button
+                key={value}
+                onClick={() => handleTabChange(value)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 9,
+                  fontSize: 13,
+                  fontWeight: isSel ? 600 : 500,
+                  background: isSel ? 'var(--surface-elevated)' : 'transparent',
+                  border: isSel ? '1px solid var(--gold-border)' : '1px solid transparent',
+                  color: isSel ? 'var(--gold-hi)' : 'var(--text-2)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* ── Items List ── */}
@@ -583,22 +612,29 @@ const HistoryPage = () => {
               const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG.prelims
               const Icon = cfg.icon
               const cleanTitle = formatTopicTitle(item.topic)
+              const isTx = item.type === 'transactions'
 
               return (
                 <div
-                  key={item._id || item.id || i}
-                  onClick={() => handleViewSessionById(item.id, cleanTitle)}
+                  key={item._id || item.id || item.orderId || i}
+                  onClick={() => {
+                    if (!isTx) handleViewSessionById(item.id, cleanTitle)
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: 16,
                     padding: '18px 24px',
-                    cursor: 'pointer',
+                    cursor: isTx ? 'default' : 'pointer',
                     borderBottom: i < items.length - 1 ? '1px solid var(--border-soft)' : 'none',
                     transition: 'background 0.12s ease',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-elevated)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  onMouseEnter={e => {
+                    if (!isTx) e.currentTarget.style.background = 'var(--surface-elevated)'
+                  }}
+                  onMouseLeave={e => {
+                    if (!isTx) e.currentTarget.style.background = 'transparent'
+                  }}
                 >
                   {/* Icon */}
                   <div
@@ -626,20 +662,52 @@ const HistoryPage = () => {
                       <span className="tag" style={{ background: cfg.dim, color: cfg.color }}>
                         {cfg.label}
                       </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
-                      <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>
-                        {item.exam || ''}
-                      </span>
-                      {typeof item.score === 'number' && item.score !== null && (item.type === 'eval' || item.type === 'test') && (
-                        <span style={{ fontSize: 12.5, fontWeight: 600, color: cfg.color }}>
-                          Score: {item.score}/{item.maxScore || 10}
+                      {isTx && (
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            padding: '1px 7px',
+                            borderRadius: 6,
+                            textTransform: 'uppercase',
+                            background: item.status === 'paid' ? 'var(--emerald-dim)' : item.status === 'failed' ? 'var(--red-dim)' : 'var(--gold-dim)',
+                            color: item.status === 'paid' ? 'var(--emerald)' : item.status === 'failed' ? 'var(--red)' : 'var(--gold-hi)',
+                            border: `1px solid ${item.status === 'paid' ? 'var(--emerald-border)' : item.status === 'failed' ? 'rgba(239,68,68,0.3)' : 'var(--gold-border)'}`,
+                          }}
+                        >
+                          {item.status}
                         </span>
                       )}
-                      {item.noteType && (
-                        <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>
-                          {item.noteType}
-                        </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
+                      {isTx ? (
+                        <>
+                          <span style={{ fontSize: 12.5, fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-1)' }}>
+                            ₹{item.amount}
+                          </span>
+                          <span style={{ fontSize: 12.5, color: 'var(--emerald)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                            +{item.creditsAdded} Credits
+                          </span>
+                          <span style={{ fontSize: 11.5, color: 'var(--text-3)', fontFamily: 'var(--font-mono)' }}>
+                            {item.orderId}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>
+                            {item.exam || ''}
+                          </span>
+                          {typeof item.score === 'number' && item.score !== null && (item.type === 'eval' || item.type === 'test') && (
+                            <span style={{ fontSize: 12.5, fontWeight: 600, color: cfg.color }}>
+                              Score: {item.score}/{item.maxScore || 10}
+                            </span>
+                          )}
+                          {item.noteType && (
+                            <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>
+                              {item.noteType}
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

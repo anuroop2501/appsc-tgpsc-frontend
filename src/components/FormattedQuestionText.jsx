@@ -271,7 +271,7 @@ export function parseQuestionText(text = '') {
 export default function FormattedQuestionText({ text, className = '' }) {
   const parsed = parseQuestionText(text)
 
-  // ── Match the Following: 2-Column Table UI ────────────────
+  // ── Match the Following: Responsive 2-Column Table UI ────
   if (parsed.format === 'match_the_following') {
     const maxRows = Math.max(parsed.list1.length, parsed.list2.length)
     const rows = Array.from({ length: maxRows }).map((_, i) => ({
@@ -280,22 +280,22 @@ export default function FormattedQuestionText({ text, className = '' }) {
     }))
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className={className}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }} className={className}>
         {parsed.intro && (
-          <p style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.5, color: 'var(--text-1)', margin: 0 }}>
+          <p style={{ fontSize: 'clamp(13px, 2.8vw, 14px)', fontWeight: 600, lineHeight: 1.45, color: 'var(--text-1)', margin: 0, wordBreak: 'break-word' }}>
             {parsed.intro}
           </p>
         )}
 
-        {/* 2-Column Structured Table */}
-        <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--surface-elevated)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        {/* 2-Column Responsive Structured Table */}
+        <div style={{ borderRadius: 9, overflowX: 'auto', WebkitOverflowScrolling: 'touch', border: '1px solid var(--border)', background: 'var(--surface-elevated)', width: '100%' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 260 }}>
             <thead>
               <tr style={{ background: 'rgba(79, 142, 247, 0.08)', borderBottom: '1px solid var(--border)' }}>
-                <th style={{ padding: '10px 14px', width: '50%', fontSize: 12, fontWeight: 700, color: 'var(--indigo)', borderRight: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <th style={{ padding: '8px 10px', width: '50%', fontSize: 'clamp(10px, 2.2vw, 11.5px)', fontWeight: 700, color: 'var(--indigo)', borderRight: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.03em', wordBreak: 'break-word', lineHeight: 1.35 }}>
                   {parsed.list1Title || 'List-I'}
                 </th>
-                <th style={{ padding: '10px 14px', width: '50%', fontSize: 12, fontWeight: 700, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <th style={{ padding: '8px 10px', width: '50%', fontSize: 'clamp(10px, 2.2vw, 11.5px)', fontWeight: 700, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.03em', wordBreak: 'break-word', lineHeight: 1.35 }}>
                   {parsed.list2Title || 'List-II'}
                 </th>
               </tr>
@@ -310,37 +310,37 @@ export default function FormattedQuestionText({ text, className = '' }) {
                   }}
                 >
                   {/* Left Column (List I) */}
-                  <td style={{ padding: '11px 14px', verticalAlign: 'top', borderRight: '1px solid var(--border)', fontSize: 13.5, color: 'var(--text-1)' }}>
+                  <td style={{ padding: '8px 10px', verticalAlign: 'top', borderRight: '1px solid var(--border)', fontSize: 'clamp(12px, 2.5vw, 13px)', color: 'var(--text-1)', wordBreak: 'break-word' }}>
                     {row.item1 && (
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
                         <span style={{
-                          flexShrink: 0, width: 22, height: 22, borderRadius: 6,
+                          flexShrink: 0, width: 20, height: 20, borderRadius: 5,
                           background: 'var(--indigo-dim)', color: 'var(--indigo)',
-                          border: '1px solid var(--indigo-border)', fontSize: 11.5,
+                          border: '1px solid var(--indigo-border)', fontSize: 10.5,
                           fontWeight: 700, display: 'flex', alignItems: 'center',
-                          justifyContent: 'center', marginTop: 1,
+                          justifyContent: 'center', marginTop: 2,
                         }}>
                           {row.item1.label}
                         </span>
-                        <span style={{ lineHeight: 1.5, flex: 1, fontWeight: 500 }}>{row.item1.text}</span>
+                        <span style={{ lineHeight: 1.45, flex: 1, fontWeight: 500, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{row.item1.text}</span>
                       </div>
                     )}
                   </td>
 
                   {/* Right Column (List II) */}
-                  <td style={{ padding: '11px 14px', verticalAlign: 'top', fontSize: 13.5, color: 'var(--text-1)' }}>
+                  <td style={{ padding: '8px 10px', verticalAlign: 'top', fontSize: 'clamp(12px, 2.5vw, 13px)', color: 'var(--text-1)', wordBreak: 'break-word' }}>
                     {row.item2 && (
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
                         <span style={{
-                          flexShrink: 0, width: 22, height: 22, borderRadius: 6,
+                          flexShrink: 0, width: 20, height: 20, borderRadius: 5,
                           background: 'var(--emerald-dim)', color: 'var(--emerald)',
-                          border: '1px solid var(--emerald-border)', fontSize: 11.5,
+                          border: '1px solid var(--emerald-border)', fontSize: 10.5,
                           fontWeight: 700, display: 'flex', alignItems: 'center',
-                          justifyContent: 'center', marginTop: 1,
+                          justifyContent: 'center', marginTop: 2,
                         }}>
                           {row.item2.label}
                         </span>
-                        <span style={{ lineHeight: 1.5, flex: 1, fontWeight: 500 }}>{row.item2.text}</span>
+                        <span style={{ lineHeight: 1.45, flex: 1, fontWeight: 500, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{row.item2.text}</span>
                       </div>
                     )}
                   </td>
@@ -351,7 +351,7 @@ export default function FormattedQuestionText({ text, className = '' }) {
         </div>
 
         {parsed.prompt && (
-          <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'clamp(12.5px, 2.5vw, 13.5px)', fontWeight: 600, color: 'var(--text-1)', margin: '2px 0 0', wordBreak: 'break-word' }}>
             {parsed.prompt}
           </p>
         )}
@@ -362,22 +362,22 @@ export default function FormattedQuestionText({ text, className = '' }) {
   // ── Assertion & Reason UI ────────────────────────────────
   if (parsed.format === 'assertion_reason') {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} className={className}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }} className={className}>
         {parsed.intro && (
-          <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>
+          <p style={{ fontSize: 'clamp(13px, 2.8vw, 13.5px)', fontWeight: 600, color: 'var(--text-1)', margin: 0, wordBreak: 'break-word' }}>
             {parsed.intro}
           </p>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           {/* Assertion (A) Card */}
           <div
             style={{
               display: 'flex',
               alignItems: 'flex-start',
-              gap: 12,
-              padding: '10px 14px',
-              borderRadius: 9,
+              gap: 10,
+              padding: '8px 12px',
+              borderRadius: 8,
               background: 'var(--surface-elevated)',
               border: '1px solid var(--border)',
             }}
@@ -385,31 +385,31 @@ export default function FormattedQuestionText({ text, className = '' }) {
             <span
               style={{
                 flexShrink: 0,
-                fontSize: 11,
+                fontSize: 10.5,
                 fontWeight: 700,
-                padding: '3px 8px',
-                borderRadius: 6,
+                padding: '2px 7px',
+                borderRadius: 5,
                 background: 'var(--indigo-dim)',
                 color: 'var(--indigo)',
                 border: '1px solid var(--indigo-border)',
-                marginTop: 1,
+                marginTop: 2,
               }}
             >
               Assertion (A)
             </span>
-            <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-1)', margin: 0, flex: 1 }}>
+            <p style={{ fontSize: 'clamp(12.5px, 2.5vw, 13.5px)', lineHeight: 1.5, color: 'var(--text-1)', margin: 0, flex: 1, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
               {parsed.assertion}
             </p>
           </div>
 
-          {/* Reason (R) Card on a new line */}
+          {/* Reason (R) Card */}
           <div
             style={{
               display: 'flex',
               alignItems: 'flex-start',
-              gap: 12,
-              padding: '10px 14px',
-              borderRadius: 9,
+              gap: 10,
+              padding: '8px 12px',
+              borderRadius: 8,
               background: 'var(--surface-elevated)',
               border: '1px solid var(--border)',
             }}
@@ -417,26 +417,26 @@ export default function FormattedQuestionText({ text, className = '' }) {
             <span
               style={{
                 flexShrink: 0,
-                fontSize: 11,
+                fontSize: 10.5,
                 fontWeight: 700,
-                padding: '3px 8px',
-                borderRadius: 6,
+                padding: '2px 7px',
+                borderRadius: 5,
                 background: 'rgba(6,182,212,0.12)',
                 color: '#06B6D4',
                 border: '1px solid rgba(6,182,212,0.3)',
-                marginTop: 1,
+                marginTop: 2,
               }}
             >
               Reason (R)
             </span>
-            <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-1)', margin: 0, flex: 1 }}>
+            <p style={{ fontSize: 'clamp(12.5px, 2.5vw, 13.5px)', lineHeight: 1.5, color: 'var(--text-1)', margin: 0, flex: 1, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
               {parsed.reason}
             </p>
           </div>
         </div>
 
         {parsed.prompt && (
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'clamp(12.5px, 2.5vw, 13px)', fontWeight: 600, color: 'var(--text-1)', margin: '2px 0 0', wordBreak: 'break-word' }}>
             {parsed.prompt}
           </p>
         )}
@@ -447,81 +447,23 @@ export default function FormattedQuestionText({ text, className = '' }) {
   // ── Chronology / Timeline UI ─────────────────────────────
   if (parsed.format === 'chronology') {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} className={className}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }} className={className}>
         {parsed.intro && (
-          <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Clock size={14} style={{ color: 'var(--indigo)' }} /> {parsed.intro}
+          <p style={{ fontSize: 'clamp(13px, 2.8vw, 13.5px)', fontWeight: 600, color: 'var(--text-1)', margin: 0, display: 'flex', alignItems: 'center', gap: 6, wordBreak: 'break-word' }}>
+            <Clock size={14} style={{ color: 'var(--indigo)', flexShrink: 0 }} /> {parsed.intro}
           </p>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {parsed.statements.map((st, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 12px',
-                borderRadius: 8,
-                background: 'var(--surface-elevated)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <span
-                style={{
-                  flexShrink: 0,
-                  width: 22,
-                  height: 22,
-                  borderRadius: 6,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'var(--indigo-dim)',
-                  color: 'var(--indigo)',
-                  border: '1px solid var(--indigo-border)',
-                }}
-              >
-                {st.num}
-              </span>
-              <p style={{ fontSize: 13.5, color: 'var(--text-1)', margin: 0, flex: 1 }}>
-                {st.content}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {parsed.prompt && (
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)', margin: '2px 0 0' }}>
-            {parsed.prompt}
-          </p>
-        )}
-      </div>
-    )
-  }
-
-  // ── Statement Cards UI ───────────────────────────────────
-  if (parsed.statements?.length > 0) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} className={className}>
-        {parsed.intro && (
-          <p style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.5, color: 'var(--text-1)', margin: 0 }}>
-            {parsed.intro}
-          </p>
-        )}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {parsed.statements.map((st, idx) => (
             <div
               key={idx}
               style={{
                 display: 'flex',
                 alignItems: 'flex-start',
-                gap: 10,
-                padding: '9px 12px',
-                borderRadius: 8,
+                gap: 8,
+                padding: '8px 10px',
+                borderRadius: 7,
                 background: 'var(--surface-elevated)',
                 border: '1px solid var(--border)',
               }}
@@ -532,7 +474,7 @@ export default function FormattedQuestionText({ text, className = '' }) {
                   width: 20,
                   height: 20,
                   borderRadius: 5,
-                  fontSize: 11,
+                  fontSize: 10.5,
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
@@ -540,12 +482,12 @@ export default function FormattedQuestionText({ text, className = '' }) {
                   background: 'var(--indigo-dim)',
                   color: 'var(--indigo)',
                   border: '1px solid var(--indigo-border)',
-                  marginTop: 1,
+                  marginTop: 2,
                 }}
               >
                 {st.num}
               </span>
-              <p style={{ fontSize: 13.5, lineHeight: 1.5, color: 'var(--text-1)', margin: 0, flex: 1 }}>
+              <p style={{ fontSize: 'clamp(12.5px, 2.5vw, 13.5px)', lineHeight: 1.45, color: 'var(--text-1)', margin: 0, flex: 1, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                 {st.content}
               </p>
             </div>
@@ -553,7 +495,66 @@ export default function FormattedQuestionText({ text, className = '' }) {
         </div>
 
         {parsed.prompt && (
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'clamp(12.5px, 2.5vw, 13px)', fontWeight: 600, color: 'var(--text-1)', margin: '2px 0 0', wordBreak: 'break-word' }}>
+            {parsed.prompt}
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  // ── Statement Cards UI ───────────────────────────────────
+  if (parsed.statements?.length > 0) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }} className={className}>
+        {parsed.intro && (
+          <p style={{ fontSize: 'clamp(13px, 2.8vw, 13.5px)', fontWeight: 600, lineHeight: 1.45, color: 'var(--text-1)', margin: 0, wordBreak: 'break-word' }}>
+            {parsed.intro}
+          </p>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {parsed.statements.map((st, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+                padding: '8px 10px',
+                borderRadius: 7,
+                background: 'var(--surface-elevated)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <span
+                style={{
+                  flexShrink: 0,
+                  width: 20,
+                  height: 20,
+                  borderRadius: 5,
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'var(--indigo-dim)',
+                  color: 'var(--indigo)',
+                  border: '1px solid var(--indigo-border)',
+                  marginTop: 2,
+                }}
+              >
+                {st.num}
+              </span>
+              <p style={{ fontSize: 'clamp(12.5px, 2.5vw, 13.5px)', lineHeight: 1.45, color: 'var(--text-1)', margin: 0, flex: 1, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                {st.content}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {parsed.prompt && (
+          <p style={{ fontSize: 'clamp(12.5px, 2.5vw, 13px)', fontWeight: 600, color: 'var(--text-1)', margin: '2px 0 0', wordBreak: 'break-word' }}>
             {parsed.prompt}
           </p>
         )}
@@ -563,7 +564,7 @@ export default function FormattedQuestionText({ text, className = '' }) {
 
   // ── Default / Direct Question UI ─────────────────────────
   return (
-    <p className={className} style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: 'var(--text-1)', margin: 0 }}>
+    <p className={className} style={{ fontSize: 'clamp(13.5px, 2.8vw, 14.5px)', fontWeight: 500, lineHeight: 1.55, color: 'var(--text-1)', margin: 0, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
       {text}
     </p>
   )

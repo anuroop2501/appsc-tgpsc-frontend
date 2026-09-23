@@ -558,12 +558,6 @@ const ResultsScreen = ({ questions, answers, durationMinutes, timeTaken, onRetak
                 </span>
               )}
             </div>
-
-            {q.reference && (
-              <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-md flex items-center gap-1.5" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-muted)', border: '1px solid var(--border)' }}>
-                📖 {q.reference}
-              </span>
-            )}
           </div>
 
           <div className="flex items-start gap-3 mb-5">
