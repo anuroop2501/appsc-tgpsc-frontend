@@ -22,7 +22,7 @@ export default function Footer({ compact = false }) {
         }}
       >
         <div>
-          &copy; {currentYear} APPSC AI. All rights reserved.
+          &copy; {currentYear} APPSC AI • A Product of AWE IAS ACADEMY. All rights reserved.
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <Link
@@ -159,7 +159,7 @@ export default function Footer({ compact = false }) {
         }}
       >
         <div>
-          &copy; {currentYear} APPSC AI. All rights reserved. Disclaimer: APPSC AI is an independent educational platform and is not affiliated with APPSC or any government body.
+          &copy; {currentYear} APPSC AI • A Product of AWE IAS ACADEMY. All rights reserved. Disclaimer: APPSC AI is an independent educational platform and is not affiliated with APPSC or any government body.
         </div>
       </div>
     </footer>

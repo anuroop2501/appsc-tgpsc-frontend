@@ -81,6 +81,10 @@ export const streamNotes = async ({ topic, exam, noteType, language = 'en' }, on
               try {
                 // Try JSON parse first (in case server wraps in JSON)
                 const parsed = JSON.parse(payload)
+                if (parsed && typeof parsed === 'object' && parsed.error) {
+                  onError && onError(new Error(parsed.error))
+                  return
+                }
                 const text =
                   parsed.token ||
                   parsed.content ||

@@ -275,6 +275,7 @@ const SessionDetailModal = ({ isOpen, onClose, sessionId }) => {
                           correctAnswer={correctIndex}
                           explanation={q.explanation || q.exp}
                           type={q.type}
+                          difficulty={q.difficulty}
                           pyqSource={q.pyq_source || q.pyqSource || q.source}
                         />
                       )

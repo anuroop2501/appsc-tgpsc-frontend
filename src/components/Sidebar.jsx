@@ -93,25 +93,38 @@ const Sidebar = ({ open, onClose, isMobile }) => {
       }}
     >
       {/* ── Brand & Collapse Button ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 22 }}>
-        <BrandLogo size={38} showText={true} textSize={20} />
+      <div style={{ paddingBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <BrandLogo size={38} showText={true} textSize={20} />
 
-        {/* Back / Collapse Button inside Sidebar */}
-        <button
-          onClick={onClose}
+          {/* Back / Collapse Button inside Sidebar */}
+          <button
+            onClick={onClose}
+            style={{
+              width: 32, height: 32, borderRadius: 8,
+              border: '1px solid var(--border)', background: 'var(--surface)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text-2)', cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            title="Collapse sidebar"
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-1)'; e.currentTarget.style.borderColor = 'var(--indigo)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+          >
+            <ChevronLeft size={17} />
+          </button>
+        </div>
+
+        <p
           style={{
-            width: 32, height: 32, borderRadius: 8,
-            border: '1px solid var(--border)', background: 'var(--surface)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-2)', cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            margin: '6px 0 0',
+            fontSize: 10.5,
+            color: 'var(--text-3)',
+            letterSpacing: '0.02em',
           }}
-          title="Collapse sidebar"
-          onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-1)'; e.currentTarget.style.borderColor = 'var(--indigo)' }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--border)' }}
         >
-          <ChevronLeft size={17} />
-        </button>
+          A Product of <span style={{ color: 'var(--text-2)', fontWeight: 550 }}>AWE IAS ACADEMY</span>
+        </p>
       </div>
 
       {/* ── Nav ── */}

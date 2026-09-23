@@ -305,6 +305,7 @@ const PrelimsPage = () => {
                   correctAnswer={correctIndex}
                   explanation={q.explanation || q.exp}
                   type={q.type}
+                  difficulty={q.difficulty}
                   pyqSource={q.pyq_source || q.pyqSource || q.source}
                   onAnswer={(isCorrect) => {
                     setAnsweredCount((c) => c + 1)

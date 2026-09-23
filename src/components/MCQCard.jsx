@@ -1,17 +1,19 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, Lightbulb, Zap, Bookmark, Link as LinkIcon, Clock, Layers, HelpCircle } from 'lucide-react'
-import FormattedQuestionText from './FormattedQuestionText'
+import { CheckCircle, XCircle, Lightbulb } from 'lucide-react'
+import FormattedQuestionText, { renderInlineFormatted } from './FormattedQuestionText'
 import { useLanguage } from '../context/LanguageContext'
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D']
 
-const TYPE_CONFIG = {
-  match_the_following: { label: 'Match The Following', icon: LinkIcon, color: '#4F8EF7', bg: 'rgba(79,142,247,0.12)' },
-  chronology: { label: 'Chronology', icon: Clock, color: '#F5A623', bg: 'rgba(245,166,35,0.12)' },
-  odd_one_out: { label: 'Odd One Out', icon: HelpCircle, color: '#F76F6F', bg: 'rgba(247,111,111,0.12)' },
-  direct: { label: 'Direct Concept', icon: Zap, color: '#3DD68C', bg: 'rgba(61,214,140,0.12)' },
-  statement: { label: 'Statement Based', icon: Layers, color: '#7B5EF8', bg: 'rgba(123,94,248,0.12)' },
-  assertion_reason: { label: 'Assertion & Reason', icon: Bookmark, color: '#06B6D4', bg: 'rgba(6,182,212,0.12)' },
+/**
+ * Strips redundant leading option letters e.g. "A. ", "(a) ", "1. ", "(ఎ) "
+ * so the card option button doesn't display "[A] A. Text".
+ */
+function sanitizeOptionText(opt) {
+  if (!opt || typeof opt !== 'string') return opt || ''
+  let cleaned = opt.replace(/^(?:[\(\[]?[A-Da-d1-4][\)\]\.\:\-]\s*)+/i, '').trim()
+  cleaned = cleaned.replace(/^(?:[\(\[]?[ఎ|బి|సి|డి][\)\]\.\:\-]\s*)+/i, '').trim()
+  return cleaned
 }
 
 /**
@@ -60,36 +62,36 @@ function renderStructuredExplanation(explanationText, t) {
   // If structured sections weren't detected, render cleanly as standard text
   if (distractorsSection.length === 0 && memorySection.length === 0) {
     return (
-      <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-1)', margin: 0 }}>
-        {explanationText}
+      <p style={{ fontSize: 13, lineHeight: 1.55, color: 'var(--text-1)', margin: 0, whiteSpace: 'pre-line' }}>
+        {renderInlineFormatted(explanationText)}
       </p>
     )
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {/* 1. Correct Option Rationale (Clean, No Icon) */}
+      {/* 1. Correct Option Rationale */}
       {correctSection.length > 0 && (
-        <div style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--emerald-dim)', border: '1px solid var(--emerald-border)' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 4 }}>
+        <div style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--emerald-dim)', border: '1px solid var(--emerald-border)' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>
             {t('prelims.whyCorrect', 'Why Correct')}
           </span>
-          <p style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--text-1)', margin: 0 }}>
-            {correctSection.join(' ')}
+          <p style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-1)', margin: 0 }}>
+            {renderInlineFormatted(correctSection.join(' '))}
           </p>
         </div>
       )}
 
-      {/* 2. Distractor Analysis (Clean, No Search Icon, No Subtitle Text) */}
+      {/* 2. Distractor Analysis */}
       {distractorsSection.length > 0 && (
-        <div style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--indigo)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
+        <div style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--indigo)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 6 }}>
             {t('prelims.optionBreakdown', 'Option-by-Option Breakdown')}
           </span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {distractorsSection.map((dLine, idx) => (
               <div key={idx} style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-2)' }}>
-                {dLine.startsWith('-') || dLine.startsWith('•') ? dLine : `• ${dLine}`}
+                {renderInlineFormatted(dLine.startsWith('-') || dLine.startsWith('•') ? dLine : `• ${dLine}`)}
               </div>
             ))}
           </div>
@@ -98,12 +100,12 @@ function renderStructuredExplanation(explanationText, t) {
 
       {/* 3. Memory Hook / Takeaway */}
       {memorySection.length > 0 && (
-        <div style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--gold-dim)', border: '1px solid var(--gold-border)' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-hi)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 4 }}>
+        <div style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--gold-dim)', border: '1px solid var(--gold-border)' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-hi)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>
             {t('prelims.memoryHook', 'Memory Hook')}
           </span>
           <p style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-1)', margin: 0, fontWeight: 500 }}>
-            {memorySection.join(' ')}
+            {renderInlineFormatted(memorySection.join(' '))}
           </p>
         </div>
       )}
@@ -111,11 +113,81 @@ function renderStructuredExplanation(explanationText, t) {
   )
 }
 
-const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSource, index, onAnswer }) => {
+/**
+ * Detect and extract option sequence (A, B, C, D or ఎ, బి, సి, డి) from a question stem string.
+ * Used to recover options when the LLM outputs options inside the question field and passes dummy options.
+ */
+function extractEmbeddedOptions(text) {
+  if (!text || typeof text !== 'string') return null
+
+  const optSeqRegex = /(?:([:\?\.\!])\s*|(?:\r?\n)+\s*|\s{2,}|\s+(?=\(?[A-Da-d]\b[\.\:\)\-]))\s*\(?(?:A|[ఎఏ])[\.\:\)\-\]]\s+((?:(?!List-|Column-|జాబితా|Select\b)[\s\S])+?)\s*\(?(?:B|బి)[\.\:\)\-\]]\s+((?:(?!List-|Column-|జాబితా|Select\b)[\s\S])+?)\s*\(?(?:C|సి)[\.\:\)\-\]]\s+((?:(?!List-|Column-|జాబితా|Select\b)[\s\S])+?)\s*\(?(?:D|డి)[\.\:\)\-\]]\s+((?:(?!List-|Column-|జాబితా|Select\b)[\s\S])+)$/i
+
+  const match = text.match(optSeqRegex)
+  if (!match) return null
+
+  const delim = match[1] || ''
+  let cleanStem = text.slice(0, match.index).trim()
+  if (delim && !cleanStem.endsWith(delim)) {
+    cleanStem += delim
+  }
+
+  return {
+    cleanStem,
+    optionsMap: {
+      A: match[2].trim(),
+      B: match[3].trim(),
+      C: match[4].trim(),
+      D: match[5].trim(),
+    },
+  }
+}
+
+const MCQCard = ({
+  question,
+  options,
+  correctAnswer,
+  explanation,
+  type,
+  pyqSource,
+  difficulty,
+  index,
+  onAnswer,
+}) => {
   const { t } = useLanguage()
   const [selectedOption, setSelectedOption] = useState(null)
   const [answered, setAnswered] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
+
+  // Recover options if passed options are dummy placeholders (e.g. ['A', 'B', 'D', 'C'], empty strings, or length <= 2)
+  const extracted = extractEmbeddedOptions(question)
+  const cleanQuestion = extracted ? extracted.cleanStem : question
+
+  const isDummyOptions = !options || options.length < 4 || options.every((opt) => {
+    const s = typeof opt === 'string' ? opt.trim() : String(opt || '').trim()
+    return s.length <= 2 || ['A', 'B', 'C', 'D', 'ఎ', 'బి', 'సి', 'డి'].includes(s.toUpperCase())
+  })
+
+  const effectiveOptions = (options || []).map((opt, i) => {
+    const optStr = typeof opt === 'string' ? opt.trim() : String(opt || '').trim()
+    const optUpper = optStr.toUpperCase()
+    if (extracted?.optionsMap) {
+      if (['A', 'B', 'C', 'D'].includes(optUpper)) {
+        return extracted.optionsMap[optUpper] || extracted.optionsMap[OPTION_LABELS[i]] || optStr
+      }
+      if (['ఎ', 'బి', 'సి', 'డి'].includes(optStr)) {
+        const teluguLetterMap = { 'ఎ': 'A', 'బి': 'B', 'సి': 'C', 'డి': 'D' }
+        return extracted.optionsMap[teluguLetterMap[optStr]] || extracted.optionsMap[OPTION_LABELS[i]] || optStr
+      }
+      if (isDummyOptions || !optStr || optStr.length <= 2) {
+        return extracted.optionsMap[OPTION_LABELS[i]] || optStr
+      }
+    }
+    return optStr
+  })
+
+  const finalOptions = effectiveOptions.length === 4
+    ? effectiveOptions
+    : (extracted?.optionsMap ? OPTION_LABELS.map((k) => extracted.optionsMap[k]) : effectiveOptions)
 
   const handleSelect = (optionIndex) => {
     if (answered) return
@@ -125,7 +197,7 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
     setTimeout(() => setShowExplanation(true), 300)
   }
 
-  const isCorrect = (i) => i === correctAnswer || options[i] === correctAnswer
+  const isCorrect = (i) => i === correctAnswer || finalOptions[i] === correctAnswer
   const isSelected = (i) => i === selectedOption
   const userGotItRight = answered && isCorrect(selectedOption)
 
@@ -152,28 +224,34 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
     }
   }
 
-  const typeMeta = TYPE_CONFIG[type] || null
-  const TypeIcon = typeMeta ? typeMeta.icon : null
-
   return (
     <div
       className="card"
       style={{
-        padding: 'clamp(14px, 3.5vw, 20px)', animation: 'fadeIn 0.3s ease forwards',
-        animationDelay: `${(index || 0) * 60}ms`, animationFillMode: 'both',
-        display: 'flex', flexDirection: 'column',
+        padding: 'clamp(14px, 3.5vw, 20px)',
+        animation: 'fadeIn 0.3s ease forwards',
+        animationDelay: `${(index || 0) * 50}ms`,
+        animationFillMode: 'both',
+        display: 'flex',
+        flexDirection: 'column',
         width: '100%',
         boxSizing: 'border-box',
         overflow: 'hidden',
       }}
     >
-      {/* ── Question header ── */}
+      {/* ── Question stem with number badge ── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
         <span
           style={{
-            flexShrink: 0, width: 24, height: 24, borderRadius: 6,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11.5, fontWeight: 700,
+            flexShrink: 0,
+            width: 25,
+            height: 25,
+            borderRadius: 6,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 11.5,
+            fontWeight: 700,
             background: answered
               ? userGotItRight ? 'var(--emerald-dim)' : 'var(--red-dim)'
               : 'var(--indigo-dim)',
@@ -189,47 +267,67 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
           {(index || 0) + 1}
         </span>
         <div style={{ flex: 1, minWidth: 0, overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-          <FormattedQuestionText text={question} />
+          <FormattedQuestionText text={cleanQuestion} />
         </div>
       </div>
 
-      {/* ── Options ── */}
+      {/* ── Options (A, B, C, D) ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8, width: '100%' }}>
-        {options.map((opt, i) => (
-          <button
-            key={i}
-            onClick={() => handleSelect(i)}
-            disabled={answered}
-            style={{
-              ...getOptionStyle(i),
-              width: '100%', display: 'flex', alignItems: 'flex-start', gap: 10,
-              padding: '10px 12px', borderRadius: 9, textAlign: 'left',
-              cursor: answered ? 'default' : 'pointer', transition: 'all 0.15s ease',
-              wordBreak: 'break-word', overflowWrap: 'break-word',
-            }}
-            onMouseEnter={e => { if (!answered) e.currentTarget.style.borderColor = 'var(--indigo)' }}
-            onMouseLeave={e => { if (!answered) e.currentTarget.style.borderColor = 'var(--border)' }}
-          >
-            <span style={{
-              flexShrink: 0, width: 22, height: 22, borderRadius: 6,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700,
-              background: answered && isCorrect(i)
-                ? 'var(--emerald-dim)'
-                : answered && isSelected(i)
-                ? 'var(--red-dim)'
-                : 'var(--border-soft)',
-              color: 'inherit',
-              border: '1px solid var(--border)',
-              marginTop: 1,
-            }}>
-              {OPTION_LABELS[i]}
-            </span>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.45, wordBreak: 'break-word' }}>{opt}</span>
-            {answered && isCorrect(i) && <CheckCircle size={15} style={{ color: 'var(--emerald)', flexShrink: 0, marginTop: 3 }} />}
-            {answered && isSelected(i) && !isCorrect(i) && <XCircle size={15} style={{ color: 'var(--red)', flexShrink: 0, marginTop: 3 }} />}
-          </button>
-        ))}
+        {finalOptions.map((opt, i) => {
+          const cleanOpt = sanitizeOptionText(opt)
+          return (
+            <button
+              key={i}
+              onClick={() => handleSelect(i)}
+              disabled={answered}
+              style={{
+                ...getOptionStyle(i),
+                width: '100%',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+                padding: '10px 12px',
+                borderRadius: 9,
+                textAlign: 'left',
+                cursor: answered ? 'default' : 'pointer',
+                transition: 'all 0.15s ease',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+              }}
+              onMouseEnter={(e) => { if (!answered) e.currentTarget.style.borderColor = 'var(--indigo)' }}
+              onMouseLeave={(e) => { if (!answered) e.currentTarget.style.borderColor = 'var(--border)' }}
+            >
+              <span
+                style={{
+                  flexShrink: 0,
+                  width: 23,
+                  height: 23,
+                  borderRadius: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  background: answered && isCorrect(i)
+                    ? 'var(--emerald-dim)'
+                    : answered && isSelected(i)
+                    ? 'var(--red-dim)'
+                    : 'var(--border-soft)',
+                  color: 'inherit',
+                  border: '1px solid var(--border)',
+                  marginTop: 1,
+                }}
+              >
+                {OPTION_LABELS[i]}
+              </span>
+              <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.45, wordBreak: 'break-word' }}>
+                {renderInlineFormatted(cleanOpt)}
+              </span>
+              {answered && isCorrect(i) && <CheckCircle size={15} style={{ color: 'var(--emerald)', flexShrink: 0, marginTop: 3 }} />}
+              {answered && isSelected(i) && !isCorrect(i) && <XCircle size={15} style={{ color: 'var(--red)', flexShrink: 0, marginTop: 3 }} />}
+            </button>
+          )
+        })}
       </div>
 
       {/* ── 360° Explanation ── */}
@@ -240,7 +338,7 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
               <Lightbulb size={13} style={{ color: 'var(--gold-hi)' }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-hi)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold-hi)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {t('prelims.explanation', '360° Solution & Concept Analysis')}
               </p>
               {renderStructuredExplanation(explanation, t)}
@@ -249,9 +347,12 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
         </div>
       )}
 
-      {/* Toggle explanation */}
+      {/* Toggle explanation button */}
       {answered && explanation && !showExplanation && (
-        <button onClick={() => setShowExplanation(true)} style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-hi)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+        <button
+          onClick={() => setShowExplanation(true)}
+          style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--gold-hi)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
           <Lightbulb size={13} /> {t('prelims.showExplanation', 'Show 360° Solution & Distractor Analysis')}
         </button>
       )}
@@ -260,4 +361,3 @@ const MCQCard = ({ question, options, correctAnswer, explanation, type, pyqSourc
 }
 
 export default MCQCard
-

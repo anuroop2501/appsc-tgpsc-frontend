@@ -34,6 +34,8 @@ export async function generatePrelimsStream({
   let buffer = ''
   let finalQuestions = null
 
+  let streamError = null
+
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
@@ -44,8 +46,16 @@ export async function generatePrelimsStream({
     for (const line of lines) {
       const trimmed = line.trim()
       if (trimmed.startsWith('data:')) {
+        let data = null
         try {
-          const data = JSON.parse(trimmed.slice(5).trim())
+          data = JSON.parse(trimmed.slice(5).trim())
+        } catch (e) {
+          if (e.message && e.message !== 'Unexpected end of JSON input') {
+            console.error('[Prelims SSE] parse error:', e)
+          }
+        }
+
+        if (data) {
           if (data.type === 'progress') {
             onProgress?.({ progress: data.progress, message: data.message })
           } else if (data.type === 'questions_batch') {
@@ -55,15 +65,17 @@ export async function generatePrelimsStream({
             finalQuestions = data.questions
             onProgress?.({ progress: 100, message: 'Done' })
           } else if (data.type === 'error') {
-            throw new Error(data.error || 'Prelims generation failed')
-          }
-        } catch (e) {
-          if (e.message && e.message !== 'Unexpected end of JSON input') {
-            console.error('[Prelims SSE] parse error:', e)
+            streamError = data.error || 'Prelims generation failed'
+            break
           }
         }
       }
     }
+    if (streamError) break
+  }
+
+  if (streamError) {
+    throw new Error(streamError)
   }
 
   if (buffer.trim().startsWith('data:')) {
