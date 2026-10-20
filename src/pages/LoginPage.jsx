@@ -154,9 +154,25 @@ const LoginPage = () => {
 
               {/* Password */}
               <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 6 }}>
-                  Password
-                </label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-2)', margin: 0 }}>
+                    Password
+                  </label>
+                  <Link
+                    to="/forgot-password"
+                    style={{
+                      fontSize: 12.5,
+                      fontWeight: 500,
+                      color: 'var(--indigo)',
+                      textDecoration: 'none',
+                      transition: 'opacity 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                    onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
                 <div style={{ position: 'relative' }}>
                   <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)', zIndex: 1 }} />
                   <input

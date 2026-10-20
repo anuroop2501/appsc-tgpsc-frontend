@@ -11,3 +11,9 @@ export const getMe = () =>
 
 export const refreshToken = (token) =>
   api.post('/api/auth/refresh', { refreshToken: token }).then((r) => r.data)
+
+export const forgotPassword = (data) =>
+  api.post('/api/auth/forgot-password', data).then((r) => r.data)
+
+export const resetPassword = (data) =>
+  api.post('/api/auth/reset-password', data).then((r) => r.data)

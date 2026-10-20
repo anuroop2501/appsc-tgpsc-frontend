@@ -3,6 +3,7 @@ import AuthGuard from './components/AuthGuard'
 import Layout from './components/Layout'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import DashboardPage from './pages/DashboardPage'
 import PrelimsPage from './pages/PrelimsPage'
 import NotesPage from './pages/NotesPage'
@@ -22,6 +23,8 @@ const App = () => {
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ForgotPasswordPage />} />
 
         {/* Legal & Policy routes (accessible publicly and authenticated) */}
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
