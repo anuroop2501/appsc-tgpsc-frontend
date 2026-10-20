@@ -140,6 +140,11 @@ export default function PricingPage() {
 
       const result = await cashfree.checkout(checkoutOptions)
 
+      if (result?.redirect) {
+        // Cashfree is handling redirection to payment provider / return_url
+        return
+      }
+
       if (result?.error) {
         setError(result.error.message || 'Payment dismissed or cancelled.')
         return

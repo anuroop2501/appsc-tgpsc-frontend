@@ -60,6 +60,11 @@ export default function PricingModal({ isOpen, onClose, onPaymentSuccess, reason
 
       const result = await cashfree.checkout(checkoutOptions)
 
+      if (result?.redirect) {
+        // Cashfree is handling redirection to payment provider / return_url
+        return
+      }
+
       if (result?.error) {
         setError(result.error.message || 'Payment cancelled or dismissed.')
         return

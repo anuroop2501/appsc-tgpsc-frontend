@@ -20,9 +20,10 @@ export const getUserBalance = async () => {
  * Create a Cashfree payment order for a plan or top-up item.
  * @param {string} itemId - e.g. 'basic_499', 'pro_999', 'officer_1999', 'topup_149'
  * @param {string} [returnUrl] - Optional custom return URL for redirect
+ * @param {string} [customerPhone] - Optional 10-digit mobile number
  */
-export const createPaymentOrder = async (itemId, returnUrl) => {
-  const res = await api.post('/api/payment/create-order', { itemId, returnUrl })
+export const createPaymentOrder = async (itemId, returnUrl, customerPhone) => {
+  const res = await api.post('/api/payment/create-order', { itemId, returnUrl, customerPhone })
   return res.data
 }
 
