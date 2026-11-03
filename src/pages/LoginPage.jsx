@@ -17,6 +17,15 @@ const LoginPage = () => {
     if (token) navigate(from, { replace: true })
   }, [token, navigate, from])
 
+  useEffect(() => {
+    const prevTheme = document.documentElement.getAttribute('data-theme')
+    document.documentElement.setAttribute('data-theme', 'light')
+    return () => {
+      const saved = localStorage.getItem('appsc_theme') || prevTheme || 'dark'
+      document.documentElement.setAttribute('data-theme', saved)
+    }
+  }, [])
+
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -46,6 +55,7 @@ const LoginPage = () => {
 
   return (
     <div
+      data-theme="light"
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -53,12 +63,13 @@ const LoginPage = () => {
         justifyContent: 'center',
         padding: 16,
         background: 'var(--bg)',
+        color: 'var(--text-1)',
       }}
     >
       {/* Subtle ambient glows */}
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(100,130,232,0.08) 0%, transparent 70%)' }} />
-        <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,164,48,0.06) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,185,66,0.06) 0%, transparent 70%)' }} />
       </div>
 
       <div style={{ width: '100%', maxWidth: 420, position: 'relative', animation: 'fadeIn 0.4s ease forwards' }}>
@@ -69,7 +80,7 @@ const LoginPage = () => {
             border: '1px solid var(--border)',
             borderRadius: 20,
             padding: 'clamp(24px, 6vw, 40px) clamp(18px, 5vw, 36px)',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+            boxShadow: '0 20px 40px -15px rgba(0,0,0,0.07), 0 0 1px 1px rgba(0,0,0,0.04)',
           }}
         >
           {/* Brand */}
@@ -92,9 +103,6 @@ const LoginPage = () => {
             </h1>
             <p style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 4, letterSpacing: '0.04em' }}>
               AI-Powered Preparation Platform for APPSC
-            </p>
-            <p style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 6, marginBottom: 0, letterSpacing: '0.02em' }}>
-              A Product of <span style={{ color: 'var(--text-2)', fontWeight: 500 }}>AWE IAS ACADEMY</span>
             </p>
           </div>
 
@@ -262,7 +270,7 @@ const LoginPage = () => {
               Refund Policy
             </Link>
           </div>
-          <div>APPSC AI — Precision Preparation Platform • A Product of AWE IAS ACADEMY</div>
+          <div>APPSC AI — Precision Preparation Platform</div>
         </div>
       </div>
     </div>

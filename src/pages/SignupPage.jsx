@@ -89,9 +89,6 @@ const SignupPage = () => {
             <p style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 4, letterSpacing: '0.04em' }}>
               AI-Powered Preparation Platform for APPSC
             </p>
-            <p style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 6, marginBottom: 0, letterSpacing: '0.02em' }}>
-              A Product of <span style={{ color: 'var(--text-2)', fontWeight: 500 }}>AWE IAS ACADEMY</span>
-            </p>
           </div>
 
           {/* Heading */}
@@ -198,7 +195,7 @@ const SignupPage = () => {
               Refund Policy
             </Link>
           </div>
-          <div>APPSC AI — Precision Preparation Platform • A Product of AWE IAS ACADEMY</div>
+          <div>APPSC AI — Precision Preparation Platform</div>
         </div>
       </div>
     </div>

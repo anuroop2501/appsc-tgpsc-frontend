@@ -114,17 +114,6 @@ const Sidebar = ({ open, onClose, isMobile }) => {
             <ChevronLeft size={17} />
           </button>
         </div>
-
-        <p
-          style={{
-            margin: '6px 0 0',
-            fontSize: 10.5,
-            color: 'var(--text-3)',
-            letterSpacing: '0.02em',
-          }}
-        >
-          A Product of <span style={{ color: 'var(--text-2)', fontWeight: 550 }}>AWE IAS ACADEMY</span>
-        </p>
       </div>
 
       {/* ── Nav ── */}
